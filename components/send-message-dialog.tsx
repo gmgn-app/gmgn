@@ -28,7 +28,7 @@ import {
 import { isAddress, Address } from "viem";
 import { Send, Loader2, Hash, CircleCheck } from 'lucide-react';
 
-
+// Define the form schema.
 const formSchema = z.object({
   address: z.string().refine((value) => isAddress(value), {
     message: "Provided address is invalid.",
@@ -39,15 +39,19 @@ const formSchema = z.object({
 });
 
 export default function SendMessageDialog() {
+
+  // setup the send transaction hook
   const {
     data: hash,
     error,
     isPending,
     sendTransaction,
   } = useSendTransaction();
+
+  // setup the chainId hook
   const chainId = useChainId();
 
-  // 1. Define your form.
+  // Define the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,7 +60,7 @@ export default function SendMessageDialog() {
     },
   });
 
-  // 2. Define a submit handler.
+  // Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
@@ -66,23 +70,27 @@ export default function SendMessageDialog() {
     });
   }
 
+  // 3. Use the `useWaitForTransactionReceipt` hook to wait for the transaction to be confirmed.
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
       hash,
     });
 
+  // Truncate the address for display.
   function truncateAddress(address: Address | undefined, numberOfChars: number) {
     if (!address) return "No address";
     let convertedAddress = address.toString();
     return `${convertedAddress.slice(0, numberOfChars)}...${convertedAddress.slice(-numberOfChars)}`;
   }
 
+  // Truncate the hash for display
   function truncateHash(address: String | undefined, numberOfChars: number) {
     if (!address) return "No address";
     let convertedAddress = address.toString();
     return `${convertedAddress.slice(0, numberOfChars)}...${convertedAddress.slice(-numberOfChars)}`;
   }
 
+  // Select the explorer link based on the chainId
   function selectExplorerLink(chainId: number) {
     switch (chainId) {
       case 8217:
