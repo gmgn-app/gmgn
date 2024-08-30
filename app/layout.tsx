@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Comic_Neue } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from './providers';
 
-const comicNeue = Comic_Neue({ weight: "400", subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'gmgn',
@@ -41,10 +41,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={comicNeue.className}>
+      <body className={inter.className}>
         <Providers>
-          <main className="flex flex-col gap-8 items-center justify-center py-12 px-4 lg:p-16">
-            <div className="flex flex-col gap-12 max-w-5xl">
+          <main className="flex flex-col gap-8 items-center justify-center p-2 md:p-12 lg:p-16">
+            <div className="flex flex-col gap-12 max-w-xl py-4">
               {children}
             </div>
           </main>
