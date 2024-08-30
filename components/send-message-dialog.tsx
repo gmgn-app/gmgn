@@ -150,7 +150,7 @@ export default function SendMessageDialog() {
       </div>
       <div className="flex flex-col w-full h-36 border-black border-2 rounded-md p-4">
         <h2 className="text-3xl font-semibold mb-4">Status</h2>
-        <p className="flex flex-row items-center"><Hash className="mr-2 h-4 w-4" />Tx Hash: {hash ? <a className="ml-2 underline underline-offset-2 text-blue-500" href={`${selectExplorerLink(chainId)}${hash}`}>{truncateHash(hash, 6)}</a> : "No transaction yet."}</p>
+        <p className="flex flex-row items-center mb-2"><Hash className="mr-2 h-4 w-4" />Tx Hash: {hash ? <a className="ml-2 underline underline-offset-2 text-blue-500" href={`${selectExplorerLink(chainId)}${hash}`}>{truncateHash(hash, 6)}</a> : "No transaction yet."}</p>
         {isConfirming && <p className="flex flex-row items-center text-yellow-500"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Waiting for confirmation...</p>}
         {isConfirmed && <p className="flex flex-row items-center text-green-500"><CircleCheck className="mr-2 h-4 w-4" />Transaction confirmed!</p>}
         {error && (
