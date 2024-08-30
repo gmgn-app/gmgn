@@ -14,10 +14,10 @@ export const metadata: Metadata = {
     title: 'gmgn',
     description: 'share your thoughts onchain',
     url: 'https://www.gmgn.app',
-    siteName: 'BlockCMD',
+    siteName: 'gmgn',
     images: [
       {
-        url: '/blockcmd-tbn.png',
+        url: '/gmgn-tbn.png',
         width: 1200,
         height: 630,
         alt: 'og-image',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: 'gmgn',
     description: 'share your thoughts onchain',
     creator: '@zxstim',
-    images: ['/blockcmd-tbn.png'],
+    images: ['/gmgn-tbn.png'],
   },
 }
 export default function RootLayout({
