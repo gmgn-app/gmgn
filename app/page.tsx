@@ -1,3 +1,5 @@
+"use client";
+
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import SendMessageDialog from "@/components/send-message-dialog";
 
