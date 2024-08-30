@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { isAddress, Address } from "viem";
-import { Send, Loader2, Hash, CircleCheck } from 'lucide-react';
+import { Send, Loader2, Hash, CircleCheck, OctagonAlert } from 'lucide-react';
 
 // Define the form schema.
 const formSchema = z.object({
@@ -160,7 +160,7 @@ export default function SendMessageDialog() {
         {isConfirming && <p className="flex flex-row items-center text-yellow-500"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Waiting for confirmation...</p>}
         {isConfirmed && <p className="flex flex-row items-center text-green-500"><CircleCheck className="mr-2 h-4 w-4" />Transaction confirmed!</p>}
         {error && (
-          <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+          <p className="flex flex-row items-center text-red-500"><OctagonAlert className="mr-2 h-4 w-4" />Error: {(error as BaseError).shortMessage || error.message}</p>
         )}
       </div>
     </div>
