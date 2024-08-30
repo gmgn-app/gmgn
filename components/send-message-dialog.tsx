@@ -68,6 +68,10 @@ export default function SendMessageDialog() {
     });
   }
 
+  function onReset() {
+    form.reset();
+  }
+
   // 3. Use the `useWaitForTransactionReceipt` hook to wait for the transaction to be confirmed.
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
@@ -100,12 +104,13 @@ export default function SendMessageDialog() {
     }
   }
 
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col w-full h-full border-black border-2 rounded-md bg-white p-4">
         <h2 className="text-3xl font-semibold mb-8">Message</h2>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onReset={form.handleSubmit(onReset)} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
               name="address"
@@ -146,7 +151,8 @@ export default function SendMessageDialog() {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end">
+            <div className="flex flex-row justify-between items-center">
+              <Button variant="outline" className="w-18 rounded-md border-black border-2 p-2.5" type="reset">Clear</Button>
               <Button className="w-36 rounded-md border-black border-2 p-2.5" disabled={isPending} type="submit">
                 {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Please wait</> : <><Send className="mr-2 h-4 w-4" /> Send</>}
               </Button>
