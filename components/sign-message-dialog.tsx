@@ -128,7 +128,7 @@ export default function SignMessageDialog() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 w-[300px] md:w-[600px] lg:w-[900px]">
       <div className="flex flex-col w-full h-full border-black border-2 rounded-md bg-white p-4">
         <h2 className="text-3xl font-semibold mb-8">Message</h2>
         <Form {...form}>
@@ -142,16 +142,16 @@ export default function SignMessageDialog() {
               name="txMessage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Message</FormLabel>
+                  <FormLabel>Text</FormLabel>
                   <FormControl>
                     <Textarea
                       className="rounded-none w-full h-36 border-black border-2 p-2.5"
-                      placeholder="Enter your message"
+                      placeholder="Enter your text"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    This is your public message.
+                    This is the text you want to sign.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

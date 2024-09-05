@@ -5,7 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Page() {
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-12 items-center">
       <ConnectButton />
       <SignMessageDialog />
     </div>
