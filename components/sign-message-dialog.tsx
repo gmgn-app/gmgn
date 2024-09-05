@@ -25,7 +25,18 @@ import {
   UserPen,
   OctagonAlert,
   Hash,
+  Link,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import CopyButton from "./copy-button";
 
 // Define the form schema.
 const formSchema = z.object({
@@ -100,15 +111,20 @@ export default function SignMessageDialog() {
 
   function unixTimestampToDateTime(unixTimestamp: number) {
     const date = new Date(unixTimestamp);
-    return date.toLocaleString
-      ? date.toLocaleString()
-      : date.toUTCString();
+    return date.toLocaleString ? date.toLocaleString() : date.toUTCString();
   }
 
-  function constructLinkAndCopyToClipboard(signatureObject: SignatureObject) {
+  function constructLink(signatureObject: SignatureObject) {
     const baseUrl = "https://gmgn.app/signature";
-    const signatureString = "?account=" + signatureObject.account + "&timestamp=" + signatureObject.timestamp + "&signature=" + signatureObject.signature;
-    navigator.clipboard.writeText(baseUrl + signatureString);
+    const signatureString =
+      baseUrl +
+      "?account=" +
+      signatureObject.account +
+      "&timestamp=" +
+      signatureObject.timestamp +
+      "&signature=" +
+      signatureObject.signature;
+    return signatureString;
   }
 
   return (
@@ -219,20 +235,63 @@ export default function SignMessageDialog() {
       <div className="flex flex-col w-full border-black border-2 rounded-md p-4">
         <h2 className="text-3xl font-semibold mb-4">Share</h2>
         <div className="flex flex-row gap-2">
-          <Button
-            className="w-36 rounded-md border-black border-2 p-2.5"
-            onClick={() => constructLinkAndCopyToClipboard({ account: variables?.account, timestamp: submittedAt, signature: hash })}
-          >
-            Share link
-          </Button>
-          <Button
-            className="w-36 rounded-md border-black border-2 p-2.5"
-            onClick={() => {
-              navigator.clipboard.writeText(hash || "");
-            }}
-          >
-            Share signature
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Link className="mr-2 h-4 w-4" />
+                Link
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>You can share this link</DialogTitle>
+                <DialogDescription>
+                  <Input
+                    className="rounded-none w-full border-black border-2 p-2.5 mt-2"
+                    value={constructLink({
+                      account: account?.address,
+                      timestamp: submittedAt,
+                      signature: hash,
+                    })}
+                    readOnly
+                  />
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <CopyButton
+                  text={constructLink({
+                    account: account?.address,
+                    timestamp: submittedAt,
+                    signature: hash,
+                  })}
+                />
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Hash className="mr-2 h-4 w-4" />
+                Hash
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>You can share this text</DialogTitle>
+                <DialogDescription>
+                  <Input
+                    className="rounded-none w-full border-black border-2 p-2.5 mt-2"
+                    value={hash}
+                    readOnly
+                  />
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <CopyButton text={hash ? hash : "none"} />
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
