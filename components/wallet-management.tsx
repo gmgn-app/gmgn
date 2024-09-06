@@ -11,7 +11,8 @@ import {
   Address,
   Account,
   formatEther,
-  parseEther
+  parseEther,
+  fromBytes
 } from "viem";
 import { klaytnBaobab } from "viem/chains";
 import Image from "next/image";
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from "@/components/ui/toast"
+import { WebAuthnStorage } from "@hazae41/webauthnstorage"
 
 export default function WalletManagement() {
   const { toast } = useToast()
@@ -55,30 +57,35 @@ export default function WalletManagement() {
     setBalance(formatEther(balance).toString());
   }
 
-  useEffect(() => {
-    const privateKey = localStorage.getItem("privateKey");
-    if (privateKey) {
-      setCreateWalletButtonActive(false);
-      const account = privateKeyToAccount(privateKey as Address);
-      const walletClient = createWalletClient({
-        account: privateKeyToAccount(privateKey as Address),
-        chain: klaytnBaobab,
-        transport: http(),
-      });
-      setWalletClient(walletClient);
-      setWalletAddress(account.address);
-      const fetchBalance = async () => {
-        const balance = await publicClient.getBalance({
-          address: account.address,
-        });
-        setBalance(formatEther(balance).toString());
-      };
-      // call the function
-      fetchBalance()
-        // make sure to catch any error
-        .catch(console.error);
-    }
-  }, []);
+  // useEffect(() => {
+  //   // const privateKey = localStorage.getItem("privateKey");
+  //   const bytes = await WebAuthnStorage.get(handle)
+  //   const privateKey = fromBytes(
+  //     new Uint8Array(), 
+  //     'hex'
+  //   )
+  //   if (privateKey) {
+  //     setCreateWalletButtonActive(false);
+  //     const account = privateKeyToAccount(privateKey as Address);
+  //     const walletClient = createWalletClient({
+  //       account: privateKeyToAccount(privateKey as Address),
+  //       chain: klaytnBaobab,
+  //       transport: http(),
+  //     });
+  //     setWalletClient(walletClient);
+  //     setWalletAddress(account.address);
+  //     const fetchBalance = async () => {
+  //       const balance = await publicClient.getBalance({
+  //         address: account.address,
+  //       });
+  //       setBalance(formatEther(balance).toString());
+  //     };
+  //     // call the function
+  //     fetchBalance()
+  //       // make sure to catch any error
+  //       .catch(console.error);
+  //   }
+  // }, []);
 
   // Truncate the address for display.
   function truncateAddress(
@@ -93,20 +100,71 @@ export default function WalletManagement() {
     )}...${convertedAddress.slice(-numberOfChars)}`;
   }
 
-    // Truncate the hash for display
-    function truncateHash(address: String | undefined, numberOfChars: number) {
-      if (!address) return "No address";
-      let convertedAddress = address.toString();
-      return `${convertedAddress.slice(
-        0,
-        numberOfChars
-      )}...${convertedAddress.slice(-numberOfChars)}`;
+  // Truncate the hash for display
+  function truncateHash(address: String | undefined, numberOfChars: number) {
+    if (!address) return "No address";
+    let convertedAddress = address.toString();
+    return `${convertedAddress.slice(
+      0,
+      numberOfChars
+    )}...${convertedAddress.slice(-numberOfChars)}`;
+  }
+
+    async function getWallet() {
+      
+      /**
+       * Retrieve the handle to the private key from some unauthenticated storage
+       */
+      const cache = await caches.open("my-storage")
+      const request = new Request("my-private-key")
+      const response = await cache.match(request)
+      const handle = response ? new Uint8Array(await response.arrayBuffer()) : new Uint8Array();
+      // const handle = new Uint8Array([156, 237, 69, 251, 193, 186, 47, 79, 7, 235, 149, 213, 83, 235, 149, 107, 155, 176, 52, 240, 51, 62, 173, 205, 28, 234, 252, 16, 219, 138, 124, 143])
+      /**
+       * Retrieve the private key from authenticated storage
+       */
+      const bytes = await WebAuthnStorage.getOrThrow(handle)
+      const privateKey = fromBytes(bytes, 'hex')
+      if (privateKey) {
+        setCreateWalletButtonActive(false);
+        const account = privateKeyToAccount(privateKey as Address);
+        const walletClient = createWalletClient({
+          account: privateKeyToAccount(privateKey as Address),
+          chain: klaytnBaobab,
+          transport: http(),
+        });
+        setWalletClient(walletClient);
+        setWalletAddress(account.address);
+        const fetchBalance = async () => {
+          const balance = await publicClient.getBalance({
+            address: account.address,
+          });
+          setBalance(formatEther(balance).toString());
+        };
+        // call the function
+        fetchBalance()
+          // make sure to catch any error
+          .catch(console.error);
+      }
     }
 
-  function createWallet() {
-    const privateKey = generatePrivateKey();
-    console.log(privateKey);
-    localStorage.setItem("privateKey", privateKey.toString());
+
+
+
+  async function createWallet() {
+    // const privateKey = generatePrivateKey();
+    const bytes = crypto.getRandomValues(new Uint8Array(32))
+    /**
+     * Store the private key into authenticated storage
+     */
+    const handle = await WebAuthnStorage.createOrThrow("private-key", bytes);
+    /**
+     * Store the handle to the private key into some unauthenticated storage
+     */
+    const cache = await caches.open("my-storage")
+    const request = new Request("my-private-key")
+    const response = new Response(handle)
+    await cache.put(request, response)
   }
 
   async function submitTransaction() {
@@ -154,6 +212,9 @@ export default function WalletManagement() {
             Create
           </Button>
         )}
+        <Button className="w-fit" onClick={getWallet}>
+          Load
+        </Button>
         <Dialog>
           <DialogTrigger asChild>
             <Button>

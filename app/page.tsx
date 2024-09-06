@@ -7,7 +7,7 @@ export default function Home() {
       <h1 className="text-3xl font-bold">Welcome and have fun!</h1>
       <Link
         className="flex flex-row items-center border-2 border-primary rounded-none p-2.5 font-semibold"
-        href="/sign"
+        href="/wallet"
       >
         <Wallet className="mr-2 h-4 w-4" />
         Wallet
