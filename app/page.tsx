@@ -9,6 +9,13 @@ export default function Home() {
         className="flex flex-row items-center border-2 border-primary rounded-none p-2.5 font-semibold"
         href="/sign"
       >
+        <Wallet className="mr-2 h-4 w-4" />
+        Wallet
+      </Link>
+      <Link
+        className="flex flex-row items-center border-2 border-primary rounded-none p-2.5 font-semibold"
+        href="/sign"
+      >
         <Signature className="mr-2 h-4 w-4" />
         Sign
       </Link>
