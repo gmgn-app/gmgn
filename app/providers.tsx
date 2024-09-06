@@ -22,7 +22,7 @@ const { wallets } = getDefaultWallets();
 // initialize and destructure wallets object
 
 const config = getDefaultConfig({
-  appName: 'BLOCKCMD_INSPECT', // Name your app
+  appName: 'GMGN', // Name your app
   projectId: "e0e485365ce5d5ab04d3dd795f627315", // Enter your WalletConnect Project ID here
   wallets: [
     ...wallets,
