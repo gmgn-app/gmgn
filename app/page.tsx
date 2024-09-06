@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { Signature, MessageSquareText } from "lucide-react";
+import { Wallet, Signature, MessageSquareText } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="flex flex-col gap-12 justify-center h-screen">
       <h1 className="text-3xl font-bold">Welcome and have fun!</h1>
+      <Link
+        className="flex flex-row items-center border-2 border-primary rounded-none p-2.5 font-semibold"
+        href="/wallet"
+      >
+        <Wallet className="mr-2 h-4 w-4" />
+        Wallet
+      </Link>
       <Link
         className="flex flex-row items-center border-2 border-primary rounded-none p-2.5 font-semibold"
         href="/sign"
