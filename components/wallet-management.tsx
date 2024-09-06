@@ -27,9 +27,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
 
 export default function WalletManagement() {
+  const { toast } = useToast()
+
   const [balance, setBalance] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [walletClient, setWalletClient] = useState<any>();
@@ -90,6 +93,16 @@ export default function WalletManagement() {
     )}...${convertedAddress.slice(-numberOfChars)}`;
   }
 
+    // Truncate the hash for display
+    function truncateHash(address: String | undefined, numberOfChars: number) {
+      if (!address) return "No address";
+      let convertedAddress = address.toString();
+      return `${convertedAddress.slice(
+        0,
+        numberOfChars
+      )}...${convertedAddress.slice(-numberOfChars)}`;
+    }
+
   function createWallet() {
     const privateKey = generatePrivateKey();
     console.log(privateKey);
@@ -100,6 +113,11 @@ export default function WalletManagement() {
     const hash = await walletClient.sendTransaction({ 
       to: receivingAddress as Address,
       value: parseEther(sendingAmount)
+    })
+    toast({
+      title: "Transaction sent!",
+      description: "Hash: " + truncateHash(hash, 6),
+      action: <ToastAction altText="view">View</ToastAction>,
     })
     setTransactionHash(hash)
   } 

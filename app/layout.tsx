@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from './providers';
+import { Toaster } from "@/components/ui/toaster"
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +48,7 @@ export default function RootLayout({
           <main className="flex flex-col gap-8 items-center justify-center p-2 md:p-12 lg:p-16">
             <div className="flex flex-col gap-12 max-w-xl py-4">
               {children}
+              <Toaster />
             </div>
           </main>
         </Providers>
