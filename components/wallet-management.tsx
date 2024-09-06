@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import {
   createWalletClient,
@@ -10,11 +11,12 @@ import {
   Address,
   Account,
   formatEther,
+  parseEther
 } from "viem";
 import { klaytnBaobab } from "viem/chains";
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
-import { RotateCcw } from "lucide-react";
+import { Send, RotateCcw, ArrowDownToLine } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
   Dialog,
@@ -26,11 +28,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+
 export default function WalletManagement() {
   const [balance, setBalance] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
+  const [walletClient, setWalletClient] = useState<any>();
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
+
+  const [sendingAmount, setSendingAmount] = useState("");
+  const [receivingAddress, setReceivingAddress] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
 
   const publicClient = createPublicClient({
     chain: klaytnBaobab,
@@ -49,7 +57,19 @@ export default function WalletManagement() {
     if (privateKey) {
       setCreateWalletButtonActive(false);
       const account = privateKeyToAccount(privateKey as Address);
+      const walletClient = createWalletClient({
+        account: privateKeyToAccount(privateKey as Address),
+        chain: klaytnBaobab,
+        transport: http(),
+      });
+      setWalletClient(walletClient);
       setWalletAddress(account.address);
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: account.address,
+        });
+        setBalance(formatEther(balance).toString());
+      };
       // call the function
       fetchBalance()
         // make sure to catch any error
@@ -76,6 +96,13 @@ export default function WalletManagement() {
     localStorage.setItem("privateKey", privateKey.toString());
   }
 
+  async function submitTransaction() {
+    const hash = await walletClient.sendTransaction({ 
+      to: receivingAddress as Address,
+      value: parseEther(sendingAmount)
+    })
+    setTransactionHash(hash)
+  } 
 
   return (
     <div className="flex flex-col gap-4">
@@ -94,7 +121,7 @@ export default function WalletManagement() {
               <WalletCopyButton text={walletAddress as Address} />
             </div>
           </div>
-          <Button variant="outline" size="icon">
+          <Button onClick={fetchBalance} variant="outline" size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
@@ -109,13 +136,71 @@ export default function WalletManagement() {
             Create
           </Button>
         )}
-        <Button className="w-fit">Send</Button>
-        <Button className="w-fit">Receive</Button>
-        <QRCode
-          size={256}
-          value={walletAddress}
-          viewBox={`0 0 256 256`}
-        />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Send className="mr-2 h-4 w-4" />
+              Send
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="flex flex-col items-center">
+              <DialogTitle>Send</DialogTitle>
+              <DialogDescription>
+                Enter address and amount
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <Input 
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                placeholder="0x..."
+                value={receivingAddress}
+                onChange={(e) => setReceivingAddress(e.target.value)}
+              />
+              <Input
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                placeholder="0"
+                value={sendingAmount}
+                onChange={(e) => setSendingAmount(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={submitTransaction}>Send</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <ArrowDownToLine className="mr-2 h-4 w-4" />
+              Receive
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="flex flex-col items-center">
+              <DialogTitle>Receive</DialogTitle>
+              <DialogDescription>
+                Scan QR code or copy address
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center">
+              <QRCode
+                className="mt-4"
+                size={256}
+                value={walletAddress}
+                viewBox={`0 0 256 256`}
+              />
+            </div>
+            <DialogFooter className="flex flex-row gap-2 items-center">
+              <Input
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                value={walletAddress}
+                readOnly
+              />
+              <WalletCopyButton text={walletAddress as Address} />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
