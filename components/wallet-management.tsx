@@ -56,15 +56,11 @@ export default function WalletManagement() {
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
-      const GMGN_WALLET_STORAGE = JSON.parse(GMGN_WALLET);
-      if (GMGN_WALLET_STORAGE.status === "created") {
+      const wallet = JSON.parse(GMGN_WALLET);
+      setWalletName(wallet.username);
+      setWalletIcon(wallet.icon);
+      if (wallet.status === "created") {
         setCreateWalletButtonActive(false);
-      }
-      if (GMGN_WALLET_STORAGE.icon) {
-        setWalletIcon(GMGN_WALLET_STORAGE.icon);
-      }
-      if (GMGN_WALLET_STORAGE.username) {
-        setWalletName(GMGN_WALLET_STORAGE.username);
       }
     }
   }, []);
@@ -91,7 +87,7 @@ export default function WalletManagement() {
     return `${convertedAddress.slice(
       0,
       numberOfChars
-    )}...${convertedAddress.slice(-numberOfChars)}`;
+    )}...${convertedAddress.slice(-4)}`;
   }
 
   // Truncate the hash for display
@@ -170,7 +166,7 @@ export default function WalletManagement() {
       icon: icon.toDataURL(),
       username: walletName,
     };
-    localStorage.setItem("gmgn-wallet", GMGN_WALLET_STORAGE.toString());
+    localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
     setCreateWalletButtonActive(false);
   }
 
@@ -196,7 +192,7 @@ export default function WalletManagement() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4 w-[300px] md:w-[600px] lg:w-[900px]">
+      <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4 w-[340px] md:w-[768px]">
         <div className="flex flex-row justify-between">
           <div className="flex flex-col md:flex-row gap-2 items-start">
             <Image
@@ -208,7 +204,8 @@ export default function WalletManagement() {
             />
             <div className="flex flex-row gap-2 justify-center items-center">
               <p>{walletName ? trimWalletName(walletName) : "---"}</p>
-              <p>{truncateAddress(walletAddress as Address, 6)}</p>
+              <div className="w-4 h-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+              <p className="font-mono">{truncateAddress(walletAddress as Address, 6)}</p>
               <WalletCopyButton text={walletAddress as Address} />
             </div>
           </div>
