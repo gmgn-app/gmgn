@@ -187,6 +187,13 @@ export default function WalletManagement() {
     setTransactionHash(hash);
   }
 
+  function trimWalletName(name: string) {
+    if (name.length > 10) {
+      return name.slice(0, 10) + "...";
+    }
+    return name;
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4 w-[300px] md:w-[600px] lg:w-[900px]">
@@ -200,7 +207,7 @@ export default function WalletManagement() {
               className="rounded-full border-2 border-primary"
             />
             <div className="flex flex-row gap-2 justify-center items-center">
-              <p>{walletName ? walletName : "---"}</p>
+              <p>{walletName ? trimWalletName(walletName) : "---"}</p>
               <p>{truncateAddress(walletAddress as Address, 6)}</p>
               <WalletCopyButton text={walletAddress as Address} />
             </div>
