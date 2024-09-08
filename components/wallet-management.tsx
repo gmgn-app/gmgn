@@ -7,10 +7,10 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import {
   createWalletClient,
   createPublicClient,
-  http,
   Address,
   Account,
   formatEther,
+  http,
   parseEther,
   fromBytes,
 } from "viem";
@@ -24,7 +24,8 @@ import {
   LoaderPinwheel,
   CirclePlus,
   CircleUser,
-  Wallet
+  Wallet,
+  CreditCard,
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
@@ -40,8 +41,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { WebAuthnStorage } from "@hazae41/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
-import cuid from 'cuid';
-
+import cuid from "cuid";
+import { Label } from "@/components/ui/label";
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -56,6 +57,10 @@ export default function WalletManagement() {
   const [walletName, setWalletName] = useState("");
   const [transactionHash, setTransactionHash] = useState("");
   const [walletIcon, setWalletIcon] = useState("/kaia.png");
+  const [gasEstimate, setGasEstimate] = useState("");
+  const [gasPrice, setGasPrice] = useState("");
+  const [transactionCost, setTransactionCost] = useState("");
+  const [readyToTransfer, setReadyToTransfer] = useState(false);
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -79,6 +84,19 @@ export default function WalletManagement() {
       address: walletAddress as Address,
     });
     setBalance(formatEther(balance).toString());
+  }
+
+  async function fetchTransactionCostEstimate() {
+    const gas = await publicClient.estimateGas({ 
+      account: walletAddress as Address,
+      to: receivingAddress as Address,
+      value: parseEther(sendingAmount),
+    });
+    const gasPrice = await publicClient.getGasPrice();
+    setGasEstimate(formatEther(gas));
+    setGasPrice(formatEther(gasPrice));
+    setTransactionCost(formatEther(gas * gasPrice));
+    setReadyToTransfer(true);
   }
 
   // Truncate the address for display.
@@ -180,8 +198,9 @@ export default function WalletManagement() {
     toast({
       title: "Transaction sent!",
       description: "Hash: " + truncateHash(hash, 6),
-      action: <ToastAction altText="view">View</ToastAction>,
+      action: <ToastAction altText="view"><a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>View</a></ToastAction>,
     });
+    setReadyToTransfer(false);
     setTransactionHash(hash);
   }
 
@@ -209,7 +228,10 @@ export default function WalletManagement() {
                 <CircleUser className="w-4 h-4" />
                 <p>{walletName ? walletName : "---"}</p>
               </div>
-              <WalletCopyButton copyText={walletAddress} buttonTitle={truncateAddress(walletAddress as Address, 6)} />
+              <WalletCopyButton
+                copyText={walletAddress}
+                buttonTitle={truncateAddress(walletAddress as Address, 6)}
+              />
             </div>
           </div>
           <Button onClick={fetchBalance} variant="outline" size="icon">
@@ -253,9 +275,15 @@ export default function WalletManagement() {
           <LoaderPinwheel className="mr-2 h-4 w-4" />
           Load
         </Button>
+        {!createWalletButtonActive && (
+          <Button disabled>
+            <CreditCard className="mr-2 h-4 w-4" />
+            Topup
+          </Button>
+        )}
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
               <Send className="mr-2 h-4 w-4" />
               Send
             </Button>
@@ -265,28 +293,45 @@ export default function WalletManagement() {
               <DialogTitle>Send</DialogTitle>
               <DialogDescription>Enter address and amount</DialogDescription>
             </DialogHeader>
-            <div>
-              <Input
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                placeholder="0x..."
-                value={receivingAddress}
-                onChange={(e) => setReceivingAddress(e.target.value)}
-              />
-              <Input
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                placeholder="0"
-                value={sendingAmount}
-                onChange={(e) => setSendingAmount(e.target.value)}
-              />
+            <div className="flex flex-col gap-8 mt-4 mb-6">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="receivingAddress">Receiving address</Label>
+                <Input
+                  id="receivingAddress"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0x..."
+                  value={receivingAddress}
+                  onChange={(e) => setReceivingAddress(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sendingAmount">Amount</Label>
+                <Input
+                  id="sendingAmount"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0"
+                  value={sendingAmount}
+                  onChange={(e) => setSendingAmount(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
+                <p>{gasEstimate} : Gas</p>
+                <p>{gasPrice} : Gas price</p>
+                <p>{transactionCost} : Cost</p>
+                <Button disabled={readyToTransfer} className="w-fit self-end" onClick={fetchTransactionCostEstimate}>Continue</Button>
+              </div>
             </div>
             <DialogFooter>
-              <Button onClick={submitTransaction}>Send</Button>
+              <DialogTrigger asChild>
+                <Button disabled={!readyToTransfer} onClick={submitTransaction}>Send</Button>
+              </DialogTrigger>
             </DialogFooter>
           </DialogContent>
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
               <Download className="mr-2 h-4 w-4" />
               Receive
             </Button>
@@ -312,7 +357,10 @@ export default function WalletManagement() {
                 value={walletAddress}
                 readOnly
               />
-              <WalletCopyButton copyText={walletAddress} buttonTitle={walletAddress} />
+              <WalletCopyButton
+                copyText={walletAddress}
+                buttonTitle={walletAddress}
+              />
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
-import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -43,12 +42,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>
-          <main className="flex flex-col gap-8 p-2 md:p-12 lg:p-16 w-screen items-center justify-center">
-            {children}
-            <Toaster />
-          </main>
-        </Providers>
+        <main className="flex flex-col gap-8 p-2 md:p-12 lg:p-16 w-screen items-center justify-center">
+          {children}
+          <Toaster />
+        </main>
       </body>
     </html>
   );
