@@ -11,6 +11,7 @@
   "dependencies": {
     "@hazae41/webauthnstorage": "^1.0.1",
     "@hookform/resolvers": "^3.9.0",
+    "@kaiachain/ethers-ext": "^1.0.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -25,6 +26,7 @@
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
     "drizzle-orm": "^0.33.0",
+    "ethers": "^5.7.2",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.436.0",
     "next": "14.2.7",

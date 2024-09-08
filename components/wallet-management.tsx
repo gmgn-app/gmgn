@@ -25,7 +25,6 @@ import {
   LoaderPinwheel,
   CirclePlus,
   CircleUser,
-  Wallet,
   Mail,
   Signature,
   CreditCard,
@@ -56,6 +55,7 @@ import { createIcon } from "@/lib/blockies";
 import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -78,6 +78,7 @@ export default function WalletManagement() {
   const [sendingMessage, setSendingMessage] = useState("");
   const [signature, setSignature] = useState("");
   const [messageToSign, setMessageToSign] = useState("");
+  const [kaiaSdkWalletClient, setKaiaSdkWalletClient] = useState<any>();
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -108,6 +109,17 @@ export default function WalletManagement() {
         return klaytnBaobab;
       default:
         return klaytnBaobab;
+    }
+  }
+
+  function selectJsonRpcProvider(network: string | undefined) {
+    switch (network) {
+      case "kaia":
+        return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
+      case "kaia-kairos":
+        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
+      default:
+        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
     }
   }
 
@@ -185,6 +197,9 @@ export default function WalletManagement() {
       });
       setWalletClient(walletClient);
       setWalletAddress(account.address);
+      const provider = selectJsonRpcProvider(network);
+      const wallet = new Wallet(privateKey, provider);
+      setKaiaSdkWalletClient(wallet);
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
           address: account.address,
@@ -292,6 +307,46 @@ export default function WalletManagement() {
   function handleInputNetworkChange(value: string) {
     setNetwork(value);
   }
+
+  async function submitDelegatedTransaction() {
+    let tx = {
+      type: TxType.FeeDelegatedValueTransfer,
+      to: receivingAddress,
+      value: parseEther(sendingAmount),
+      from: walletAddress,
+    };
+    const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
+    const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
+    fetch("https://gmgn.app/api/fee-delegated-transaction", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "klay_sendRawTransaction",
+        params: [hash],
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
+          title: "Transaction sent!",
+          description: "Hash: " + truncateHash(data.result, 6),
+          action: (
+            <ToastAction altText="view">
+              <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
+                View
+              </a>
+            </ToastAction>
+          ),
+        });
+      });
+  }
+
 
   return (
     <div className="flex flex-col gap-4 w-full">
