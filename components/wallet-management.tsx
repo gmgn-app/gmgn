@@ -25,6 +25,8 @@ import {
   CirclePlus,
   CircleUser,
   Wallet,
+  Mail,
+  Signature,
   CreditCard,
 } from "lucide-react";
 import QRCode from "react-qr-code";
@@ -87,7 +89,7 @@ export default function WalletManagement() {
   }
 
   async function fetchTransactionCostEstimate() {
-    const gas = await publicClient.estimateGas({ 
+    const gas = await publicClient.estimateGas({
       account: walletAddress as Address,
       to: receivingAddress as Address,
       value: parseEther(sendingAmount),
@@ -196,11 +198,22 @@ export default function WalletManagement() {
       value: parseEther(sendingAmount),
     });
     toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
       title: "Transaction sent!",
       description: "Hash: " + truncateHash(hash, 6),
-      action: <ToastAction altText="view"><a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>View</a></ToastAction>,
+      action: (
+        <ToastAction altText="view">
+          <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
+            View
+          </a>
+        </ToastAction>
+      ),
     });
     setReadyToTransfer(false);
+    setGasEstimate("");
+    setGasPrice("");
+    setTransactionCost("");
     setTransactionHash(hash);
   }
 
@@ -243,7 +256,7 @@ export default function WalletManagement() {
           <span className="text-lg text-gray-400">KLAY</span>
         </p>
       </div>
-      <div className="grid grid-cols-2 md:flex md:flex-row gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
         {createWalletButtonActive && (
           <Dialog>
             <DialogTrigger asChild>
@@ -283,7 +296,11 @@ export default function WalletManagement() {
         )}
         <Dialog>
           <DialogTrigger asChild>
-            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : walletAddress ? false : true
+              }
+            >
               <Send className="mr-2 h-4 w-4" />
               Send
             </Button>
@@ -319,19 +336,31 @@ export default function WalletManagement() {
                 <p>{gasEstimate} : Gas</p>
                 <p>{gasPrice} : Gas price</p>
                 <p>{transactionCost} : Cost</p>
-                <Button disabled={readyToTransfer} className="w-fit self-end" onClick={fetchTransactionCostEstimate}>Continue</Button>
+                <Button
+                  disabled={readyToTransfer}
+                  className="w-fit self-end"
+                  onClick={fetchTransactionCostEstimate}
+                >
+                  Continue
+                </Button>
               </div>
             </div>
             <DialogFooter>
               <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={submitTransaction}>Send</Button>
+                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
+                  Send
+                </Button>
               </DialogTrigger>
             </DialogFooter>
           </DialogContent>
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : walletAddress ? false : true
+              }
+            >
               <Download className="mr-2 h-4 w-4" />
               Receive
             </Button>
@@ -361,6 +390,126 @@ export default function WalletManagement() {
                 copyText={walletAddress}
                 buttonTitle={walletAddress}
               />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : walletAddress ? false : true
+              }
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Message
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="flex flex-col items-center">
+              <DialogTitle>Message</DialogTitle>
+              <DialogDescription>Enter address and amount</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-8 mt-4 mb-6">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="receivingAddress">Receiving address</Label>
+                <Input
+                  id="receivingAddress"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0x..."
+                  value={receivingAddress}
+                  onChange={(e) => setReceivingAddress(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sendingAmount">Amount</Label>
+                <Input
+                  id="sendingAmount"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0"
+                  value={sendingAmount}
+                  onChange={(e) => setSendingAmount(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
+                <p>{gasEstimate} : Gas</p>
+                <p>{gasPrice} : Gas price</p>
+                <p>{transactionCost} : Cost</p>
+                <Button
+                  disabled={readyToTransfer}
+                  className="w-fit self-end"
+                  onClick={fetchTransactionCostEstimate}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogTrigger asChild>
+                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
+                  Send
+                </Button>
+              </DialogTrigger>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : walletAddress ? false : true
+              }
+            >
+              <Signature className="mr-2 h-4 w-4" />
+              Sign
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="flex flex-col items-center">
+              <DialogTitle>Send</DialogTitle>
+              <DialogDescription>Enter address and amount</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-8 mt-4 mb-6">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="receivingAddress">Receiving address</Label>
+                <Input
+                  id="receivingAddress"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0x..."
+                  value={receivingAddress}
+                  onChange={(e) => setReceivingAddress(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sendingAmount">Amount</Label>
+                <Input
+                  id="sendingAmount"
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  placeholder="0"
+                  value={sendingAmount}
+                  onChange={(e) => setSendingAmount(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
+                <p>{gasEstimate} : Gas</p>
+                <p>{gasPrice} : Gas price</p>
+                <p>{transactionCost} : Cost</p>
+                <Button
+                  disabled={readyToTransfer}
+                  className="w-fit self-end"
+                  onClick={fetchTransactionCostEstimate}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogTrigger asChild>
+                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
+                  Send
+                </Button>
+              </DialogTrigger>
             </DialogFooter>
           </DialogContent>
         </Dialog>
