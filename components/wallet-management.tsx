@@ -67,6 +67,8 @@ export default function WalletManagement() {
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [sendingMessage, setSendingMessage] = useState("");
+  const [signature, setSignature] = useState("");
+  const [messageToSign, setMessageToSign] = useState("");
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -251,6 +253,12 @@ export default function WalletManagement() {
     setReceivingAddress("");
   }
 
+  async function signMessage() {
+    const signature = await walletClient.signMessage({ 
+      message: messageToSign,
+    })
+    setSignature(signature);
+  }
 
   function trimWalletName(name: string) {
     if (name.length > 10) {
@@ -415,15 +423,10 @@ export default function WalletManagement() {
                 viewBox={`0 0 256 256`}
               />
             </div>
-            <DialogFooter className="flex flex-row gap-2 items-center">
-              <Input
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                value={walletAddress}
-                readOnly
-              />
+            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
               <WalletCopyButton
                 copyText={walletAddress}
-                buttonTitle={walletAddress}
+                buttonTitle={truncateAddress(walletAddress as Address, 6)}
               />
             </DialogFooter>
           </DialogContent>
@@ -506,32 +509,28 @@ export default function WalletManagement() {
             </DialogHeader>
             <div className="flex flex-col gap-8 mt-4 mb-6">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="receivingAddress">Receiving address</Label>
-                <Input
-                  id="receivingAddress"
-                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                  placeholder="0x..."
-                  value={receivingAddress}
-                  onChange={(e) => setReceivingAddress(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
                 <Label htmlFor="message">Message</Label>
                 <Textarea
                   id="message"
                   className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
                   placeholder="gm or gn"
-                  value={sendingAmount}
-                  onChange={(e) => setSendingAmount(e.target.value)}
+                  value={messageToSign}
+                  onChange={(e) => setMessageToSign(e.target.value)}
                 />
               </div>
             </div>
+            <Button onClick={signMessage}>
+              Sign
+            </Button>
             <DialogFooter>
-              <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
-                  Send
-                </Button>
-              </DialogTrigger>
+              <div>
+                <h2>Signature</h2>
+                <Textarea
+                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                  value={signature}
+                  readOnly
+                  />
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
