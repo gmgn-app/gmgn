@@ -260,12 +260,12 @@ export default function WalletManagement() {
     setSignature(signature);
   }
 
-  function trimWalletName(name: string) {
-    if (name.length > 10) {
-      return name.slice(0, 10) + "...";
-    }
-    return name;
-  }
+  // function trimWalletName(name: string) {
+  //   if (name.length > 10) {
+  //     return name.slice(0, 10) + "...";
+  //   }
+  //   return name;
+  // }
 
   return (
     <div className="flex flex-col gap-4 w-full">
