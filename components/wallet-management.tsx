@@ -15,7 +15,7 @@ import {
   fromBytes,
   toHex,
 } from "viem";
-import { klaytnBaobab } from "viem/chains";
+import { klaytn, klaytnBaobab } from "viem/chains";
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
@@ -40,14 +40,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { WebAuthnStorage } from "@hazae41/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
-import cuid from "cuid";
+import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { set } from "react-hook-form";
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -56,12 +64,13 @@ export default function WalletManagement() {
   const [walletClient, setWalletClient] = useState<any>();
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
-
+  const [network, setNetwork] = useState<string | undefined>(undefined);
+  const [selectKey, setSelectKey] = useState(createId());
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [walletName, setWalletName] = useState("");
   const [transactionHash, setTransactionHash] = useState("");
-  const [walletIcon, setWalletIcon] = useState("/kaia.png");
+  const [walletIcon, setWalletIcon] = useState("");
   const [gasEstimate, setGasEstimate] = useState("");
   const [gasPrice, setGasPrice] = useState("");
   const [transactionCost, setTransactionCost] = useState("");
@@ -79,11 +88,31 @@ export default function WalletManagement() {
       if (wallet.status === "created") {
         setCreateWalletButtonActive(false);
       }
+    } else {
+      setWalletIcon(
+        createIcon({
+          // All options are optional
+          seed: createId(), // seed used to generate icon data, default: random
+          size: 15, // width/height of the icon in blocks, default: 10
+          scale: 3, // width/height of each block in pixels, default: 5
+        }).toDataURL()
+      );
     }
   }, []);
 
+  function selectViemChain(text: string) {
+    switch (text) {
+      case "kaia":
+        return klaytn;
+      case "kaia-kairos":
+        return klaytnBaobab;
+      default:
+        return klaytnBaobab;
+    }
+  }
+
   const publicClient = createPublicClient({
-    chain: klaytnBaobab,
+    chain: selectViemChain(network as string),
     transport: http(),
   });
 
@@ -185,7 +214,7 @@ export default function WalletManagement() {
     await cache.put(request, response);
     const icon = createIcon({
       // All options are optional
-      seed: cuid(), // seed used to generate icon data, default: random
+      seed: createId, // seed used to generate icon data, default: random
       size: 15, // width/height of the icon in blocks, default: 10
       scale: 3, // width/height of each block in pixels, default: 5
     });
@@ -254,26 +283,40 @@ export default function WalletManagement() {
   }
 
   async function signMessage() {
-    const signature = await walletClient.signMessage({ 
+    const signature = await walletClient.signMessage({
       message: messageToSign,
-    })
+    });
     setSignature(signature);
   }
 
-  // function trimWalletName(name: string) {
-  //   if (name.length > 10) {
-  //     return name.slice(0, 10) + "...";
-  //   }
-  //   return name;
-  // }
+  function handleInputNetworkChange(value: string) {
+    setNetwork(value);
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
+      <Select
+        key={selectKey}
+        value={network}
+        onValueChange={handleInputNetworkChange}
+        defaultValue="kaia-kairos"
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select a network" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Network</SelectLabel>
+            <SelectItem value="kaia">Kaia</SelectItem>
+            <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4">
         <div className="flex flex-row justify-between">
           <div className="flex flex-col md:flex-row gap-4 items-start">
             <Image
-              src={walletIcon}
+              src={walletIcon ? walletIcon : "/kaia.png"}
               alt="avatar"
               width={50}
               height={50}
@@ -327,7 +370,7 @@ export default function WalletManagement() {
             </DialogContent>
           </Dialog>
         )}
-        <Button onClick={getWallet}>
+        <Button disabled={createWalletButtonActive} onClick={getWallet}>
           <LoaderPinwheel className="mr-2 h-4 w-4" />
           Load
         </Button>
@@ -519,9 +562,7 @@ export default function WalletManagement() {
                 />
               </div>
             </div>
-            <Button onClick={signMessage}>
-              Sign
-            </Button>
+            <Button onClick={signMessage}>Sign</Button>
             <DialogFooter>
               <div>
                 <h2>Signature</h2>
@@ -529,7 +570,7 @@ export default function WalletManagement() {
                   className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
                   value={signature}
                   readOnly
-                  />
+                />
               </div>
             </DialogFooter>
           </DialogContent>
