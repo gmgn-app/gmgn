@@ -23,6 +23,8 @@ import {
   Download,
   LoaderPinwheel,
   CirclePlus,
+  CircleUser,
+  Wallet
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
@@ -38,6 +40,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { WebAuthnStorage } from "@hazae41/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
+import cuid from 'cuid';
+
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -104,8 +108,8 @@ export default function WalletManagement() {
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
-    const cache = await caches.open("my-storage");
-    const request = new Request("my-private-key");
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
     const response = await cache.match(request);
     const handle = response
       ? new Uint8Array(await response.arrayBuffer())
@@ -145,19 +149,17 @@ export default function WalletManagement() {
     /**
      * Store the private key into authenticated storage
      */
-    const handle = await WebAuthnStorage.createOrThrow("private-key", bytes);
+    const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
     /**
      * Store the handle to the private key into some unauthenticated storage
      */
-    const cache = await caches.open("my-storage");
-    const request = new Request("my-private-key");
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
     const response = new Response(handle);
     await cache.put(request, response);
     const icon = createIcon({
       // All options are optional
-      seed: "randstring", // seed used to generate icon data, default: random
-      color: "#dfe", // to manually specify the icon color, default: random
-      bgcolor: "#aaa", // choose a different background color, default: white
+      seed: cuid(), // seed used to generate icon data, default: random
       size: 15, // width/height of the icon in blocks, default: 10
       scale: 3, // width/height of each block in pixels, default: 5
     });
@@ -191,10 +193,10 @@ export default function WalletManagement() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4 w-[340px] md:w-[768px]">
+    <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4">
         <div className="flex flex-row justify-between">
-          <div className="flex flex-col md:flex-row gap-2 items-start">
+          <div className="flex flex-col md:flex-row gap-4 items-start">
             <Image
               src={walletIcon}
               alt="avatar"
@@ -202,18 +204,18 @@ export default function WalletManagement() {
               height={50}
               className="rounded-full border-2 border-primary"
             />
-            <div className="flex flex-row gap-2 justify-center items-center">
-              <p>{walletName ? trimWalletName(walletName) : "---"}</p>
-              <div className="w-4 h-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
-              <p className="font-mono">{truncateAddress(walletAddress as Address, 6)}</p>
-              <WalletCopyButton text={walletAddress as Address} />
+            <div className="flex flex-col text-sm">
+              <div className="flex flex-row gap-2 items-center">
+                <CircleUser className="w-4 h-4" />
+                <p>{walletName ? walletName : "---"}</p>
+              </div>
+              <WalletCopyButton copyText={walletAddress} buttonTitle={truncateAddress(walletAddress as Address, 6)} />
             </div>
           </div>
           <Button onClick={fetchBalance} variant="outline" size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
-
         <p className="self-end text-3xl font-semibold">
           {balance ? balance : "-/-"}{" "}
           <span className="text-lg text-gray-400">KLAY</span>
@@ -310,7 +312,7 @@ export default function WalletManagement() {
                 value={walletAddress}
                 readOnly
               />
-              <WalletCopyButton text={walletAddress as Address} />
+              <WalletCopyButton copyText={walletAddress} buttonTitle={walletAddress} />
             </DialogFooter>
           </DialogContent>
         </Dialog>
