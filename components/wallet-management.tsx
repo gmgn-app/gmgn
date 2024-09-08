@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { privateKeyToAccount } from "viem/accounts";
 import {
   createWalletClient,
   createPublicClient,
@@ -13,6 +13,7 @@ import {
   http,
   parseEther,
   fromBytes,
+  toHex,
 } from "viem";
 import { klaytnBaobab } from "viem/chains";
 import Image from "next/image";
@@ -45,6 +46,8 @@ import { WebAuthnStorage } from "@hazae41/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
 import cuid from "cuid";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { set } from "react-hook-form";
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -63,6 +66,7 @@ export default function WalletManagement() {
   const [gasPrice, setGasPrice] = useState("");
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState("");
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -215,7 +219,38 @@ export default function WalletManagement() {
     setGasPrice("");
     setTransactionCost("");
     setTransactionHash(hash);
+    setSendingAmount("");
+    setReceivingAddress("");
   }
+
+  async function submitMessage() {
+    const hash = await walletClient.sendTransaction({
+      to: receivingAddress as Address,
+      value: 0,
+      data: toHex(sendingMessage),
+    });
+    toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
+      title: "Message sent!",
+      description: "Hash: " + truncateHash(hash, 6),
+      action: (
+        <ToastAction altText="view">
+          <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
+            View
+          </a>
+        </ToastAction>
+      ),
+    });
+    setReadyToTransfer(false);
+    setGasEstimate("");
+    setGasPrice("");
+    setTransactionCost("");
+    setTransactionHash(hash);
+    setSendingMessage("");
+    setReceivingAddress("");
+  }
+
 
   function trimWalletName(name: string) {
     if (name.length > 10) {
@@ -407,7 +442,7 @@ export default function WalletManagement() {
           <DialogContent>
             <DialogHeader className="flex flex-col items-center">
               <DialogTitle>Message</DialogTitle>
-              <DialogDescription>Enter address and amount</DialogDescription>
+              <DialogDescription>Enter receiver and message</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-8 mt-4 mb-6">
               <div className="flex flex-col gap-2">
@@ -421,13 +456,13 @@ export default function WalletManagement() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sendingAmount">Amount</Label>
-                <Input
-                  id="sendingAmount"
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
                   className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                  placeholder="0"
-                  value={sendingAmount}
-                  onChange={(e) => setSendingAmount(e.target.value)}
+                  placeholder="gm or gn"
+                  value={sendingMessage}
+                  onChange={(e) => setSendingMessage(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
@@ -446,7 +481,7 @@ export default function WalletManagement() {
             </div>
             <DialogFooter>
               <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
+                <Button disabled={!readyToTransfer} onClick={submitMessage}>
                   Send
                 </Button>
               </DialogTrigger>
