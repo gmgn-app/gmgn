@@ -501,8 +501,8 @@ export default function WalletManagement() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader className="flex flex-col items-center">
-              <DialogTitle>Send</DialogTitle>
-              <DialogDescription>Enter address and amount</DialogDescription>
+              <DialogTitle>Sign</DialogTitle>
+              <DialogDescription>Sign a message</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-8 mt-4 mb-6">
               <div className="flex flex-col gap-2">
@@ -516,27 +516,14 @@ export default function WalletManagement() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sendingAmount">Amount</Label>
-                <Input
-                  id="sendingAmount"
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
                   className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                  placeholder="0"
+                  placeholder="gm or gn"
                   value={sendingAmount}
                   onChange={(e) => setSendingAmount(e.target.value)}
                 />
-              </div>
-              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
-                <p>{gasEstimate} : Gas</p>
-                <p>{gasPrice} : Gas price</p>
-                <p>{transactionCost} : Cost</p>
-                <Button
-                  disabled={readyToTransfer}
-                  className="w-fit self-end"
-                  onClick={fetchTransactionCostEstimate}
-                >
-                  Continue
-                </Button>
               </div>
             </div>
             <DialogFooter>
