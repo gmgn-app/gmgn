@@ -28,7 +28,7 @@ import {
   Mail,
   Signature,
   CreditCard,
-  Settings
+  Settings,
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
@@ -391,6 +391,20 @@ export default function WalletManagement() {
     setReadyToTransfer(!readyToTransfer);
   }
 
+  function resetWallet() {
+    localStorage.removeItem("gmgn-wallet");
+    setWalletAddress("");
+    setWalletClient(undefined);
+    setCreateWalletButtonActive(true);
+    setWalletName("");
+    toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+      title: "Wallet has been reset!",
+      description: "Please go to your device settings to clear the passkey.",
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <Select
@@ -695,7 +709,7 @@ export default function WalletManagement() {
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button disabled={createWalletButtonActive ? true : false}>
+            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
               <Settings className="mr-2 h-4 w-4" />
               Utilities
             </Button>
@@ -708,7 +722,15 @@ export default function WalletManagement() {
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-row gap-4">
-              <Button variant="destructive">Clear cache</Button>
+              <Button
+                disabled={
+                  createWalletButtonActive ? true : walletAddress ? false : true
+                }
+                onClick={resetWallet}
+                variant="destructive"
+              >
+                Reset wallet
+              </Button>
               <Button
                 disabled={
                   createWalletButtonActive ? true : walletAddress ? false : true
