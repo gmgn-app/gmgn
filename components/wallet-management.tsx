@@ -28,6 +28,7 @@ import {
   Mail,
   Signature,
   CreditCard,
+  Settings
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
@@ -38,6 +39,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -56,9 +58,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
-import { Switch } from "@/components/ui/switch"
-
-
+import { Switch } from "@/components/ui/switch";
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -83,6 +83,7 @@ export default function WalletManagement() {
   const [messageToSign, setMessageToSign] = useState("");
   const [kaiaSdkWalletClient, setKaiaSdkWalletClient] = useState<any>();
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [utilitiesText, setUtilitiesText] = useState("");
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -185,7 +186,6 @@ export default function WalletManagement() {
     const handle = response
       ? new Uint8Array(await response.arrayBuffer())
       : new Uint8Array();
-    // const handle = new Uint8Array([156, 237, 69, 251, 193, 186, 47, 79, 7, 235, 149, 213, 83, 235, 149, 107, 155, 176, 52, 240, 51, 62, 173, 205, 28, 234, 252, 16, 219, 138, 124, 143])
     /**
      * Retrieve the private key from authenticated storage
      */
@@ -214,6 +214,26 @@ export default function WalletManagement() {
       fetchBalance()
         // make sure to catch any error
         .catch(console.error);
+    }
+  }
+
+  async function showPrivateKey() {
+    /**
+     * Retrieve the handle to the private key from some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
+    const response = await cache.match(request);
+    const handle = response
+      ? new Uint8Array(await response.arrayBuffer())
+      : new Uint8Array();
+    /**
+     * Retrieve the private key from authenticated storage
+     */
+    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const privateKey = fromBytes(bytes, "hex");
+    if (privateKey) {
+      setUtilitiesText(privateKey);
     }
   }
 
@@ -330,9 +350,9 @@ export default function WalletManagement() {
         },
         body: JSON.stringify({
           signature: hash,
-          network: currentNetwork, 
+          network: currentNetwork,
         }),
-      })
+      });
       const result = await response.json();
       toast({
         className:
@@ -341,7 +361,10 @@ export default function WalletManagement() {
         description: "Hash: " + truncateHash(result.receipt.transactionHash, 6),
         action: (
           <ToastAction altText="view">
-            <a target="_blank" href={`https://kairos.kaiascan.io/tx/${result.receipt.transactionHash}`}>
+            <a
+              target="_blank"
+              href={`https://kairos.kaiascan.io/tx/${result.receipt.transactionHash}`}
+            >
               View
             </a>
           </ToastAction>
@@ -501,10 +524,11 @@ export default function WalletManagement() {
                 <Label htmlFor="delegate-fee">Delegate fee</Label>
               </div>
 
-              {
-                !delegateFeeActive && (
-                  <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-                  <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
+              {!delegateFeeActive && (
+                <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                  <h2 className="border-b pb-2 text-xl font-semibold">
+                    Details
+                  </h2>
                   <p>{gasEstimate} : Gas</p>
                   <p>{gasPrice} : Gas price</p>
                   <p>{transactionCost} : Cost</p>
@@ -516,12 +540,18 @@ export default function WalletManagement() {
                     Continue
                   </Button>
                 </div>
-                )
-              }
+              )}
             </div>
             <DialogFooter>
               <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={delegateFeeActive ? submitDelegatedTransaction : submitTransaction}>
+                <Button
+                  disabled={!readyToTransfer}
+                  onClick={
+                    delegateFeeActive
+                      ? submitDelegatedTransaction
+                      : submitTransaction
+                  }
+                >
                   Send
                 </Button>
               </DialogTrigger>
@@ -665,12 +695,8 @@ export default function WalletManagement() {
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              disabled={
-                createWalletButtonActive ? true : false
-              }
-            >
-              <Download className="mr-2 h-4 w-4" />
+            <Button disabled={createWalletButtonActive ? true : false}>
+              <Settings className="mr-2 h-4 w-4" />
               Utilities
             </Button>
           </DialogTrigger>
@@ -681,19 +707,32 @@ export default function WalletManagement() {
                 Various toolings to manage the wallet
               </DialogDescription>
             </DialogHeader>
-              <div>
-                <Button>
-                  Clear cache
-                </Button>
-                <Button>
-                  Show private key
-                </Button>
-              </div>
-            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
-              <WalletCopyButton
-                copyText={walletAddress}
-                buttonTitle={truncateAddress(walletAddress as Address, 6)}
+            <div className="flex flex-row gap-4">
+              <Button variant="destructive">Clear cache</Button>
+              <Button
+                disabled={
+                  createWalletButtonActive ? true : walletAddress ? false : true
+                }
+                variant="destructive"
+                onClick={showPrivateKey}
+              >
+                Show private key
+              </Button>
+            </div>
+            <div className="w-full">
+              <h2 className="border-b pb-2 text-xl font-semibold">Result</h2>
+              <Textarea
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                value={utilitiesText}
+                readOnly
               />
+            </div>
+            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
+              <DialogClose asChild>
+                <Button onClick={() => setUtilitiesText("")}>
+                  Close and clear
+                </Button>
+              </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
