@@ -56,6 +56,9 @@ import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
+import { Switch } from "@/components/ui/switch"
+
+
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -79,6 +82,7 @@ export default function WalletManagement() {
   const [signature, setSignature] = useState("");
   const [messageToSign, setMessageToSign] = useState("");
   const [kaiaSdkWalletClient, setKaiaSdkWalletClient] = useState<any>();
+  const [delegateFeeActive, setDelegateFeeActive] = useState(false);
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -249,7 +253,7 @@ export default function WalletManagement() {
     });
     toast({
       className:
-        "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
       title: "Transaction sent!",
       description: "Hash: " + truncateHash(hash, 6),
       action: (
@@ -277,7 +281,7 @@ export default function WalletManagement() {
     });
     toast({
       className:
-        "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
       title: "Message sent!",
       description: "Hash: " + truncateHash(hash, 6),
       action: (
@@ -317,36 +321,52 @@ export default function WalletManagement() {
     };
     const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
     const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
-    fetch("https://gmgn.app/api/fee-delegated-transaction", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "klay_sendRawTransaction",
-        params: [hash],
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        toast({
-          className:
-            "bottom-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4",
-          title: "Transaction sent!",
-          description: "Hash: " + truncateHash(data.result, 6),
-          action: (
-            <ToastAction altText="view">
-              <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
-                View
-              </a>
-            </ToastAction>
-          ),
-        });
+    const currentNetwork = network;
+    try {
+      const response = await fetch("http://localhost:3000/api/delegate-fee", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          signature: hash,
+          network: currentNetwork, 
+        }),
+      })
+      const result = await response.json();
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Transaction sent!",
+        description: "Hash: " + truncateHash(result.receipt.transactionHash, 6),
+        action: (
+          <ToastAction altText="view">
+            <a target="_blank" href={`https://kairos.kaiascan.io/tx/${result.receipt.transactionHash}`}>
+              View
+            </a>
+          </ToastAction>
+        ),
       });
+    } catch (error) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Transaction failed!",
+        description: "Uh oh! Something went wrong.",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
+    setReadyToTransfer(false);
+    setTransactionHash(hash);
+    setSendingAmount("");
+    setReceivingAddress("");
   }
 
+  function handleDelegateFeeChange() {
+    setDelegateFeeActive(!delegateFeeActive);
+    setReadyToTransfer(!readyToTransfer);
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -472,23 +492,36 @@ export default function WalletManagement() {
                   onChange={(e) => setSendingAmount(e.target.value)}
                 />
               </div>
-              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
-                <p>{gasEstimate} : Gas</p>
-                <p>{gasPrice} : Gas price</p>
-                <p>{transactionCost} : Cost</p>
-                <Button
-                  disabled={readyToTransfer}
-                  className="w-fit self-end"
-                  onClick={fetchTransactionCostEstimate}
-                >
-                  Continue
-                </Button>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="delegate-fee"
+                  checked={delegateFeeActive}
+                  onCheckedChange={handleDelegateFeeChange}
+                />
+                <Label htmlFor="delegate-fee">Delegate fee</Label>
               </div>
+
+              {
+                !delegateFeeActive && (
+                  <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                  <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
+                  <p>{gasEstimate} : Gas</p>
+                  <p>{gasPrice} : Gas price</p>
+                  <p>{transactionCost} : Cost</p>
+                  <Button
+                    disabled={readyToTransfer}
+                    className="w-fit self-end"
+                    onClick={fetchTransactionCostEstimate}
+                  >
+                    Continue
+                  </Button>
+                </div>
+                )
+              }
             </div>
             <DialogFooter>
               <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={submitTransaction}>
+                <Button disabled={!readyToTransfer} onClick={delegateFeeActive ? submitDelegatedTransaction : submitTransaction}>
                   Send
                 </Button>
               </DialogTrigger>
@@ -630,6 +663,41 @@ export default function WalletManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : false
+              }
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Utilities
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="flex flex-col items-center">
+              <DialogTitle>Utilities</DialogTitle>
+              <DialogDescription>
+                Various toolings to manage the wallet
+              </DialogDescription>
+            </DialogHeader>
+              <div>
+                <Button>
+                  Clear cache
+                </Button>
+                <Button>
+                  Show private key
+                </Button>
+              </div>
+            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
+              <WalletCopyButton
+                copyText={walletAddress}
+                buttonTitle={truncateAddress(walletAddress as Address, 6)}
+              />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog></Dialog>
       </div>
     </div>
   );
