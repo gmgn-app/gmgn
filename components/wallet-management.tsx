@@ -680,7 +680,7 @@ export default function WalletManagement() {
                 viewBox={`0 0 256 256`}
               />
             </div>
-            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
+            <DialogFooter className="md:flex md:flex-row md:gap-2 md:items-center md:justify-center">
               <WalletCopyButton
                 copyText={walletAddress}
                 buttonTitle={truncateAddress(walletAddress as Address, 6)}
