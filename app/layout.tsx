@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Toaster } from "@/components/ui/toaster";
+import Script from 'next/script'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,6 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Script defer data-domain="gmgn.app" src="https://analytics.pyhash.com/js/script.js"></Script>
       <body className={inter.className}>
         <main className="flex flex-col gap-8 p-2 md:p-12 lg:p-16 w-screen items-center justify-center">
           {children}
