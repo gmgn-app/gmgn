@@ -128,6 +128,17 @@ export default function WalletManagement() {
     }
   }
 
+  function selectBlockExplorer(network: string | undefined) {
+    switch (network) {
+      case "kaia":
+        return "https://kaiascan.io";
+      case "kaia-kairos":
+        return "https://kairos.kaiascan.io";
+      default:
+        return "https://kairos.kaiascan.io";
+    }
+  }
+
   const publicClient = createPublicClient({
     chain: selectViemChain(network as string),
     transport: http(),
@@ -278,7 +289,10 @@ export default function WalletManagement() {
       description: "Hash: " + truncateHash(hash, 6),
       action: (
         <ToastAction altText="view">
-          <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
+          <a
+            target="_blank"
+            href={`${selectBlockExplorer(network)}/tx/${hash}`}
+          >
             View
           </a>
         </ToastAction>
@@ -306,7 +320,10 @@ export default function WalletManagement() {
       description: "Hash: " + truncateHash(hash, 6),
       action: (
         <ToastAction altText="view">
-          <a target="_blank" href={`https://kairos.kaiascan.io/tx/${hash}`}>
+          <a
+            target="_blank"
+            href={`${selectBlockExplorer(network)}/tx/${hash}`}
+          >
             View
           </a>
         </ToastAction>
@@ -343,16 +360,19 @@ export default function WalletManagement() {
     const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
     const currentNetwork = network;
     try {
-      const response = await fetch("http://localhost:3000/api/delegate-fee", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          signature: hash,
-          network: currentNetwork,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/delegate-fee`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            signature: hash,
+            network: currentNetwork,
+          }),
+        }
+      );
       const result = await response.json();
       toast({
         className:
@@ -363,7 +383,9 @@ export default function WalletManagement() {
           <ToastAction altText="view">
             <a
               target="_blank"
-              href={`https://kairos.kaiascan.io/tx/${result.receipt.transactionHash}`}
+              href={`${selectBlockExplorer(network)}/tx/${
+                result.receipt.transactionHash
+              }`}
             >
               View
             </a>
@@ -380,10 +402,70 @@ export default function WalletManagement() {
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
-    setReadyToTransfer(false);
+    setReadyToTransfer(true);
     setTransactionHash(hash);
     setSendingAmount("");
     setReceivingAddress("");
+  }
+
+  async function submitDelegatedMessage() {
+    let tx = {
+      type: TxType.FeeDelegatedValueTransferMemo,
+      to: receivingAddress,
+      from: walletAddress,
+      value: 0,
+      input: toHex(sendingMessage),
+    };
+    const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
+    const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
+    const currentNetwork = network;
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/delegate-fee`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            signature: hash,
+            network: currentNetwork,
+          }),
+        }
+      );
+      const result = await response.json();
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Transaction sent!",
+        description: "Hash: " + truncateHash(result.receipt.transactionHash, 6),
+        action: (
+          <ToastAction altText="view">
+            <a
+              target="_blank"
+              href={`${selectBlockExplorer(network)}/tx/${
+                result.receipt.transactionHash
+              }`}
+            >
+              View
+            </a>
+          </ToastAction>
+        ),
+      });
+    } catch (error) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Transaction failed!",
+        description: "Uh oh! Something went wrong.",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
+    setReadyToTransfer(true);
+    setTransactionHash(hash);
+    setReceivingAddress("");
+    setSendingMessage("");
   }
 
   function handleDelegateFeeChange() {
@@ -643,24 +725,43 @@ export default function WalletManagement() {
                   onChange={(e) => setSendingMessage(e.target.value)}
                 />
               </div>
-              <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-                <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
-                <p>{gasEstimate} : Gas</p>
-                <p>{gasPrice} : Gas price</p>
-                <p>{transactionCost} : Cost</p>
-                <Button
-                  disabled={readyToTransfer}
-                  className="w-fit self-end"
-                  onClick={fetchTransactionCostEstimate}
-                >
-                  Continue
-                </Button>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="delegate-fee"
+                  checked={delegateFeeActive}
+                  onCheckedChange={handleDelegateFeeChange}
+                />
+                <Label htmlFor="delegate-fee">Delegate fee</Label>
               </div>
+              {!delegateFeeActive && (
+                <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
+                  <h2 className="border-b pb-2 text-xl font-semibold">
+                    Details
+                  </h2>
+                  <p>{gasEstimate} : Gas</p>
+                  <p>{gasPrice} : Gas price</p>
+                  <p>{transactionCost} : Cost</p>
+                  <Button
+                    disabled={readyToTransfer}
+                    className="w-fit self-end"
+                    onClick={fetchTransactionCostEstimate}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              )}
             </div>
             <DialogFooter>
-              <DialogTrigger asChild>
-                <Button disabled={!readyToTransfer} onClick={submitMessage}>
-                  Send
+            <DialogTrigger asChild>
+                <Button
+                  disabled={!readyToTransfer}
+                  onClick={
+                    delegateFeeActive
+                      ? submitDelegatedMessage
+                      : submitMessage
+                  }
+                >
+                  Send message
                 </Button>
               </DialogTrigger>
             </DialogFooter>
@@ -709,7 +810,11 @@ export default function WalletManagement() {
         </Dialog>
         <Dialog>
           <DialogTrigger asChild>
-            <Button disabled={createWalletButtonActive ? true : walletAddress ? false : true}>
+            <Button
+              disabled={
+                createWalletButtonActive ? true : walletAddress ? false : true
+              }
+            >
               <Settings className="mr-2 h-4 w-4" />
               Utilities
             </Button>
