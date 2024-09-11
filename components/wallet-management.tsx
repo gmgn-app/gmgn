@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { WebAuthnStorage } from "@hazae41/webauthnstorage";
+import { createOrThrow, getOrThrow } from "@/lib/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
 import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
@@ -200,7 +200,7 @@ export default function WalletManagement() {
     /**
      * Retrieve the private key from authenticated storage
      */
-    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const bytes = await getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
       setCreateWalletButtonActive(false);
@@ -255,7 +255,7 @@ export default function WalletManagement() {
     /**
      * Retrieve the private key from authenticated storage
      */
-    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const bytes = await getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
       setUtilitiesText(privateKey);
@@ -268,7 +268,7 @@ export default function WalletManagement() {
     /**
      * Store the private key into authenticated storage
      */
-    const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
+    const handle = await createOrThrow("gmgn-wallet", bytes);
     /**
      * Store the handle to the private key into some unauthenticated storage
      */
