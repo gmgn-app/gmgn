@@ -215,6 +215,12 @@ export default function WalletManagement() {
       const provider = selectJsonRpcProvider(network);
       const wallet = new Wallet(privateKey, provider);
       setKaiaSdkWalletClient(wallet);
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Wallet loaded!",
+        description: "You are ready to use your wallet.",
+      })
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
           address: account.address,
@@ -225,6 +231,14 @@ export default function WalletManagement() {
       fetchBalance()
         // make sure to catch any error
         .catch(console.error);
+    } else {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Wallet load failed!",
+        description: "Uh oh! Something went wrong. please try again.",
+      });
     }
   }
 
@@ -275,6 +289,22 @@ export default function WalletManagement() {
     };
     localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
     setCreateWalletButtonActive(false);
+    if (handle) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Wallet created!",
+        description: "Please click the Load button to access your wallet.",
+      })
+    } else {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Wallet creation failed!",
+        description: "Uh oh! Something went wrong. please try again.",
+      });
+    }
   }
 
   async function submitTransaction() {
