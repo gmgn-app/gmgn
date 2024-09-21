@@ -14,8 +14,9 @@ import {
   parseEther,
   fromBytes,
   toHex,
+  toBytes,
 } from "viem";
-import { klaytn, klaytnBaobab } from "viem/chains";
+import { klaytn, klaytnBaobab, arbitrumSepolia, baseSepolia, sepolia } from "viem/chains";
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
@@ -52,13 +53,16 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { createOrThrow, getOrThrow } from "@/lib/webauthnstorage";
+import { WebAuthnStorage } from "@/lib/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
 import { createId } from "@paralleldrive/cuid2";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
 import { Switch } from "@/components/ui/switch";
+import { getPublicKey, etc } from '@noble/ed25519';
+import { sha512 } from "@noble/hashes/sha512";
+
 
 export default function WalletManagement() {
   const { toast } = useToast();
@@ -68,7 +72,6 @@ export default function WalletManagement() {
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [network, setNetwork] = useState<string | undefined>(undefined);
-  const [selectKey, setSelectKey] = useState(createId());
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [walletName, setWalletName] = useState("");
@@ -84,6 +87,7 @@ export default function WalletManagement() {
   const [kaiaSdkWalletClient, setKaiaSdkWalletClient] = useState<any>();
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
   const [utilitiesText, setUtilitiesText] = useState("");
+  
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -117,7 +121,29 @@ export default function WalletManagement() {
     }
   }
 
+  function selectPublicClient(text: string) {
+    switch (text) {
+      case "kaia":
+        return createPublicClient({
+          chain: klaytn,
+          transport: http(),
+        });
+      case "kaia-kairos":
+        return createPublicClient({
+          chain: klaytnBaobab,
+          transport: http(),
+        });
+      default:
+        return createPublicClient({
+          chain: sepolia,
+          transport: http(),
+        });
+    }
+  }
+
   function selectJsonRpcProvider(network: string | undefined) {
+    // https://rpc.ankr.com/arbitrum_sepolia
+    // https://rpc.ankr.com/base_sepolia
     switch (network) {
       case "kaia":
         return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
@@ -200,7 +226,7 @@ export default function WalletManagement() {
     /**
      * Retrieve the private key from authenticated storage
      */
-    const bytes = await getOrThrow(handle);
+    const bytes = await WebAuthnStorage.getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
       setCreateWalletButtonActive(false);
@@ -255,20 +281,21 @@ export default function WalletManagement() {
     /**
      * Retrieve the private key from authenticated storage
      */
-    const bytes = await getOrThrow(handle);
+    const bytes = await WebAuthnStorage.getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
-      setUtilitiesText(privateKey);
+      // remove the 0x prefix
+      let formattedPrivateKey = privateKey.slice(2);
+      setUtilitiesText(formattedPrivateKey);
     }
   }
 
   async function createWallet() {
-    // const privateKey = generatePrivateKey();
     const bytes = crypto.getRandomValues(new Uint8Array(32));
     /**
      * Store the private key into authenticated storage
      */
-    const handle = await createOrThrow("gmgn-wallet", bytes);
+    const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
     /**
      * Store the handle to the private key into some unauthenticated storage
      */
@@ -517,10 +544,56 @@ export default function WalletManagement() {
     });
   }
 
+  async function importWallet(privateKey: string) {
+    let newPrivateKey = "0x" + privateKey;
+    const bytes = toBytes(newPrivateKey);
+    /**
+     * Store the private key into authenticated storage
+     */
+    const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
+    /**
+     * Store the handle to the private key into some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
+    const response = new Response(handle);
+    await cache.put(request, response);
+    const icon = createIcon({
+      // All options are optional
+      seed: createId, // seed used to generate icon data, default: random
+      size: 15, // width/height of the icon in blocks, default: 10
+      scale: 3, // width/height of each block in pixels, default: 5
+    });
+    const GMGN_WALLET_STORAGE = {
+      status: "created",
+      icon: icon.toDataURL(),
+      username: walletName,
+    };
+    localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
+    setCreateWalletButtonActive(false);
+    if (handle) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Wallet created!",
+        description: "Please click the Load button to access your wallet.",
+      })
+    } else {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Wallet creation failed!",
+        description: "Uh oh! Something went wrong. please try again.",
+      });
+    }
+
+
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <Select
-        key={selectKey}
         value={network}
         onValueChange={handleInputNetworkChange}
         defaultValue="kaia-kairos"
@@ -533,6 +606,8 @@ export default function WalletManagement() {
             <SelectLabel>Network</SelectLabel>
             <SelectItem value="kaia">Kaia</SelectItem>
             <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
+            <SelectItem value="arbitrum-sepolia">Aribtrum Sepolia</SelectItem>
+            <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -841,9 +916,6 @@ export default function WalletManagement() {
         <Dialog>
           <DialogTrigger asChild>
             <Button
-              disabled={
-                createWalletButtonActive ? true : walletAddress ? false : true
-              }
             >
               <Settings className="mr-2 h-4 w-4" />
               Utilities
@@ -874,6 +946,11 @@ export default function WalletManagement() {
                 onClick={showPrivateKey}
               >
                 Show private key
+              </Button>
+              <Button
+                variant="outline"
+              >
+                Import private key
               </Button>
             </div>
             <div className="w-full">

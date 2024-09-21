@@ -1,3 +1,4 @@
+class WebAuthnStorage {
 /**
  * Use WebAuthn to store authentication-protected arbitrary bytes
  *
@@ -5,7 +6,7 @@
  * @param data arbitrary data of 64 bytes or less
  * @returns handle to the data
  */
-async function createOrThrow(name: string, data: Uint8Array) {
+static async createOrThrow(name: string, data: Uint8Array) {
   const credential = await navigator.credentials.create({
       publicKey: {
           challenge: new Uint8Array([117, 61, 252, 231, 191, 241]),
@@ -38,7 +39,7 @@ async function createOrThrow(name: string, data: Uint8Array) {
 * @param id handle to the data
 * @returns data
 */
-async function getOrThrow(id: Uint8Array) {
+static async getOrThrow(id: Uint8Array) {
   const credential = await navigator.credentials.get({
       publicKey: {
           challenge: new Uint8Array([117, 61, 252, 231, 191, 241]),
@@ -47,5 +48,6 @@ async function getOrThrow(id: Uint8Array) {
   });
   return new Uint8Array((credential as any).response.userHandle);
 }
+}
 
-export { createOrThrow, getOrThrow };
+export { WebAuthnStorage };
