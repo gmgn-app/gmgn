@@ -154,6 +154,21 @@ export default function WalletManagement() {
     }
   }
 
+  function selectViemChainConfig(network: string | undefined) {
+    switch (network) {
+      case "kaia":
+        return klaytn;
+      case "kaia-kairos":
+        return klaytnBaobab;
+      case "arbitrum-sepolia":
+        return arbitrumSepolia;
+      case "base-sepolia":
+        return baseSepolia;
+      default:
+        return klaytnBaobab;
+    }
+  }
+
   function selectBlockExplorer(network: string | undefined) {
     switch (network) {
       case "kaia":
@@ -233,7 +248,7 @@ export default function WalletManagement() {
       const account = privateKeyToAccount(privateKey as Address);
       const walletClient = createWalletClient({
         account: privateKeyToAccount(privateKey as Address),
-        chain: klaytnBaobab,
+        chain: selectViemChainConfig(network),
         transport: http(),
       });
       setWalletClient(walletClient);
