@@ -110,37 +110,6 @@ export default function WalletManagement() {
     }
   }, []);
 
-  function selectViemChain(text: string) {
-    switch (text) {
-      case "kaia":
-        return klaytn;
-      case "kaia-kairos":
-        return klaytnBaobab;
-      default:
-        return klaytnBaobab;
-    }
-  }
-
-  function selectPublicClient(text: string) {
-    switch (text) {
-      case "kaia":
-        return createPublicClient({
-          chain: klaytn,
-          transport: http(),
-        });
-      case "kaia-kairos":
-        return createPublicClient({
-          chain: klaytnBaobab,
-          transport: http(),
-        });
-      default:
-        return createPublicClient({
-          chain: sepolia,
-          transport: http(),
-        });
-    }
-  }
-
   function selectJsonRpcProvider(network: string | undefined) {
     // https://rpc.ankr.com/arbitrum_sepolia
     // https://rpc.ankr.com/base_sepolia
@@ -164,6 +133,8 @@ export default function WalletManagement() {
         return arbitrumSepolia;
       case "base-sepolia":
         return baseSepolia;
+      case "ethereum-sepolia":
+        return sepolia;
       default:
         return klaytnBaobab;
     }
@@ -181,7 +152,7 @@ export default function WalletManagement() {
   }
 
   const publicClient = createPublicClient({
-    chain: selectViemChain(network as string),
+    chain: selectViemChainConfig(network as string),
     transport: http(),
   });
 
@@ -203,6 +174,23 @@ export default function WalletManagement() {
     setGasPrice(formatEther(gasPrice));
     setTransactionCost(formatEther(gas * gasPrice));
     setReadyToTransfer(true);
+  }
+
+  function selectNativeAssetSymbol(network: string | undefined) {
+    switch (network) {
+      case "kaia":
+        return "KLAY";
+      case "kaia-kairos":
+        return "KLAY";
+      case "arbitrum-sepolia":
+        return "ETH";
+      case "base-sepolia":
+        return "ETH";
+      case "ethereum-sepolia":
+        return "ETH";
+      default:
+        return "ETH";
+    }
   }
 
   // Truncate the address for display.
@@ -619,10 +607,11 @@ export default function WalletManagement() {
         <SelectContent>
           <SelectGroup>
             <SelectLabel>Network</SelectLabel>
-            <SelectItem value="kaia">Kaia</SelectItem>
+            {/* <SelectItem value="kaia">Kaia</SelectItem> */}
             <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
             <SelectItem value="arbitrum-sepolia">Aribtrum Sepolia</SelectItem>
             <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
+            <SelectItem value="ethereum-sepolia">Ethereum Sepolia</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -653,7 +642,7 @@ export default function WalletManagement() {
         </div>
         <p className="self-end text-3xl font-semibold">
           {balance ? balance : "-/-"}{" "}
-          <span className="text-lg text-gray-400">KLAY</span>
+          <span className="text-lg text-gray-400">{selectNativeAssetSymbol(network)}</span>
         </p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
