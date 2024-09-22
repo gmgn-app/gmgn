@@ -76,6 +76,7 @@ export default function SendTransactionForm() {
     }
   }
 
+  // Format the balance for display
   function formatBalance(number: string, maxDecimal: number) {
     // split the number base on the decimal point, then take only maxDecimals character from the decimal part
     const [whole, decimal] = number.split(".");
