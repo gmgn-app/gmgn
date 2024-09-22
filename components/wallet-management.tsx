@@ -30,6 +30,7 @@ import {
   Signature,
   CreditCard,
   Settings,
+  Pencil,
 } from "lucide-react";
 import QRCode from "react-qr-code";
 import {
@@ -198,7 +199,7 @@ export default function WalletManagement() {
     address: Address | undefined,
     numberOfChars: number
   ) {
-    if (!address) return "No address";
+    if (!address) return "--------------";
     let convertedAddress = address.toString();
     return `${convertedAddress.slice(
       0,
@@ -615,7 +616,7 @@ export default function WalletManagement() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <div className="flex flex-col gap-2 border-black rounded-md border-2 p-4">
+      <div className="flex flex-col gap-2 border-2 rounded-md p-4">
         <div className="flex flex-row justify-between">
           <div className="flex flex-col md:flex-row gap-4 items-start">
             <Image
@@ -626,9 +627,9 @@ export default function WalletManagement() {
               className="rounded-full border-2 border-primary"
             />
             <div className="flex flex-col text-sm">
-              <div className="flex flex-row gap-2 items-center">
-                <CircleUser className="w-4 h-4" />
+              <div className="flex flex-row gap-2 items-center">     
                 <p>{walletName ? walletName : "---"}</p>
+                <Pencil className="w-4 h-4" />
               </div>
               <WalletCopyButton
                 copyText={walletAddress}
@@ -642,7 +643,7 @@ export default function WalletManagement() {
         </div>
         <p className="self-end text-3xl font-semibold">
           {balance ? balance : "-/-"}{" "}
-          <span className="text-lg text-gray-400">{selectNativeAssetSymbol(network)}</span>
+          <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
         </p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">

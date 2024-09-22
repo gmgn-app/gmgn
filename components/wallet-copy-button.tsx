@@ -25,12 +25,12 @@ export default function WalletCopyButton({
   return (
     <Button variant="ghost" disabled={isCopied} onClick={copy} className="p-0">
       {isCopied ? (
-        <div className="flex flex-row gap-1 items-center">
+        <div className="flex flex-row gap-2 items-center">
           {buttonTitle}
           <Check className="h-4 w-4" />
         </div>
       ) : (
-        <div className="flex flex-row gap-1 items-center">
+        <div className="flex flex-row gap-2 items-center">
           {buttonTitle}
           <Copy className="h-4 w-4" />
         </div>
