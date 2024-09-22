@@ -411,8 +411,17 @@ export default function WalletManagement() {
     setSignature(signature);
   }
 
-  function handleInputNetworkChange(value: string) {
+  async function handleInputNetworkChange(value: string) {
     setNetwork(value);
+    const publicClient = createPublicClient({
+      chain: selectViemChainConfig(value as string),
+      transport: http(),
+    });
+    const balance = await publicClient.getBalance({
+      address: walletAddress as Address,
+    });
+    console.log("balance", balance);
+    setBalance(formatEther(balance).toString());
   }
 
   async function submitDelegatedTransaction() {
