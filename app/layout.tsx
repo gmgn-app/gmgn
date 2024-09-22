@@ -8,7 +8,7 @@ import Script from 'next/script'
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "gmgn",
+  title: "gm gn",
   description: "share your thoughts onchain",
   metadataBase: new URL("https://www.gmgn.app"),
   openGraph: {

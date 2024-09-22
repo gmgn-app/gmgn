@@ -636,7 +636,7 @@ export default function WalletManagement() {
               />
             </div>
           </div>
-          <Button onClick={fetchBalance} variant="outline" size="icon">
+          <Button onClick={fetchBalance} size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
