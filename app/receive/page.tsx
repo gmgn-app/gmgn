@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "react-qr-code";
-import { truncateAddress } from "@/lib/utils";
+import { truncateAddress, selectChainNameFromNetwork } from "@/lib/utils";
 import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
 
@@ -37,10 +37,24 @@ export default function ReceivePage() {
           viewBox={`0 0 256 256`}
         />
       </div>
-      <WalletCopyButton
-        copyText={address ? address : "0x000000000000000000000000000000000000dEaD"}
-        buttonTitle={truncateAddress(address as Address, 6)}
-      />
+      <div className="flex flex-col gap-4 items-center">
+        <WalletCopyButton
+          copyText={
+            address ? address : "0x000000000000000000000000000000000000dEaD"
+          }
+          buttonTitle={truncateAddress(address as Address, 6)}
+        />
+        <p className="underline underline-offset-4">{selectChainNameFromNetwork(network)}</p>
+      </div>
+      <div className="flex flex-col gap-4 items-center text-center p-8 text-sm">
+        <p>
+          You can receive tokens & NFTs on Ethereum Sepolia, Arbitrum Sepolia,
+          Base Sepolia, Kaia Kairos.
+        </p>
+        <Link className="text-blue-500" href="/learn">
+          Learn more
+        </Link>
+      </div>
     </div>
   );
 }

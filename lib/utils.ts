@@ -18,3 +18,19 @@ export function truncateAddress(
       numberOfChars
     )}...${convertedAddress.slice(-4)}`;
   }
+
+export function selectChainNameFromNetwork(network: string | null) {
+  if (!network) return "Unknown Network";
+  switch (network) {
+    case "ethereum-sepolia":
+      return "Ethereum Sepolia";
+    case "arbitrum-sepolia":
+      return "Arbitrum Sepolia";
+    case "base-sepolia":
+      return "Base Sepolia";
+    case "kaia-kairos":
+      return "Kaia Kairos";
+    default:
+      return "Unknown Network";
+  }
+}
