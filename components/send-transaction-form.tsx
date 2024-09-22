@@ -169,7 +169,7 @@ export default function SendTransactionForm() {
       const hash = await walletClient.sendTransaction({
         account,
         to: receivingAddress as Address,
-        value: BigInt(sendingAmount),
+        value: parseEther(sendingAmount),
       });
       toast({
         className:

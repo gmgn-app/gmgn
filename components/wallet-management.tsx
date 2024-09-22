@@ -991,7 +991,7 @@ export default function WalletManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Dialog></Dialog>
+
       </div>
     </div>
   );
