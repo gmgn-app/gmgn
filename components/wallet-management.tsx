@@ -9,7 +9,6 @@ import {
   createWalletClient,
   createPublicClient,
   Address,
-  Account,
   formatEther,
   http,
   parseEther,
@@ -31,15 +30,12 @@ import {
   RotateCcw,
   Download,
   LoaderPinwheel,
-  CirclePlus,
-  CircleUser,
+  KeyRound,
   Mail,
   Signature,
-  CreditCard,
   Settings,
   Pencil,
 } from "lucide-react";
-import QRCode from "react-qr-code";
 import {
   Dialog,
   DialogContent,
@@ -69,17 +65,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
 import { Switch } from "@/components/ui/switch";
 import { formatBalance } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
+import { Skeleton } from "./ui/skeleton";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
 export default function WalletManagement() {
+  // Get the search params from the URL.
+  const searchParams = useSearchParams();
+  const chainName = searchParams.get("chain");
+
   const { toast } = useToast();
   const [balance, setBalance] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [walletClient, setWalletClient] = useState<any>();
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
-  const [network, setNetwork] = useState<string | undefined>("kaia-kairos");
+  const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
+  const [network, setNetwork] = useState<string | undefined>(
+    chainName ?? undefined
+  );
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [walletName, setWalletName] = useState("");
@@ -104,8 +109,10 @@ export default function WalletManagement() {
       setWalletIcon(wallet.icon);
       if (wallet.status === "created") {
         setCreateWalletButtonActive(false);
+        setLoadingWalletStorage(false);
       }
     } else {
+      setLoadingWalletStorage(false);
       setWalletIcon(
         createIcon({
           // All options are optional
@@ -531,62 +538,75 @@ export default function WalletManagement() {
             className="rounded-md"
           />
         </Link>
-        <Select
-          value={network}
-          onValueChange={handleInputNetworkChange}
-          defaultValue="kaia-kairos"
-        >
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select a network" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Select a network</SelectLabel>
-              <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
-              <SelectItem value="arbitrum-sepolia">Aribtrum Sepolia</SelectItem>
-              <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
-              <SelectItem value="ethereum-sepolia">Ethereum Sepolia</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col gap-2 border-2 rounded-md p-4">
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-col md:flex-row gap-4 items-start">
-            <Image
-              src={walletIcon ? walletIcon : "/gmgn-placeholder-icon.svg"}
-              alt="avatar"
-              width={50}
-              height={50}
-              className="rounded-full border-2 border-primary"
-            />
-            <div className="flex flex-col text-sm">
-              <div className="flex flex-row gap-2 items-center">
-                <p>{walletName ? walletName : "---"}</p>
-                <Pencil className="w-4 h-4" />
-              </div>
-              <WalletCopyButton
-                copyText={walletAddress}
-                buttonTitle={truncateAddress(walletAddress as Address, 6)}
-              />
-            </div>
-          </div>
-          <Button onClick={fetchBalance} size="icon">
-            <RotateCcw className="w-4 h-4" />
+        <div className="flex flex-row gap-2">
+          <Select
+            value={network}
+            onValueChange={handleInputNetworkChange}
+            defaultValue="kaia-kairos"
+          >
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select a network" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select a network</SelectLabel>
+                <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
+                <SelectItem value="arbitrum-sepolia">
+                  Aribtrum Sepolia
+                </SelectItem>
+                <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
+                <SelectItem value="ethereum-sepolia">
+                  Ethereum Sepolia
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Button asChild size="icon" variant="outline">
+            <Link href="/settings">
+              <Settings className="w-6 h-6" />
+            </Link>
           </Button>
         </div>
-        <p className="self-end text-3xl font-semibold">
-          {balance ? formatBalance(balance, 8) : "-/-"}{" "}
-          <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
-        </p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-        {createWalletButtonActive && (
+      {createWalletButtonActive === false && loadingWalletStorage === false && walletAddress ? (
+        <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] rounded-md p-4">
+          <div className="flex flex-row justify-between">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              <Image
+                src={walletIcon ? walletIcon : "/gmgn-placeholder-icon.svg"}
+                alt="avatar"
+                width={50}
+                height={50}
+                className="rounded-full border-primary border-2"
+              />
+              <div className="flex flex-col text-sm">
+                <div className="flex flex-row gap-2 items-center p-2">
+                  <p>{walletName ? walletName : "---"}</p>
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <WalletCopyButton
+                  copyText={walletAddress}
+                  buttonTitle={truncateAddress(walletAddress as Address, 6)}
+                />
+              </div>
+            </div>
+            <Button onClick={fetchBalance} size="icon">
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="self-end text-3xl font-semibold">
+            {balance ? formatBalance(balance, 8) : "-/-"}{" "}
+            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
+          </p>
+        </div>
+      ) : createWalletButtonActive === true &&
+        loadingWalletStorage === false ? (
+        <div className="flex flex-col gap-2 bg-[#9FE870] h-[200px] items-center justify-center rounded-md p-4">
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
-                <CirclePlus className="mr-2 h-4 w-4" />
-                Create
+              <Button variant="secondary">
+                <KeyRound className="mr-2 h-4 w-4" />
+                Create wallet with Passkey
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -607,17 +627,18 @@ export default function WalletManagement() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        )}
-        <Button disabled={createWalletButtonActive} onClick={getWallet}>
-          <LoaderPinwheel className="mr-2 h-4 w-4" />
-          Load
-        </Button>
-        {!createWalletButtonActive && (
-          <Button disabled>
-            <CreditCard className="mr-2 h-4 w-4" />
-            Topup
+        </div>
+      ) : createWalletButtonActive === false && loadingWalletStorage === false && !walletAddress ? (
+        <div className="flex flex-col gap-2 bg-[#9FE870] h-[200px] items-center justify-center rounded-md p-4">
+          <Button variant="secondary" disabled={createWalletButtonActive} onClick={getWallet}>
+            <LoaderPinwheel className="mr-2 h-4 w-4" />
+            Load wallet from Passkey
           </Button>
-        )}
+        </div>
+      ) : (
+        <Skeleton className="h-[200px] rounded-md" />
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
             <Link
@@ -648,7 +669,6 @@ export default function WalletManagement() {
             Receive
           </Button>
         )}
-
         <Dialog>
           <DialogTrigger asChild>
             <Button
