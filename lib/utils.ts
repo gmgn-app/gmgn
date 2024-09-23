@@ -32,6 +32,14 @@ export function truncateHash(
   )}...${convertedAddress.slice(-numberOfChars)}`;
 }
 
+// Format the balance for display
+export function formatBalance(number: string, maxDecimal: number) {
+  // split the number base on the decimal point, then take only maxDecimals character from the decimal part
+  const [whole, decimal] = number.split(".");
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${formattedWhole}.${decimal.slice(0, maxDecimal)}`;
+}
+
 export function selectChainNameFromNetwork(network: string | null) {
   if (!network) return "Unknown Network";
   switch (network) {

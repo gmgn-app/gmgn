@@ -68,6 +68,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
 import { Switch } from "@/components/ui/switch";
+import { formatBalance } from "@/lib/utils";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -343,36 +344,6 @@ export default function WalletManagement() {
     }
   }
 
-  async function submitTransaction() {
-    const hash = await walletClient.sendTransaction({
-      to: receivingAddress as Address,
-      value: parseEther(sendingAmount),
-    });
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      title: "Transaction sent!",
-      description: "Hash: " + truncateHash(hash, 6),
-      action: (
-        <ToastAction altText="view">
-          <a
-            target="_blank"
-            href={`${selectBlockExplorer(network)}/tx/${hash}`}
-          >
-            View
-          </a>
-        </ToastAction>
-      ),
-    });
-    setReadyToTransfer(false);
-    setGasEstimate("");
-    setGasPrice("");
-    setTransactionCost("");
-    setTransactionHash(hash);
-    setSendingAmount("");
-    setReceivingAddress("");
-  }
-
   async function submitMessage() {
     const hash = await walletClient.sendTransaction({
       to: receivingAddress as Address,
@@ -422,65 +393,6 @@ export default function WalletManagement() {
     });
     console.log("balance", balance);
     setBalance(formatEther(balance).toString());
-  }
-
-  async function submitDelegatedTransaction() {
-    let tx = {
-      type: TxType.FeeDelegatedValueTransfer,
-      to: receivingAddress,
-      value: parseEther(sendingAmount),
-      from: walletAddress,
-    };
-    const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
-    const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
-    const currentNetwork = network;
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/delegate-fee`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            signature: hash,
-            network: currentNetwork,
-          }),
-        }
-      );
-      const result = await response.json();
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        title: "Transaction sent!",
-        description: "Hash: " + truncateHash(result.receipt.transactionHash, 6),
-        action: (
-          <ToastAction altText="view">
-            <a
-              target="_blank"
-              href={`${selectBlockExplorer(network)}/tx/${
-                result.receipt.transactionHash
-              }`}
-            >
-              View
-            </a>
-          </ToastAction>
-        ),
-      });
-    } catch (error) {
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        variant: "destructive",
-        title: "Transaction failed!",
-        description: "Uh oh! Something went wrong.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      });
-    }
-    setReadyToTransfer(true);
-    setTransactionHash(hash);
-    setSendingAmount("");
-    setReceivingAddress("");
   }
 
   async function submitDelegatedMessage() {
@@ -638,7 +550,6 @@ export default function WalletManagement() {
           </SelectContent>
         </Select>
       </div>
-
       <div className="flex flex-col gap-2 border-2 rounded-md p-4">
         <div className="flex flex-row justify-between">
           <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -665,7 +576,7 @@ export default function WalletManagement() {
           </Button>
         </div>
         <p className="self-end text-3xl font-semibold">
-          {balance ? balance : "-/-"}{" "}
+          {balance ? formatBalance(balance, 8) : "-/-"}{" "}
           <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
         </p>
       </div>
@@ -707,26 +618,37 @@ export default function WalletManagement() {
             Topup
           </Button>
         )}
-        <Button
-          asChild
-        >
-          <Link
-            href={`/send?network=${network}&address=${walletAddress}&balance=${parseEther(
-              balance
-            ).toString()}`}
-          >
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link
+              href={`/send?network=${network}&address=${walletAddress}&balance=${parseEther(
+                balance
+              ).toString()}`}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Send
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled>
             <Send className="mr-2 h-4 w-4" />
             Send
-          </Link>
-        </Button>
-        <Button
-          asChild
-        >
-          <Link href={`receive?address=${walletAddress}&network=${network}`}>
+          </Button>
+        )}
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link href={`receive?address=${walletAddress}&network=${network}`}>
+              <Download className="mr-2 h-4 w-4" />
+              Receive
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled>
             <Download className="mr-2 h-4 w-4" />
             Receive
-          </Link>
-        </Button>
+          </Button>
+        )}
+
         <Dialog>
           <DialogTrigger asChild>
             <Button

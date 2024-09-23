@@ -6,15 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { useSearchParams } from "next/navigation";
 import {
   createPublicClient,
@@ -34,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { Send, RotateCcw } from "lucide-react";
 import { setBalance } from "viem/actions";
+import { redirect } from 'next/navigation'
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -41,6 +33,11 @@ export default function SendTransactionForm() {
   const network = searchParams.get("network");
   const address = searchParams.get("address");
   const balance = searchParams.get("balance");
+
+  if (!network || !address) {
+    redirect("/")
+  }
+
   const [currentBalance, setCurrentBalance] = useState(formatEther(BigInt(balance!)));
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
