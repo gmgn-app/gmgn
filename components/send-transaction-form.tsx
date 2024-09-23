@@ -38,7 +38,7 @@ import { setBalance } from "viem/actions";
 export default function SendTransactionForm() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-  const chainName = searchParams.get("chain");
+  const network = searchParams.get("network");
   const address = searchParams.get("address");
   const balance = searchParams.get("balance");
   const [currentBalance, setCurrentBalance] = useState(formatEther(BigInt(balance!)));
@@ -180,7 +180,7 @@ export default function SendTransactionForm() {
           <ToastAction altText="view">
             <a
               target="_blank"
-              href={`${selectBlockExplorer(chainName!)}/tx/${hash}`}
+              href={`${selectBlockExplorer(network!)}/tx/${hash}`}
             >
               View
             </a>
@@ -219,7 +219,7 @@ export default function SendTransactionForm() {
      */
     const bytes = await getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
-    const provider = selectJsonRpcProvider(chainName!);
+    const provider = selectJsonRpcProvider(network!);
     const kaiaSdkWalletClient = new Wallet(privateKey, provider);
     let tx = {
       type: TxType.FeeDelegatedValueTransferMemo,
@@ -230,7 +230,7 @@ export default function SendTransactionForm() {
     };
     const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
     const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
-    const currentNetwork = chainName;
+    const currentNetwork = network;
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/delegate-fee`,
@@ -255,7 +255,7 @@ export default function SendTransactionForm() {
           <ToastAction altText="view">
             <a
               target="_blank"
-              href={`${selectBlockExplorer(chainName!)}/tx/${
+              href={`${selectBlockExplorer(network!)}/tx/${
                 result.receipt.transactionHash
               }`}
             >
@@ -287,7 +287,7 @@ export default function SendTransactionForm() {
           <p className="text-2xl">
             {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
             <span className="text-lg">
-              {selectNativeAssetSymbol(chainName)}
+              {selectNativeAssetSymbol(network)}
             </span>
           </p>
           <Button onClick={fetchBalance} size="icon">

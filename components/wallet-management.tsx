@@ -707,120 +707,26 @@ export default function WalletManagement() {
             Topup
           </Button>
         )}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              disabled={
-                createWalletButtonActive ? true : walletAddress ? false : true
-              }
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Send
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader className="flex flex-col items-center">
-              <DialogTitle>Send</DialogTitle>
-              <DialogDescription>Enter address and amount</DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col gap-8 mt-4 mb-6">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="receivingAddress">Receiving address</Label>
-                <Input
-                  id="receivingAddress"
-                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                  placeholder="0x..."
-                  value={receivingAddress}
-                  onChange={(e) => setReceivingAddress(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="sendingAmount">Amount</Label>
-                <Input
-                  id="sendingAmount"
-                  className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                  placeholder="0"
-                  value={sendingAmount}
-                  onChange={(e) => setSendingAmount(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="delegate-fee"
-                  checked={delegateFeeActive}
-                  onCheckedChange={handleDelegateFeeChange}
-                />
-                <Label htmlFor="delegate-fee">Delegate fee</Label>
-              </div>
-
-              {!delegateFeeActive && (
-                <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-                  <h2 className="border-b pb-2 text-xl font-semibold">
-                    Details
-                  </h2>
-                  <p>{gasEstimate} : Gas</p>
-                  <p>{gasPrice} : Gas price</p>
-                  <p>{transactionCost} : Cost</p>
-                  <Button
-                    disabled={readyToTransfer}
-                    className="w-fit self-end"
-                    onClick={fetchTransactionCostEstimate}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <DialogTrigger asChild>
-                <Button
-                  disabled={!readyToTransfer}
-                  onClick={
-                    delegateFeeActive
-                      ? submitDelegatedTransaction
-                      : submitTransaction
-                  }
-                >
-                  Send
-                </Button>
-              </DialogTrigger>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              disabled={
-                createWalletButtonActive ? true : walletAddress ? false : true
-              }
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Receive
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader className="flex flex-col items-center">
-              <DialogTitle>Receive</DialogTitle>
-              <DialogDescription>
-                Scan QR code or copy address
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col items-center">
-              <QRCode
-                className="mt-4"
-                size={256}
-                value={walletAddress}
-                viewBox={`0 0 256 256`}
-              />
-            </div>
-            <DialogFooter className="md:flex md:flex-row md:gap-2 md:items-center md:justify-center">
-              <WalletCopyButton
-                copyText={walletAddress}
-                buttonTitle={truncateAddress(walletAddress as Address, 6)}
-              />
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button
+          asChild
+        >
+          <Link
+            href={`/send?network=${network}&address=${walletAddress}&balance=${parseEther(
+              balance
+            ).toString()}`}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send
+          </Link>
+        </Button>
+        <Button
+          asChild
+        >
+          <Link href={`receive?address=${walletAddress}&network=${network}`}>
+            <Download className="mr-2 h-4 w-4" />
+            Receive
+          </Link>
+        </Button>
         <Dialog>
           <DialogTrigger asChild>
             <Button
@@ -939,59 +845,6 @@ export default function WalletManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Settings className="mr-2 h-4 w-4" />
-              Utilities
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader className="flex flex-col items-center">
-              <DialogTitle>Utilities</DialogTitle>
-              <DialogDescription>
-                Various toolings to manage the wallet
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-row gap-4">
-              <Button
-                disabled={
-                  createWalletButtonActive ? true : walletAddress ? false : true
-                }
-                onClick={resetWallet}
-                variant="destructive"
-              >
-                Reset wallet
-              </Button>
-              <Button
-                disabled={
-                  createWalletButtonActive ? true : walletAddress ? false : true
-                }
-                variant="destructive"
-                onClick={showPrivateKey}
-              >
-                Show private key
-              </Button>
-              <Button variant="outline">Import private key</Button>
-            </div>
-            <div className="w-full">
-              <h2 className="border-b pb-2 text-xl font-semibold">Result</h2>
-              <Textarea
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                value={utilitiesText}
-                readOnly
-              />
-            </div>
-            <DialogFooter className="flex flex-row gap-2 items-center justify-center">
-              <DialogClose asChild>
-                <Button onClick={() => setUtilitiesText("")}>
-                  Close and clear
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
       </div>
     </div>
   );
