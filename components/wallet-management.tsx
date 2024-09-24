@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +67,7 @@ import { Switch } from "@/components/ui/switch";
 import { formatBalance } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
+import { WalletAddressContext, WalletAddressContextType } from "@/app/wallet-context";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -74,10 +75,10 @@ export default function WalletManagement() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
   const chainName = searchParams.get("chain");
-
   const { toast } = useToast();
   const [balance, setBalance] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
+  // const [walletAddress, setWalletAddress] = useState("");
+  const { walletAddress, setWalletAddress } = useContext(WalletAddressContext) as WalletAddressContextType;
   const [walletClient, setWalletClient] = useState<any>();
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
@@ -285,28 +286,6 @@ export default function WalletManagement() {
     }
   }
 
-  async function showPrivateKey() {
-    /**
-     * Retrieve the handle to the private key from some unauthenticated storage
-     */
-    const cache = await caches.open("gmgn-storage");
-    const request = new Request("gmgn-wallet");
-    const response = await cache.match(request);
-    const handle = response
-      ? new Uint8Array(await response.arrayBuffer())
-      : new Uint8Array();
-    /**
-     * Retrieve the private key from authenticated storage
-     */
-    const bytes = await WebAuthnStorage.getOrThrow(handle);
-    const privateKey = fromBytes(bytes, "hex");
-    if (privateKey) {
-      // remove the 0x prefix
-      let formattedPrivateKey = privateKey.slice(2);
-      setUtilitiesText(formattedPrivateKey);
-    }
-  }
-
   async function createWallet() {
     const bytes = crypto.getRandomValues(new Uint8Array(32));
     /**
@@ -467,18 +446,40 @@ export default function WalletManagement() {
     setReadyToTransfer(!readyToTransfer);
   }
 
-  function resetWallet() {
-    localStorage.removeItem("gmgn-wallet");
-    setWalletAddress("");
-    setWalletClient(undefined);
-    setCreateWalletButtonActive(true);
-    setWalletName("");
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      title: "Wallet has been reset!",
-      description: "Please go to your device settings to clear the passkey.",
-    });
+  // function resetWallet() {
+  //   localStorage.removeItem("gmgn-wallet");
+  //   setWalletAddress("");
+  //   setWalletClient(undefined);
+  //   setCreateWalletButtonActive(true);
+  //   setWalletName("");
+  //   toast({
+  //     className:
+  //       "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+  //     title: "Wallet has been reset!",
+  //     description: "Please go to your device settings to clear the passkey.",
+  //   });
+  // }
+
+  async function showPrivateKey() {
+    /**
+     * Retrieve the handle to the private key from some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
+    const response = await cache.match(request);
+    const handle = response
+      ? new Uint8Array(await response.arrayBuffer())
+      : new Uint8Array();
+    /**
+     * Retrieve the private key from authenticated storage
+     */
+    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const privateKey = fromBytes(bytes, "hex");
+    if (privateKey) {
+      // remove the 0x prefix
+      let formattedPrivateKey = privateKey.slice(2);
+      setUtilitiesText(formattedPrivateKey);
+    }
   }
 
   async function importWallet(privateKey: string) {
@@ -569,7 +570,7 @@ export default function WalletManagement() {
         </div>
       </div>
       {createWalletButtonActive === false && loadingWalletStorage === false && walletAddress ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] rounded-md p-4">
+        <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
               <Image
@@ -601,10 +602,10 @@ export default function WalletManagement() {
         </div>
       ) : createWalletButtonActive === true &&
         loadingWalletStorage === false ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] h-[200px] items-center justify-center rounded-md p-4">
+        <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="secondary">
+              <Button>
                 <KeyRound className="mr-2 h-4 w-4" />
                 Create wallet with Passkey
               </Button>
@@ -629,8 +630,8 @@ export default function WalletManagement() {
           </Dialog>
         </div>
       ) : createWalletButtonActive === false && loadingWalletStorage === false && !walletAddress ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] h-[200px] items-center justify-center rounded-md p-4">
-          <Button variant="secondary" disabled={createWalletButtonActive} onClick={getWallet}>
+        <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
+          <Button disabled={createWalletButtonActive} onClick={getWallet}>
             <LoaderPinwheel className="mr-2 h-4 w-4" />
             Load wallet from Passkey
           </Button>
