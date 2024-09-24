@@ -17,8 +17,14 @@ import {
   parseEther,
   toHex,
 } from "viem";
+import {
+  klaytn,
+  klaytnBaobab,
+  arbitrumSepolia,
+  baseSepolia,
+  sepolia,
+} from "viem/chains";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
-import { klaytnBaobab } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -32,13 +38,12 @@ export default function SendTransactionForm() {
   const searchParams = useSearchParams();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
-  const balance = searchParams.get("balance");
 
   if (!network || !address) {
     redirect("/")
   }
 
-  const [currentBalance, setCurrentBalance] = useState(formatEther(BigInt(balance!)));
+  const [currentBalance, setCurrentBalance] = useState("");
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [sendingMessage, setSendingMessage] = useState("");
@@ -50,6 +55,27 @@ export default function SendTransactionForm() {
 
   // Toast notifications.
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (address) {
+      const publicClient = createPublicClient({
+        chain: selectViemChainConfig(network as string),
+        transport: http(),
+      });
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        setCurrentBalance(formatEther(balance).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+  }, [address]);
+
+
 
   // Truncate the hash for display
   function truncateHash(address: String | undefined, numberOfChars: number) {
@@ -75,6 +101,7 @@ export default function SendTransactionForm() {
 
   // Format the balance for display
   function formatBalance(number: string, maxDecimal: number) {
+    if (number === "") return "0.0000";
     // split the number base on the decimal point, then take only maxDecimals character from the decimal part
     const [whole, decimal] = number.split(".");
     const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -91,6 +118,23 @@ export default function SendTransactionForm() {
         return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
       default:
         return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
+    }
+  }
+
+  function selectViemChainConfig(network: string | undefined) {
+    switch (network) {
+      case "kaia":
+        return klaytn;
+      case "kaia-kairos":
+        return klaytnBaobab;
+      case "arbitrum-sepolia":
+        return arbitrumSepolia;
+      case "base-sepolia":
+        return baseSepolia;
+      case "ethereum-sepolia":
+        return sepolia;
+      default:
+        return klaytnBaobab;
     }
   }
 
@@ -111,11 +155,12 @@ export default function SendTransactionForm() {
     }
   }
 
+  const publicClient = createPublicClient({
+    chain: klaytnBaobab,
+    transport: http(),
+  });
+
   async function fetchBalance() {
-    const publicClient = createPublicClient({
-      chain: klaytnBaobab,
-      transport: http(),
-    });
     const balance = await publicClient.getBalance({
       address: address as Address,
     });

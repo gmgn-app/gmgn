@@ -34,6 +34,7 @@ export function truncateHash(
 
 // Format the balance for display
 export function formatBalance(number: string, maxDecimal: number) {
+  if (number === "" || number === "0") return "0";
   // split the number base on the decimal point, then take only maxDecimals character from the decimal part
   const [whole, decimal] = number.split(".");
   const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");

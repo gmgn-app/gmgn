@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, use } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,8 +83,8 @@ export default function WalletManagement() {
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
-  const [network, setNetwork] = useState<string | undefined>(
-    chainName ?? undefined
+  const [network, setNetwork] = useState<string>(
+    chainName ?? "kaia-kairos"
   );
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
@@ -112,6 +112,9 @@ export default function WalletManagement() {
         setCreateWalletButtonActive(false);
         setLoadingWalletStorage(false);
       }
+      if (wallet.status === "loaded") {
+        getWallet();
+      }
     } else {
       setLoadingWalletStorage(false);
       setWalletIcon(
@@ -124,6 +127,25 @@ export default function WalletManagement() {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (walletAddress) {
+      const publicClient = createPublicClient({
+        chain: selectViemChainConfig(network as string),
+        transport: http(),
+      });
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: walletAddress as Address,
+        });
+        setBalance(formatEther(balance).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+  }, [walletAddress]);
 
   function selectJsonRpcProvider(network: string | undefined) {
     // https://rpc.ankr.com/arbitrum_sepolia
@@ -643,9 +665,7 @@ export default function WalletManagement() {
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
             <Link
-              href={`/send?network=${network}&address=${walletAddress}&balance=${parseEther(
-                balance
-              ).toString()}`}
+              href={`/send?network=${network}&address=${walletAddress}`}
             >
               <Send className="mr-2 h-4 w-4" />
               Send
