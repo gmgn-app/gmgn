@@ -30,8 +30,9 @@ import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { Send, RotateCcw } from "lucide-react";
-import { setBalance } from "viem/actions";
 import { redirect } from 'next/navigation'
+import { formatBalance } from "@/lib/utils";
+
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -97,15 +98,6 @@ export default function SendTransactionForm() {
       default:
         return "https://sepolia.etherscan.io";
     }
-  }
-
-  // Format the balance for display
-  function formatBalance(number: string, maxDecimal: number) {
-    if (number === "") return "0.0000";
-    // split the number base on the decimal point, then take only maxDecimals character from the decimal part
-    const [whole, decimal] = number.split(".");
-    const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return `${formattedWhole}.${decimal.slice(0, maxDecimal)}`;
   }
 
   function selectJsonRpcProvider(network: string | undefined) {
