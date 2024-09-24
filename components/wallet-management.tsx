@@ -112,9 +112,6 @@ export default function WalletManagement() {
         setCreateWalletButtonActive(false);
         setLoadingWalletStorage(false);
       }
-      if (wallet.status === "loaded") {
-        getWallet();
-      }
     } else {
       setLoadingWalletStorage(false);
       setWalletIcon(
