@@ -381,6 +381,7 @@ export default function SendTransactionForm() {
           delegateFeeActive ? submitDelegatedTransaction : submitTransaction
         }
       >
+        <Send className="mr-2 h-4 w-4" />
         Send
       </Button>
     </div>

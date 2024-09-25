@@ -396,7 +396,6 @@ export default function WalletManagement() {
     const balance = await publicClient.getBalance({
       address: walletAddress as Address,
     });
-    console.log("balance", balance);
     setBalance(formatEther(balance).toString());
   }
 
