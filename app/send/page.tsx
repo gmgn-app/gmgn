@@ -18,7 +18,7 @@ export default function SendPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Send
       </h1>
-      <BackButton />
+      <BackButton route={null} />
       <SendTransactionForm />
     </div>
   );

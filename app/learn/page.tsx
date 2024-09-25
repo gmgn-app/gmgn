@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function LearnPage() {
   return (
-    <div className="flex flex-col gap-12 p-4 w-screen md:w-[768px]">
+    <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
       <Link href="/">
         <Image
           src="/gmgn-logo.svg"

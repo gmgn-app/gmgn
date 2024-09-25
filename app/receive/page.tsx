@@ -28,7 +28,7 @@ export default function ReceivePage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Receive
       </h1>
-      <BackButton />
+      <BackButton route={null} />
       <div className="flex flex-col items-center">
         <QRCode
           className="mt-4"
