@@ -1,15 +1,17 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useSearchParams } from "next/navigation";
 import { Clock, UserPen, Hash } from "lucide-react";
 
-type SignatureObject = {
-  account: string | null;
-  timestamp: string | null;
-  signature: string | null;
-};
 
-export default function SignatureReview({ signatureObject }: { signatureObject: SignatureObject }) {
+export default function SignatureReview() {
+  const searchParams = useSearchParams();
+  const address: string | null = searchParams.get("address");
+  const timestamp: string | null = searchParams.get("timestamp");
+  const signature: string | null = searchParams.get("signature");
+
   function unixTimestampToDateTime(unixTimestamp: number) {
     const date = new Date(unixTimestamp);
     return date.toLocaleString ? date.toLocaleString() : date.toUTCString();
@@ -27,7 +29,7 @@ export default function SignatureReview({ signatureObject }: { signatureObject: 
           <Input
             className="rounded-none w-full border-black border-2 p-2.5"
             placeholder="0x..."
-            value={signatureObject.account ? signatureObject.account : ""}
+            value={address ? address : ""}
             readOnly
           />
         </div>
@@ -39,7 +41,7 @@ export default function SignatureReview({ signatureObject }: { signatureObject: 
           <Input
             className="rounded-none w-full border-black border-2 p-2.5"
             placeholder="0x..."
-            value={unixTimestampToDateTime(signatureObject.timestamp ? parseInt(signatureObject.timestamp) : 0)}
+            value={unixTimestampToDateTime(timestamp ? parseInt(timestamp) : 0)}
             readOnly
           />
         </div>
@@ -51,7 +53,7 @@ export default function SignatureReview({ signatureObject }: { signatureObject: 
           <Textarea
             className="rounded-none w-full h-36 border-black border-2 p-2.5"
             placeholder="Enter your message"
-            value={signatureObject.signature ? signatureObject.signature : ""}
+            value={signature ? signature : ""}
             readOnly
           />
         </div>
