@@ -399,71 +399,6 @@ export default function WalletManagement() {
     setBalance(formatEther(balance).toString());
   }
 
-  async function submitDelegatedMessage() {
-    let tx = {
-      type: TxType.FeeDelegatedValueTransferMemo,
-      to: receivingAddress,
-      from: walletAddress,
-      value: 0,
-      input: toHex(sendingMessage),
-    };
-    const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
-    const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
-    const currentNetwork = network;
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/delegate-fee`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            signature: hash,
-            network: currentNetwork,
-          }),
-        }
-      );
-      const result = await response.json();
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        title: "Transaction sent!",
-        description: "Hash: " + truncateHash(result.receipt.transactionHash, 6),
-        action: (
-          <ToastAction altText="view">
-            <a
-              target="_blank"
-              href={`${selectBlockExplorer(network)}/tx/${
-                result.receipt.transactionHash
-              }`}
-            >
-              View
-            </a>
-          </ToastAction>
-        ),
-      });
-    } catch (error) {
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        variant: "destructive",
-        title: "Transaction failed!",
-        description: "Uh oh! Something went wrong.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      });
-    }
-    setReadyToTransfer(true);
-    setTransactionHash(hash);
-    setReceivingAddress("");
-    setSendingMessage("");
-  }
-
-  function handleDelegateFeeChange() {
-    setDelegateFeeActive(!delegateFeeActive);
-    setReadyToTransfer(!readyToTransfer);
-  }
-
   // function resetWallet() {
   //   localStorage.removeItem("gmgn-wallet");
   //   setWalletAddress("");
@@ -699,6 +634,19 @@ export default function WalletManagement() {
             Message
           </Button>
         )}
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link href={`sign?address=${walletAddress}&network=${network}`}>
+              <Signature className="mr-2 h-4 w-4" />
+              Sign
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled>
+            <Signature className="mr-2 h-4 w-4" />
+            Sign
+          </Button>
+        )}
         {/* <Dialog>
           <DialogTrigger asChild>
             <Button
@@ -776,7 +724,7 @@ export default function WalletManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog> */}
-        <Dialog>
+        {/* <Dialog>
           <DialogTrigger asChild>
             <Button
               disabled={
@@ -816,7 +764,7 @@ export default function WalletManagement() {
               </div>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
     </div>
   );

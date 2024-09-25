@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Address, Account } from "viem";
+import { Address, fromBytes, toHex } from "viem";
 import {
   Clock,
   Loader2,
@@ -35,6 +36,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import CopyButton from "./copy-button";
+import { useSearchParams } from "next/navigation";
+import { getOrThrow } from "@/lib/passkey-auth";
+import { privateKeyToAccount } from "viem/accounts";
+
 
 // Define the form schema.
 const formSchema = z.object({
@@ -44,12 +49,17 @@ const formSchema = z.object({
 });
 
 type SignatureObject = {
-  account: Account | undefined | `0x${string}`;
+  address: Address | undefined;
   timestamp: number;
   signature: `0x${string}` | undefined;
 };
 
 export default function SignForm() {
+  const searchParams = useSearchParams();
+  const address = searchParams.get("address");
+  const network = searchParams.get("network");
+  const [signature, setSignature] = useState("");
+  const [submittedAt, setSubmittedAt] = useState(0);
 
 
   // Define the form
@@ -61,13 +71,35 @@ export default function SignForm() {
   });
 
   // Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    signMessage({
-      account: account?.address,
-      message: values.txMessage,
-    });
+    /**
+     * Retrieve the handle to the private key from some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
+    const response = await cache.match(request);
+    const handle = response
+      ? new Uint8Array(await response.arrayBuffer())
+      : new Uint8Array();
+    /**
+     * Retrieve the private key from authenticated storage
+     */
+    const bytes = await getOrThrow(handle);
+    const privateKey = fromBytes(bytes, "hex");
+    if (privateKey) {
+      const account = privateKeyToAccount(privateKey as Address);
+      const signature = await account.signMessage({
+        // Hex data representation of message.
+        message: { 
+          raw: toHex(values.txMessage), 
+        },
+      })
+      const submittedAt = Date.now();
+      setSignature(signature);
+      setSubmittedAt(submittedAt);
+    }
   }
 
   function onReset() {
@@ -107,7 +139,7 @@ export default function SignForm() {
     const signatureString =
       baseUrl +
       "?account=" +
-      signatureObject.account +
+      signatureObject.address +
       "&timestamp=" +
       signatureObject.timestamp +
       "&signature=" +
@@ -155,19 +187,10 @@ export default function SignForm() {
               </Button>
               <Button
                 className="w-36 rounded-md border-black border-2 p-2.5"
-                disabled={isPending}
                 type="submit"
               >
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait
-                  </>
-                ) : (
-                  <>
-                    <Signature className="mr-2 h-4 w-4" /> Sign
-                  </>
-                )}
+                <Signature className="mr-2 h-4 w-4" />
+                Sign
               </Button>
             </div>
           </form>
@@ -184,7 +207,7 @@ export default function SignForm() {
             <Input
               className="rounded-none w-full border-black border-2 p-2.5"
               placeholder="0x..."
-              value={variables?.account?.toString()}
+              value={address ? truncateAddress(address as Address, 6) : "No address"}
               readOnly
             />
           </div>
@@ -208,17 +231,11 @@ export default function SignForm() {
             <Textarea
               className="rounded-none w-full h-36 border-black border-2 p-2.5"
               placeholder="Enter your message"
-              value={hash}
+              value={signature ? truncateHash(signature, 6) : "No signature"}
               readOnly
             />
           </div>
         </div>
-        {error && (
-          <p className="flex flex-row items-center text-red-500">
-            <OctagonAlert className="mr-2 h-4 w-4" />
-            Error: {(error as BaseError).shortMessage || error.message}
-          </p>
-        )}
       </div>
       <div className="flex flex-col w-full border-black border-2 rounded-md p-4">
         <h2 className="text-3xl font-semibold mb-4">Share</h2>
@@ -237,9 +254,9 @@ export default function SignForm() {
                   <Input
                     className="rounded-none w-full border-black border-2 p-2.5 mt-2"
                     value={constructLink({
-                      account: account?.address,
+                      address: address as Address,
                       timestamp: submittedAt,
-                      signature: hash,
+                      signature: signature as `0x${string}`,
                     })}
                     readOnly
                   />
@@ -248,9 +265,9 @@ export default function SignForm() {
               <DialogFooter>
                 <CopyButton
                   text={constructLink({
-                    account: account?.address,
+                    address: address as Address,
                     timestamp: submittedAt,
-                    signature: hash,
+                    signature: signature as `0x${string}`,
                   })}
                 />
               </DialogFooter>
@@ -270,13 +287,13 @@ export default function SignForm() {
                 <DialogDescription>
                   <Input
                     className="rounded-none w-full border-black border-2 p-2.5 mt-2"
-                    value={hash}
+                    value={signature}
                     readOnly
                   />
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <CopyButton text={hash ? hash : "none"} />
+                <CopyButton text={signature ? signature : "none"} />
               </DialogFooter>
             </DialogContent>
           </Dialog>

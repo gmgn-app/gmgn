@@ -1,7 +1,7 @@
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-import { Clock, UserPen, OctagonAlert, Hash } from "lucide-react";
+import { Clock, UserPen, Hash } from "lucide-react";
 
 type SignatureObject = {
   account: string | null;
@@ -9,7 +9,7 @@ type SignatureObject = {
   signature: string | null;
 };
 
-export default function SignatureDialog({ signatureObject }: { signatureObject: SignatureObject }) {
+export default function SignatureReview({ signatureObject }: { signatureObject: SignatureObject }) {
   function unixTimestampToDateTime(unixTimestamp: number) {
     const date = new Date(unixTimestamp);
     return date.toLocaleString ? date.toLocaleString() : date.toUTCString();
