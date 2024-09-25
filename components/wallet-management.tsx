@@ -686,7 +686,20 @@ export default function WalletManagement() {
             Receive
           </Button>
         )}
-        <Dialog>
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link href={`message?address=${walletAddress}&network=${network}`}>
+              <Mail className="mr-2 h-4 w-4" />
+              Message
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled>
+            <Mail className="mr-2 h-4 w-4" />
+            Message
+          </Button>
+        )}
+        {/* <Dialog>
           <DialogTrigger asChild>
             <Button
               disabled={
@@ -762,7 +775,7 @@ export default function WalletManagement() {
               </DialogTrigger>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
         <Dialog>
           <DialogTrigger asChild>
             <Button

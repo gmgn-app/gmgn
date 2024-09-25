@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
+import { sepolia, arbitrumSepolia, baseSepolia, klaytnBaobab, arbitrum } from "viem/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -54,5 +55,21 @@ export function selectChainNameFromNetwork(network: string | null) {
       return "Kaia Kairos";
     default:
       return "Unknown Network";
+  }
+}
+
+export function selectViemChainFromNetwork(network: string | null) {
+  if (!network) return sepolia;
+  switch (network) {
+    case "ethereum-sepolia":
+      return sepolia;
+    case "arbitrum-sepolia":
+      return arbitrumSepolia;
+    case "base-sepolia":
+      return baseSepolia;
+    case "kaia-kairos":
+      return klaytnBaobab;
+    default:
+      return sepolia;
   }
 }

@@ -7,6 +7,7 @@ import QRCode from "react-qr-code";
 import { truncateAddress, selectChainNameFromNetwork } from "@/lib/utils";
 import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
+import BackButton from "@/components/back-button";
 
 export default function ReceivePage() {
   const searchParams = useSearchParams();
@@ -14,7 +15,7 @@ export default function ReceivePage() {
   const network = searchParams.get("network");
 
   return (
-    <div className="flex flex-col gap-12 p-4 w-screen md:w-[768px]">
+    <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
       <Link href="/">
         <Image
           src="/gmgn-logo.svg"
@@ -27,6 +28,7 @@ export default function ReceivePage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Receive
       </h1>
+      <BackButton />
       <div className="flex flex-col items-center">
         <QRCode
           className="mt-4"
