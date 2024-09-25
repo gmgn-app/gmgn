@@ -28,6 +28,12 @@ export default function Faqs() {
             At the moment, every interactions require you to click a button to initiate. We are working on improving this process.
           </AccordionContent>
         </AccordionItem>
+        <AccordionItem value="item-4">
+          <AccordionTrigger>I can't create my wallet</AccordionTrigger>
+          <AccordionContent>
+            If you are having trouble creating your wallet, very likely that you have not set up Passkey in your device or your device doesn't not support Passkey.
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </div>
   );
