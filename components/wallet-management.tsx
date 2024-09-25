@@ -142,7 +142,7 @@ export default function WalletManagement() {
         // make sure to catch any error
         .catch(console.error);
     }
-  }, [walletAddress]);
+  }, [walletAddress, network]);
 
   function selectJsonRpcProvider(network: string | undefined) {
     // https://rpc.ankr.com/arbitrum_sepolia

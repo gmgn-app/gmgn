@@ -29,9 +29,9 @@ export default function Faqs() {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-4">
-          <AccordionTrigger>I can't create my wallet</AccordionTrigger>
+          <AccordionTrigger>I can&apos;t create my wallet</AccordionTrigger>
           <AccordionContent>
-            If you are having trouble creating your wallet, very likely that you have not set up Passkey in your device or your device doesn't not support Passkey.
+            If you are having trouble creating your wallet, very likely that you have not set up Passkey in your device or your device doesn&apos;t not support Passkey.
           </AccordionContent>
         </AccordionItem>
       </Accordion>
