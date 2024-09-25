@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
-import { sepolia, arbitrumSepolia, baseSepolia, klaytnBaobab, arbitrum } from "viem/chains";
+import { sepolia, arbitrumSepolia, baseSepolia, klaytnBaobab } from "viem/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -71,5 +71,16 @@ export function selectViemChainFromNetwork(network: string | null) {
       return klaytnBaobab;
     default:
       return sepolia;
+  }
+}
+
+export function selectBlockExplorer(network: string | undefined) {
+  switch (network) {
+    case "kaia":
+      return "https://kaiascan.io";
+    case "kaia-kairos":
+      return "https://kairos.kaiascan.io";
+    default:
+      return "https://kairos.kaiascan.io";
   }
 }
