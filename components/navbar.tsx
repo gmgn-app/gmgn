@@ -10,7 +10,9 @@ export default function NavBar() {
 
   function isActivePath(path: string) {
     if (path === pathname) {
-      return "text-blue-600 border-blue-600";
+      return "text-primary border-primary";
+    } else {
+      return "text-gray-400";
     }
   }
 
