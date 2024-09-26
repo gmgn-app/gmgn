@@ -58,17 +58,16 @@ export function selectChainNameFromNetwork(network: string | null) {
   }
 }
 
-export function selectViemChainFromNetwork(network: string | null) {
-  if (!network) return sepolia;
+export function selectViemChainFromNetwork(network: string | undefined | null) {
   switch (network) {
-    case "ethereum-sepolia":
-      return sepolia;
+    case "kaia-kairos":
+      return klaytnBaobab;
     case "arbitrum-sepolia":
       return arbitrumSepolia;
     case "base-sepolia":
       return baseSepolia;
-    case "kaia-kairos":
-      return klaytnBaobab;
+    case "ethereum-sepolia":
+      return sepolia;
     default:
       return sepolia;
   }

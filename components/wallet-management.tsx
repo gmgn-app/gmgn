@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
+import { useRouter } from 'next/navigation'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,8 +66,8 @@ import {
 export default function WalletManagement() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-  const chainName = searchParams.get("chain");
 
+  const router = useRouter();
   // Get the toast function from the useToast hook.
   const { toast } = useToast();
 
@@ -80,11 +81,12 @@ export default function WalletManagement() {
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
-  const [network, setNetwork] = useState<string>(chainName ?? "kaia-kairos");
+  const [network, setNetwork] = useState<string>(searchParams.get("network") ?? "kaia-kairos");
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("");
 
   useEffect(() => {
+    router.push('?network=' + network);
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
       const wallet = JSON.parse(GMGN_WALLET);
@@ -138,6 +140,7 @@ export default function WalletManagement() {
     setBalance(formatEther(balance).toString());
   }
 
+  
   async function getWallet() {
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
@@ -230,14 +233,17 @@ export default function WalletManagement() {
 
   async function handleInputNetworkChange(value: string) {
     setNetwork(value);
+    router.push('?network=' + value);
     const publicClient = createPublicClient({
       chain: selectViemChainFromNetwork(value as string),
       transport: http(),
     });
-    const balance = await publicClient.getBalance({
-      address: walletAddress as Address,
-    });
-    setBalance(formatEther(balance).toString());
+    if (walletAddress) {
+      const balance = await publicClient.getBalance({
+        address: walletAddress as Address,
+      });
+      setBalance(formatEther(balance).toString());
+    }
   }
 
   return (
