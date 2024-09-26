@@ -315,7 +315,7 @@ export default function SendTransactionForm() {
 
   return (
     <div className="flex flex-col">
-      <div>
+      <div className="flex flex-col">
         <h2 className="text-xl">Balance</h2>
         <div className="flex flex-row items-center justify-between">
           <p className="text-2xl">

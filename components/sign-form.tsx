@@ -19,10 +19,8 @@ import {
 import { Address, fromBytes, toHex } from "viem";
 import {
   Clock,
-  Loader2,
   Signature,
   UserPen,
-  OctagonAlert,
   Hash,
   Link,
 } from "lucide-react";
@@ -148,9 +146,9 @@ export default function SignForm() {
   }
 
   return (
-    <div className="flex flex-col gap-8 w-[300px] md:w-[600px] lg:w-[900px]">
+    <div className="flex flex-col gap-8">
       <div className="flex flex-col w-full h-full border-black border-2 rounded-md bg-white p-4">
-        <h2 className="text-3xl font-semibold mb-8">Message</h2>
+        <h2 className="text-3xl font-semibold mb-8">Sign message</h2>
         <Form {...form}>
           <form
             onReset={form.handleSubmit(onReset)}

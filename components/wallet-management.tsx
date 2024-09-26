@@ -451,7 +451,7 @@ export default function WalletManagement() {
             <DialogContent>
               <DialogHeader className="flex flex-col items-center">
                 <DialogTitle>Create</DialogTitle>
-                <DialogDescription>Enter note and create</DialogDescription>
+                <DialogDescription>Enter any username to create a wallet</DialogDescription>
               </DialogHeader>
               <div>
                 <Input
