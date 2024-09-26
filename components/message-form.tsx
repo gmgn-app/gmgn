@@ -76,7 +76,7 @@ export default function MessageForm() {
         // make sure to catch any error
         .catch(console.error);
     }
-  }, []);
+  }, [address, network]);
 
 
 
