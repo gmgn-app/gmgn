@@ -477,7 +477,7 @@ export default function WalletManagement() {
       ) : (
         <Skeleton className="h-[200px] rounded-md" />
       )}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
             <Link
