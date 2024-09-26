@@ -17,7 +17,7 @@ export default function CopyButton({text}: {text: string}) {
   };
  
   return (
-    <Button disabled={isCopied} onClick={copy}>
+    <Button className="w-fit" disabled={isCopied} onClick={copy}>
       {isCopied ?
         <div className="flex flex-row gap-2 items-center">
           <Check className="h-4 w-4" />
