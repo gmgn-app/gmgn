@@ -32,7 +32,8 @@ export default function DeletePage() {
     const bytes = await WebAuthnStorage.getOrThrow(handle);
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
-      setPrivateKey(privateKey);
+      let formattedPrivateKey = privateKey.slice(2);
+      setPrivateKey(formattedPrivateKey);
       toast({
         title: "Private key exported!",
         description: "Make sure to store or view it in a safe place",

@@ -12,13 +12,6 @@ import {
   http,
   fromBytes,
 } from "viem";
-import {
-  klaytn,
-  klaytnBaobab,
-  arbitrumSepolia,
-  baseSepolia,
-  sepolia,
-} from "viem/chains";
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
@@ -54,10 +47,18 @@ import { useToast } from "@/hooks/use-toast";
 import { WebAuthnStorage } from "@/lib/webauthnstorage";
 import { createIcon } from "@/lib/blockies";
 import { createId } from "@paralleldrive/cuid2";
-import { formatBalance } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { Skeleton } from "./ui/skeleton";
-import { WalletAddressContext, WalletAddressContextType } from "@/app/wallet-context";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  WalletAddressContext,
+  WalletAddressContextType,
+} from "@/app/wallet-context";
+import {
+  selectNativeAssetSymbol,
+  truncateAddress,
+  formatBalance,
+  selectViemChainFromNetwork,
+} from "@/lib/utils";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -65,16 +66,21 @@ export default function WalletManagement() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
   const chainName = searchParams.get("chain");
+
+  // Get the toast function from the useToast hook.
   const { toast } = useToast();
+
+  // Create the state variables for the wallet management
   const [balance, setBalance] = useState("");
-  // const [walletAddress, setWalletAddress] = useState("");
-  const { walletAddress, setWalletAddress } = useContext(WalletAddressContext) as WalletAddressContextType;
+  // Get the wallet address and set the wallet address from the WalletAddressContext.
+  const { walletAddress, setWalletAddress } = useContext(
+    WalletAddressContext
+  ) as WalletAddressContextType;
+  // Create the state variables for the wallet management
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
-  const [network, setNetwork] = useState<string>(
-    chainName ?? "kaia-kairos"
-  );
+  const [network, setNetwork] = useState<string>(chainName ?? "kaia-kairos");
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("");
 
@@ -104,7 +110,7 @@ export default function WalletManagement() {
   useEffect(() => {
     if (walletAddress) {
       const publicClient = createPublicClient({
-        chain: selectViemChainConfig(network as string),
+        chain: selectViemChainFromNetwork(network as string),
         transport: http(),
       });
       const fetchBalance = async () => {
@@ -120,26 +126,8 @@ export default function WalletManagement() {
     }
   }, [walletAddress, network]);
 
-
-  function selectViemChainConfig(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return klaytn;
-      case "kaia-kairos":
-        return klaytnBaobab;
-      case "arbitrum-sepolia":
-        return arbitrumSepolia;
-      case "base-sepolia":
-        return baseSepolia;
-      case "ethereum-sepolia":
-        return sepolia;
-      default:
-        return klaytnBaobab;
-    }
-  }
-
   const publicClient = createPublicClient({
-    chain: selectViemChainConfig(network as string),
+    chain: selectViemChainFromNetwork(network as string),
     transport: http(),
   });
 
@@ -148,37 +136,6 @@ export default function WalletManagement() {
       address: walletAddress as Address,
     });
     setBalance(formatEther(balance).toString());
-  }
-
-
-  function selectNativeAssetSymbol(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return "KLAY";
-      case "kaia-kairos":
-        return "KLAY";
-      case "arbitrum-sepolia":
-        return "ETH";
-      case "base-sepolia":
-        return "ETH";
-      case "ethereum-sepolia":
-        return "ETH";
-      default:
-        return "ETH";
-    }
-  }
-
-  // Truncate the address for display.
-  function truncateAddress(
-    address: Address | undefined,
-    numberOfChars: number
-  ) {
-    if (!address) return "--------------";
-    let convertedAddress = address.toString();
-    return `${convertedAddress.slice(
-      0,
-      numberOfChars
-    )}...${convertedAddress.slice(-4)}`;
   }
 
   async function getWallet() {
@@ -271,11 +228,10 @@ export default function WalletManagement() {
     }
   }
 
-
   async function handleInputNetworkChange(value: string) {
     setNetwork(value);
     const publicClient = createPublicClient({
-      chain: selectViemChainConfig(value as string),
+      chain: selectViemChainFromNetwork(value as string),
       transport: http(),
     });
     const balance = await publicClient.getBalance({
@@ -283,87 +239,6 @@ export default function WalletManagement() {
     });
     setBalance(formatEther(balance).toString());
   }
-
-  // function resetWallet() {
-  //   localStorage.removeItem("gmgn-wallet");
-  //   setWalletAddress("");
-  //   setWalletClient(undefined);
-  //   setCreateWalletButtonActive(true);
-  //   setWalletName("");
-  //   toast({
-  //     className:
-  //       "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-  //     title: "Wallet has been reset!",
-  //     description: "Please go to your device settings to clear the passkey.",
-  //   });
-  // }
-
-  // async function showPrivateKey() {
-  //   /**
-  //    * Retrieve the handle to the private key from some unauthenticated storage
-  //    */
-  //   const cache = await caches.open("gmgn-storage");
-  //   const request = new Request("gmgn-wallet");
-  //   const response = await cache.match(request);
-  //   const handle = response
-  //     ? new Uint8Array(await response.arrayBuffer())
-  //     : new Uint8Array();
-  //   /**
-  //    * Retrieve the private key from authenticated storage
-  //    */
-  //   const bytes = await WebAuthnStorage.getOrThrow(handle);
-  //   const privateKey = fromBytes(bytes, "hex");
-  //   if (privateKey) {
-  //     // remove the 0x prefix
-  //     let formattedPrivateKey = privateKey.slice(2);
-  //     setUtilitiesText(formattedPrivateKey);
-  //   }
-  // }
-
-  // async function importWallet(privateKey: string) {
-  //   let newPrivateKey = "0x" + privateKey;
-  //   const bytes = toBytes(newPrivateKey);
-  //   /**
-  //    * Store the private key into authenticated storage
-  //    */
-  //   const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
-  //   /**
-  //    * Store the handle to the private key into some unauthenticated storage
-  //    */
-  //   const cache = await caches.open("gmgn-storage");
-  //   const request = new Request("gmgn-wallet");
-  //   const response = new Response(handle);
-  //   await cache.put(request, response);
-  //   const icon = createIcon({
-  //     // All options are optional
-  //     seed: createId, // seed used to generate icon data, default: random
-  //     size: 15, // width/height of the icon in blocks, default: 10
-  //     scale: 3, // width/height of each block in pixels, default: 5
-  //   });
-  //   const GMGN_WALLET_STORAGE = {
-  //     status: "created",
-  //     icon: icon.toDataURL(),
-  //     username: walletName,
-  //   };
-  //   localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
-  //   setCreateWalletButtonActive(false);
-  //   if (handle) {
-  //     toast({
-  //       className:
-  //         "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-  //       title: "Wallet created!",
-  //       description: "Please click the Load button to access your wallet.",
-  //     });
-  //   } else {
-  //     toast({
-  //       className:
-  //         "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-  //       variant: "destructive",
-  //       title: "Wallet creation failed!",
-  //       description: "Uh oh! Something went wrong. please try again.",
-  //     });
-  //   }
-  // }
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -407,7 +282,9 @@ export default function WalletManagement() {
           </Button>
         </div>
       </div>
-      {createWalletButtonActive === false && loadingWalletStorage === false && walletAddress ? (
+      {createWalletButtonActive === false &&
+      loadingWalletStorage === false &&
+      walletAddress ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -451,7 +328,9 @@ export default function WalletManagement() {
             <DialogContent>
               <DialogHeader className="flex flex-col items-center">
                 <DialogTitle>Create</DialogTitle>
-                <DialogDescription>Enter any username to create a wallet</DialogDescription>
+                <DialogDescription>
+                  Enter any username to create a wallet
+                </DialogDescription>
               </DialogHeader>
               <div>
                 <Input
@@ -467,7 +346,9 @@ export default function WalletManagement() {
             </DialogContent>
           </Dialog>
         </div>
-      ) : createWalletButtonActive === false && loadingWalletStorage === false && !walletAddress ? (
+      ) : createWalletButtonActive === false &&
+        loadingWalletStorage === false &&
+        !walletAddress ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
           <Button disabled={createWalletButtonActive} onClick={getWallet}>
             <LoaderPinwheel className="mr-2 h-4 w-4" />
@@ -480,9 +361,7 @@ export default function WalletManagement() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link
-              href={`/send?network=${network}&address=${walletAddress}`}
-            >
+            <Link href={`/send?network=${network}&address=${walletAddress}`}>
               <Send className="mr-2 h-4 w-4" />
               Send
             </Link>

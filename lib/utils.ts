@@ -84,3 +84,20 @@ export function selectBlockExplorer(network: string | undefined) {
       return "https://kairos.kaiascan.io";
   }
 }
+
+export function selectNativeAssetSymbol(network: string | undefined) {
+  switch (network) {
+    case "kaia":
+      return "KLAY";
+    case "kaia-kairos":
+      return "KLAY";
+    case "arbitrum-sepolia":
+      return "ETH";
+    case "base-sepolia":
+      return "ETH";
+    case "ethereum-sepolia":
+      return "ETH";
+    default:
+      return "ETH";
+  }
+}
