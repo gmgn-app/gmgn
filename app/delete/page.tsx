@@ -17,7 +17,7 @@ export default function DeletePage() {
       className:
         "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
       title: "Wallet deleted!",
-      description: "Go back to home to create new wallet",
+      description: "Go back to home and refresh the page to create new wallet",
       action: (
         <ToastAction altText="Home">
           <Link href="/">Home</Link>
