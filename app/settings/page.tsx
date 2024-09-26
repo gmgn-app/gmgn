@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import BackButton from "@/components/back-button"
+import SettingsForm from "@/components/settings-form";
 
 export default function SettingsPage() {
   return (
@@ -18,6 +19,7 @@ export default function SettingsPage() {
         Settings
       </h1>
       <BackButton route={null} />
+      <SettingsForm />
     </div>
   );
 }
