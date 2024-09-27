@@ -216,9 +216,9 @@ export default function WalletManagement() {
     if (handle) {
       toast({
         className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4 bg-blue-600 text-white",
         title: "Wallet created!",
-        description: "Please click the Load button to access your wallet.",
+        description: "Please click Load wallet from Passkey to begin.",
       });
     } else {
       toast({
