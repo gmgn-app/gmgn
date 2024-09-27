@@ -49,7 +49,7 @@ export default function RootLayout({
       ></Script>
       <body className={inter.className}>
         <WalletAddressProvider>
-          <main className="flex flex-col gap-8 px-2 py-24 md:p-12 lg:p-16 w-screen items-center justify-center">
+          <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
             {children}
             <Toaster />
           </main>
