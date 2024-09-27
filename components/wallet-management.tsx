@@ -162,7 +162,7 @@ export default function WalletManagement() {
       setWalletAddress(account.address);
       toast({
         className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4 bg-green-600 text-white",
         title: "Wallet loaded!",
         description: "You are ready to use your wallet.",
       });

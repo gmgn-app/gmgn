@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
+import NavBar from "@/components/navbar";
 
 export default function ExplorePage() {
   return (
@@ -18,6 +19,7 @@ export default function ExplorePage() {
         Explore
       </h1>
       <BackButton route="/" />
+      <NavBar />
     </div>
   );
 }
