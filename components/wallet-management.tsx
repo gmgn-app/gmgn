@@ -278,6 +278,12 @@ export default function WalletManagement() {
                 <SelectItem value="ethereum-sepolia">
                   Ethereum Sepolia
                 </SelectItem>
+                <SelectItem value="fraxtal-testnet">
+                  Fraxtal Testnet
+                </SelectItem>
+                <SelectItem value="abstract-testnet">
+                  Abstract Testnet
+                </SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

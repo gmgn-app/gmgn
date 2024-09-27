@@ -1,9 +1,15 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
-import { sepolia, arbitrumSepolia, baseSepolia, klaytnBaobab } from "viem/chains";
+import {
+  sepolia,
+  arbitrumSepolia,
+  baseSepolia,
+  klaytnBaobab,
+  abstractTestnet,
+  fraxtalTestnet,
+} from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
-
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,6 +65,10 @@ export function selectChainNameFromNetwork(network: string | null) {
       return "Base Sepolia";
     case "kaia-kairos":
       return "Kaia Kairos";
+    case "abstract-testnet":
+      return "Abstract Testnet";
+    case "fraxtal-testnet":
+      return "Fraxtal Testnet";
     default:
       return "Unknown Network";
   }
@@ -74,8 +84,12 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
       return baseSepolia;
     case "ethereum-sepolia":
       return sepolia;
+    case "abstract-testnet":
+      return abstractTestnet;
+    case "fraxtal-testnet":
+      return fraxtalTestnet;
     default:
-      return sepolia;
+      return klaytnBaobab;
   }
 }
 
@@ -85,6 +99,16 @@ export function selectBlockExplorer(network: string | undefined) {
       return "https://kaiascan.io";
     case "kaia-kairos":
       return "https://kairos.kaiascan.io";
+    case "arbitrum-sepolia":
+      return "https://sepolia.arbiscan.io";
+    case "base-sepolia":
+      return "https://sepolia.basescan.org";
+    case "ethereum-sepolia":
+      return "https://sepolia.etherscan.io";
+    case "abstract-testnet":
+      return "https://explorer.testnet.abs.xyz";
+    case "fraxtal-testnet":
+      return "https://holesky.fraxscan.com";
     default:
       return "https://kairos.kaiascan.io";
   }
@@ -102,8 +126,12 @@ export function selectNativeAssetSymbol(network: string | undefined) {
       return "ETH";
     case "ethereum-sepolia":
       return "ETH";
-    default:
+    case "abstract-testnet":
       return "ETH";
+    case "fraxtal-testnet":
+      return "frxETH";
+    default:
+      return "KLAY";
   }
 }
 
