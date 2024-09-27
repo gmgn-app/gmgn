@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
 import { sepolia, arbitrumSepolia, baseSepolia, klaytnBaobab } from "viem/chains";
+import { JsonRpcProvider } from "@kaiachain/ethers-ext";
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -98,5 +100,16 @@ export function selectNativeAssetSymbol(network: string | undefined) {
       return "ETH";
     default:
       return "ETH";
+  }
+}
+
+export function selectJsonRpcProvider(network: string | undefined) {
+  switch (network) {
+    case "kaia":
+      return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
+    case "kaia-kairos":
+      return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
+    default:
+      return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
   }
 }

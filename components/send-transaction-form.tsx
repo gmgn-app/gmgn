@@ -17,23 +17,50 @@ import {
   createWalletClient,
   parseEther,
   toHex,
+  getAddress,
+  isAddress,
 } from "viem";
-import {
-  klaytn,
-  klaytnBaobab,
-  arbitrumSepolia,
-  baseSepolia,
-  sepolia,
-} from "viem/chains";
-import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
+import { Wallet, TxType } from "@kaiachain/ethers-ext";
 import { privateKeyToAccount } from "viem/accounts";
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { Send, RotateCcw, Fuel } from "lucide-react";
-import { redirect } from 'next/navigation'
-import { formatBalance, truncateHash, selectBlockExplorer, selectViemChainFromNetwork, selectNativeAssetSymbol } from "@/lib/utils";
-
+import {
+  Send,
+  RotateCcw,
+  Fuel,
+  Loader2,
+  ScanLine,
+  ThumbsUp,
+  Check,
+  CircleX,
+} from "lucide-react";
+import { Scanner } from "@yudiel/react-qr-scanner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { redirect } from "next/navigation";
+import {
+  formatBalance,
+  truncateHash,
+  truncateAddress,
+  selectBlockExplorer,
+  selectViemChainFromNetwork,
+  selectNativeAssetSymbol,
+  selectJsonRpcProvider,
+} from "@/lib/utils";
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -42,7 +69,7 @@ export default function SendTransactionForm() {
   const address = searchParams.get("address");
 
   if (!network || !address) {
-    redirect("/")
+    redirect("/");
   }
 
   const [currentBalance, setCurrentBalance] = useState("");
@@ -52,6 +79,11 @@ export default function SendTransactionForm() {
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [sendButtonLoading, setSendButtonLoading] = useState(false);
+  const [qrScanSuccess, setQrScanSuccess] = useState(false);
+  const [isValidAddress, setIsValidAddress] = useState(false);
+  const [isValidAmount, setIsValidAmount] = useState(false);
+  const [isValidTotal, setIsValidTotal] = useState(false);
 
   // Toast notifications.
   const { toast } = useToast();
@@ -75,20 +107,6 @@ export default function SendTransactionForm() {
     }
   }, [address, network]);
 
-
-  function selectJsonRpcProvider(network: string | undefined) {
-    // https://rpc.ankr.com/arbitrum_sepolia
-    // https://rpc.ankr.com/base_sepolia
-    switch (network) {
-      case "kaia":
-        return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
-      case "kaia-kairos":
-        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
-      default:
-        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
-    }
-  }
-
   const publicClient = createPublicClient({
     chain: selectViemChainFromNetwork(network!),
     transport: http(),
@@ -101,6 +119,29 @@ export default function SendTransactionForm() {
     setCurrentBalance(formatEther(balance).toString());
   }
 
+  function handleQrScan(data: string) {
+    if (data.includes(":")) {
+      const splitData = data.split(":");
+      setReceivingAddress(splitData[1]);
+      setQrScanSuccess(true);
+      // delay the success message for 2 seconds
+      setTimeout(() => {
+        setQrScanSuccess(false);
+      }, 5000);
+    } else {
+      setReceivingAddress(data);
+      setQrScanSuccess(true);
+      // delay the success message for 2 seconds
+      setTimeout(() => {
+        setQrScanSuccess(false);
+      }, 5000);
+    }
+  }
+
+  function handleDelegateFeeChange() {
+    setDelegateFeeActive(!delegateFeeActive);
+    setReadyToTransfer(true);
+  }
 
   async function prepareTransaction() {
     if (!receivingAddress) {
@@ -116,7 +157,7 @@ export default function SendTransactionForm() {
     if (!sendingAmount) {
       toast({
         className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
         variant: "destructive",
         title: "Uh oh! You did not enter an amount to send.",
         description: "Please enter an amount to send to continue.",
@@ -144,6 +185,7 @@ export default function SendTransactionForm() {
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
+    setSendButtonLoading(true);
     const cache = await caches.open("gmgn-storage");
     const request = new Request("gmgn-wallet");
     const response = await cache.match(request);
@@ -168,22 +210,31 @@ export default function SendTransactionForm() {
         value: parseEther(sendingAmount),
         data: toHex(transactionMemo),
       });
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        title: "Transaction sent!",
-        description: "Hash: " + truncateHash(hash, 6),
-        action: (
-          <ToastAction altText="view">
-            <a
-              target="_blank"
-              href={`${selectBlockExplorer(network!)}/tx/${hash}`}
-            >
-              View
-            </a>
-          </ToastAction>
-        ),
+      const publicClient = createPublicClient({
+        chain: selectViemChainFromNetwork(network!),
+        transport: http(),
       });
+      const transaction = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      if (transaction) {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          title: "Transaction sent!",
+          description: "Hash: " + truncateHash(hash, 6),
+          action: (
+            <ToastAction altText="view">
+              <a
+                target="_blank"
+                href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+              >
+                View
+              </a>
+            </ToastAction>
+          ),
+        });
+      }
     } else {
       toast({
         className:
@@ -193,12 +244,7 @@ export default function SendTransactionForm() {
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
-  }
-  // =========== END OF FORM HANDLING ===========
-
-  function handleDelegateFeeChange() {
-    setDelegateFeeActive(!delegateFeeActive);
-    setReadyToTransfer(true);
+    setSendButtonLoading(false);
   }
 
   async function submitDelegatedTransaction() {
@@ -283,9 +329,7 @@ export default function SendTransactionForm() {
         <div className="flex flex-row items-center justify-between">
           <p className="text-2xl">
             {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
-            <span className="text-lg">
-              {selectNativeAssetSymbol(network)}
-            </span>
+            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
           </p>
           <Button onClick={fetchBalance} size="icon">
             <RotateCcw className="w-4 h-4" />
@@ -295,14 +339,47 @@ export default function SendTransactionForm() {
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
-          <Input
-            id="receivingAddress"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-            placeholder="0x..."
-            value={receivingAddress}
-            onChange={(e) => setReceivingAddress(e.target.value)}
-            required
-          />
+          <div className="flex flex-row gap-2 items-center justify-center">
+            <Input
+              id="receivingAddress"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              placeholder="0x..."
+              value={receivingAddress}
+              onChange={(e) => setReceivingAddress(e.target.value)}
+              required
+            />
+            <Dialog>
+              <DialogTrigger>
+                <ScanLine className="w-6 h-6" />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>QR Scanner</DialogTitle>
+                  <DialogDescription>
+                    Scan the QR code to autofill the mint address
+                  </DialogDescription>
+                </DialogHeader>
+                <Scanner
+                  onScan={(result) => handleQrScan(result[0].rawValue)}
+                />
+                <DialogFooter>
+                  <div className="flex flex-col items-center justify-center">
+                    {qrScanSuccess ? (
+                      <p className="flex flex-row gap-2 text-blue-600">
+                        <ThumbsUp className="h-6 w-6" />
+                        Scan completed
+                      </p>
+                    ) : (
+                      <p className="flex flex-row gap-2 text-yellow-600">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        Scanning...
+                      </p>
+                    )}
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
@@ -326,19 +403,71 @@ export default function SendTransactionForm() {
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="delegate-fee"
-            checked={delegateFeeActive}
-            onCheckedChange={handleDelegateFeeChange}
-          />
-          <Label htmlFor="delegate-fee">Delegate gas fee</Label>
-        </div>
+        {network === "kaia" || network === "kaia-kairos" ? (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="delegate-fee"
+              checked={delegateFeeActive}
+              onCheckedChange={handleDelegateFeeChange}
+            />
+            <Label htmlFor="delegate-fee">Delegate gas fee</Label>
+          </div>
+        ) : null}
         {!delegateFeeActive && (
           <div className="flex flex-col gap-2 border-2 border-primary p-2">
             <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
-            <h3 className="text-sm">Estimated fees</h3>
-            <p className="flex flex-row gap-2 items-center text-sm"><Fuel className="w-4 h-4" />{`${transactionCost ? transactionCost : "-----"} ${selectNativeAssetSymbol(network)}`}</p>
+            <div className="flex flex-row gap-2">
+              <h3 className="text-sm text-muted-foreground">
+                Receiving address
+              </h3>
+              <p className="flex flex-row gap-2 items-center text-sm">
+                {receivingAddress
+                  ? truncateAddress(receivingAddress as Address, 4)
+                  : "-----"}
+                {isValidAddress ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Check className="w-4 h-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Valid address</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <CircleX className="w-4 h-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Invalid address</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </p>
+            </div>
+            <div className="flex flex-row gap-2">
+              <h3 className="text-sm text-muted-foreground">Sending amount</h3>
+              <p className="flex flex-row gap-2 items-center text-sm">
+                {`${
+                  sendingAmount ? sendingAmount : "-----"
+                } ${selectNativeAssetSymbol(network)}`}
+                <Check className="w-4 h-4" />
+              </p>
+            </div>
+            <div className="flex flex-row gap-2">
+              <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
+              <p className="flex flex-row gap-2 items-center text-sm">
+                <Fuel className="w-4 h-4" />
+                {`${
+                  transactionCost ? transactionCost : "-----"
+                } ${selectNativeAssetSymbol(network)}`}
+                <Check className="w-4 h-4" />
+              </p>
+            </div>
             <Button
               disabled={readyToTransfer}
               className="w-fit self-end"
@@ -349,15 +478,22 @@ export default function SendTransactionForm() {
           </div>
         )}
       </div>
-      <Button
-        disabled={!readyToTransfer}
-        onClick={
-          delegateFeeActive ? submitDelegatedTransaction : submitTransaction
-        }
-      >
-        <Send className="mr-2 h-4 w-4" />
-        Send
-      </Button>
+      {sendButtonLoading ? (
+        <Button disabled>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Please wait
+        </Button>
+      ) : (
+        <Button
+          disabled={!readyToTransfer}
+          onClick={
+            delegateFeeActive ? submitDelegatedTransaction : submitTransaction
+          }
+        >
+          <Send className="mr-2 h-4 w-4" />
+          Send
+        </Button>
+      )}
     </div>
   );
 }
