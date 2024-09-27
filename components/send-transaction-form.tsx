@@ -78,11 +78,18 @@ export default function SendTransactionForm() {
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [continueButtonLoading, setContinueButtonLoading] = useState(false);
   const [sendButtonLoading, setSendButtonLoading] = useState(false);
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
-  const [isValidAddress, setIsValidAddress] = useState(false);
-  const [isValidAmount, setIsValidAmount] = useState(false);
-  const [isValidTotal, setIsValidTotal] = useState(false);
+  const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidAmount, setIsValidAmount] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidTotal, setIsValidTotal] = useState<Boolean | undefined>(
+    undefined
+  );
 
   // Toast notifications.
   const { toast } = useToast();
@@ -153,6 +160,14 @@ export default function SendTransactionForm() {
       });
       return;
     }
+    if (receivingAddress) {
+      const isValidAddress = isAddress(receivingAddress, { strict: false });
+      if (isValidAddress) {
+        setIsValidAddress(true);
+      } else {
+        setIsValidAddress(false);
+      }
+    }
     if (!sendingAmount) {
       toast({
         className:
@@ -163,7 +178,18 @@ export default function SendTransactionForm() {
       });
       return;
     }
-    if (receivingAddress && sendingAmount) {
+    if (sendingAmount) {
+      const isValidAmount =
+        parseEther(currentBalance) >= parseEther(sendingAmount);
+      if (isValidAmount) {
+        setIsValidAmount(true);
+      } else {
+        setIsValidAmount(false);
+        return;
+      }
+    }
+    if (receivingAddress && sendingAmount && isValidAddress && isValidAmount) {
+      setContinueButtonLoading(true);
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network!),
         transport: http(),
@@ -174,9 +200,20 @@ export default function SendTransactionForm() {
         value: parseEther(sendingAmount),
       });
       const gasPrice = await publicClient.getGasPrice();
-      setTransactionCost(formatEther(gas * gasPrice));
-      setReadyToTransfer(true);
+      const gasCost = gas * gasPrice;
+      setTransactionCost(formatEther(gasCost));
+      const isValidTotal =
+        parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+      if (isValidTotal) {
+        setIsValidTotal(true);
+        setReadyToTransfer(true);
+      } else {
+        setIsValidTotal(false);
+        setReadyToTransfer(false);
+        return;
+      }
     }
+    setContinueButtonLoading(false);
   }
 
   // 2. Define a submit handler.
@@ -244,6 +281,7 @@ export default function SendTransactionForm() {
       });
     }
     setSendButtonLoading(false);
+    setReadyToTransfer(false);
   }
 
   async function submitDelegatedTransaction() {
@@ -423,7 +461,8 @@ export default function SendTransactionForm() {
                 {receivingAddress
                   ? truncateAddress(receivingAddress as Address, 4)
                   : "-----"}
-                {isValidAddress ? (
+                {isValidAddress === undefined ? null : isValidAddress ===
+                  true ? (
                   <Popover>
                     <PopoverTrigger>
                       <Check className="w-4 h-4 text-green-500" />
@@ -448,9 +487,9 @@ export default function SendTransactionForm() {
               <h3 className="text-sm text-muted-foreground">Sending amount</h3>
               <p className="flex flex-row gap-2 items-center text-sm">
                 {`${
-                  sendingAmount ? sendingAmount : "-----"
+                  sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
                 } ${selectNativeAssetSymbol(network)}`}
-                {isValidAmount ? (
+                {isValidAmount === undefined ? null : isValidAmount === true ? (
                   <Popover>
                     <PopoverTrigger>
                       <Check className="w-4 h-4 text-green-500" />
@@ -478,7 +517,7 @@ export default function SendTransactionForm() {
                 {`${
                   transactionCost ? transactionCost : "-----"
                 } ${selectNativeAssetSymbol(network)}`}
-                {isValidAmount ? (
+                {isValidTotal === undefined ? null : isValidTotal === true ? (
                   <Popover>
                     <PopoverTrigger>
                       <Check className="w-4 h-4 text-green-500" />
@@ -499,13 +538,20 @@ export default function SendTransactionForm() {
                 )}
               </p>
             </div>
-            <Button
-              disabled={readyToTransfer}
-              className="w-fit self-end"
-              onClick={prepareTransaction}
-            >
-              Continue
-            </Button>
+            {continueButtonLoading ? (
+              <Button disabled className="w-fit self-end">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button
+                disabled={readyToTransfer}
+                className="w-fit self-end"
+                onClick={prepareTransaction}
+              >
+                Continue
+              </Button>
+            )}
           </div>
         )}
       </div>
