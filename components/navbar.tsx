@@ -17,7 +17,7 @@ export default function NavBar() {
   }
 
   return (
-    <div className="grid grid-cols-4 fixed bottom-0 md:w-[768px] h-[80px]">
+    <div className="grid grid-cols-4 fixed bottom-0 md:w-[768px] h-[80px] bg-white">
       <Button
         className={`${isActivePath(
           "/"

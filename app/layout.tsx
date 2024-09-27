@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import Script from "next/script";
 import WalletAddressProvider from "@/app/wallet-context";
-import NavBar from "@/components/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,7 +51,6 @@ export default function RootLayout({
         <WalletAddressProvider>
           <main className="flex flex-col gap-8 p-2 md:p-12 lg:p-16 w-screen items-center justify-center">
             {children}
-            <NavBar />
             <Toaster />
           </main>
         </WalletAddressProvider>

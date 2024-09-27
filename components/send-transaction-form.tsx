@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -29,9 +30,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { Send, RotateCcw } from "lucide-react";
+import { Send, RotateCcw, Fuel } from "lucide-react";
 import { redirect } from 'next/navigation'
-import { formatBalance } from "@/lib/utils";
+import { formatBalance, truncateHash, selectBlockExplorer, selectViemChainFromNetwork, selectNativeAssetSymbol } from "@/lib/utils";
 
 
 export default function SendTransactionForm() {
@@ -47,9 +48,7 @@ export default function SendTransactionForm() {
   const [currentBalance, setCurrentBalance] = useState("");
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
-  const [sendingMessage, setSendingMessage] = useState("");
-  const [gasEstimate, setGasEstimate] = useState("");
-  const [gasPrice, setGasPrice] = useState("");
+  const [transactionMemo, setTransactionMemo] = useState("");
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
@@ -60,7 +59,7 @@ export default function SendTransactionForm() {
   useEffect(() => {
     if (address) {
       const publicClient = createPublicClient({
-        chain: selectViemChainConfig(network as string),
+        chain: selectViemChainFromNetwork(network as string),
         transport: http(),
       });
       const fetchBalance = async () => {
@@ -77,29 +76,6 @@ export default function SendTransactionForm() {
   }, [address, network]);
 
 
-
-  // Truncate the hash for display
-  function truncateHash(address: String | undefined, numberOfChars: number) {
-    if (!address) return "No address";
-    let convertedAddress = address.toString();
-    return `${convertedAddress.slice(
-      0,
-      numberOfChars
-    )}...${convertedAddress.slice(-numberOfChars)}`;
-  }
-
-  // Select the block explorer based on the network
-  function selectBlockExplorer(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return "https://kaiascan.io";
-      case "kaia-kairos":
-        return "https://kairos.kaiascan.io";
-      default:
-        return "https://sepolia.etherscan.io";
-    }
-  }
-
   function selectJsonRpcProvider(network: string | undefined) {
     // https://rpc.ankr.com/arbitrum_sepolia
     // https://rpc.ankr.com/base_sepolia
@@ -113,42 +89,8 @@ export default function SendTransactionForm() {
     }
   }
 
-  function selectViemChainConfig(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return klaytn;
-      case "kaia-kairos":
-        return klaytnBaobab;
-      case "arbitrum-sepolia":
-        return arbitrumSepolia;
-      case "base-sepolia":
-        return baseSepolia;
-      case "ethereum-sepolia":
-        return sepolia;
-      default:
-        return klaytnBaobab;
-    }
-  }
-
-  function selectNativeAssetSymbol(network: string | undefined | null) {
-    switch (network) {
-      case "kaia":
-        return "KLAY";
-      case "kaia-kairos":
-        return "KLAY";
-      case "arbitrum-sepolia":
-        return "ETH";
-      case "base-sepolia":
-        return "ETH";
-      case "ethereum-sepolia":
-        return "ETH";
-      default:
-        return "ETH";
-    }
-  }
-
   const publicClient = createPublicClient({
-    chain: klaytnBaobab,
+    chain: selectViemChainFromNetwork(network!),
     transport: http(),
   });
 
@@ -160,21 +102,41 @@ export default function SendTransactionForm() {
   }
 
 
-  async function fetchTransactionCostEstimate() {
-    const publicClient = createPublicClient({
-      chain: klaytnBaobab,
-      transport: http(),
-    });
-    const gas = await publicClient.estimateGas({
-      account: address as Address,
-      to: receivingAddress as Address,
-      value: parseEther(sendingAmount),
-    });
-    const gasPrice = await publicClient.getGasPrice();
-    setGasEstimate(formatEther(gas));
-    setGasPrice(formatEther(gasPrice));
-    setTransactionCost(formatEther(gas * gasPrice));
-    setReadyToTransfer(true);
+  async function prepareTransaction() {
+    if (!receivingAddress) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter a receiving address.",
+        description: "Please enter a receiving address to continue.",
+      });
+      return;
+    }
+    if (!sendingAmount) {
+      toast({
+        className:
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter an amount to send.",
+        description: "Please enter an amount to send to continue.",
+      });
+      return;
+    }
+    if (receivingAddress && sendingAmount) {
+      const publicClient = createPublicClient({
+        chain: selectViemChainFromNetwork(network!),
+        transport: http(),
+      });
+      const gas = await publicClient.estimateGas({
+        account: address as Address,
+        to: receivingAddress as Address,
+        value: parseEther(sendingAmount),
+      });
+      const gasPrice = await publicClient.getGasPrice();
+      setTransactionCost(formatEther(gas * gasPrice));
+      setReadyToTransfer(true);
+    }
   }
 
   // 2. Define a submit handler.
@@ -197,13 +159,14 @@ export default function SendTransactionForm() {
       const account = privateKeyToAccount(privateKey as Address);
       const walletClient = createWalletClient({
         account: privateKeyToAccount(privateKey as Address),
-        chain: klaytnBaobab,
+        chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
       const hash = await walletClient.sendTransaction({
         account,
         to: receivingAddress as Address,
         value: parseEther(sendingAmount),
+        data: toHex(transactionMemo),
       });
       toast({
         className:
@@ -235,7 +198,7 @@ export default function SendTransactionForm() {
 
   function handleDelegateFeeChange() {
     setDelegateFeeActive(!delegateFeeActive);
-    setReadyToTransfer(!readyToTransfer);
+    setReadyToTransfer(true);
   }
 
   async function submitDelegatedTransaction() {
@@ -260,7 +223,7 @@ export default function SendTransactionForm() {
       to: receivingAddress,
       from: address as Address,
       value: parseEther(sendingAmount),
-      input: toHex(sendingMessage),
+      input: toHex(transactionMemo),
     };
     const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
     const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
@@ -310,7 +273,7 @@ export default function SendTransactionForm() {
     }
     setReadyToTransfer(true);
     setReceivingAddress("");
-    setSendingMessage("");
+    setTransactionMemo("");
   }
 
   return (
@@ -338,6 +301,7 @@ export default function SendTransactionForm() {
             placeholder="0x..."
             value={receivingAddress}
             onChange={(e) => setReceivingAddress(e.target.value)}
+            required
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -345,9 +309,21 @@ export default function SendTransactionForm() {
           <Input
             id="sendingAmount"
             className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            type="number"
             placeholder="0"
             value={sendingAmount}
             onChange={(e) => setSendingAmount(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="transactionMemo">Memo</Label>
+          <Textarea
+            id="transactionMemo"
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            placeholder="gm and gn"
+            value={transactionMemo}
+            onChange={(e) => setTransactionMemo(e.target.value)}
           />
         </div>
         <div className="flex items-center space-x-2">
@@ -356,19 +332,17 @@ export default function SendTransactionForm() {
             checked={delegateFeeActive}
             onCheckedChange={handleDelegateFeeChange}
           />
-          <Label htmlFor="delegate-fee">Delegate fee</Label>
+          <Label htmlFor="delegate-fee">Delegate gas fee</Label>
         </div>
-
         {!delegateFeeActive && (
-          <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-            <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
-            <p>{gasEstimate} : Gas</p>
-            <p>{gasPrice} : Gas price</p>
-            <p>{transactionCost} : Cost</p>
+          <div className="flex flex-col gap-2 border-2 border-primary p-2">
+            <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
+            <h3 className="text-sm">Estimated fees</h3>
+            <p className="flex flex-row gap-2 items-center text-sm"><Fuel className="w-4 h-4" />{`${transactionCost ? transactionCost : "-----"} ${selectNativeAssetSymbol(network)}`}</p>
             <Button
               disabled={readyToTransfer}
               className="w-fit self-end"
-              onClick={fetchTransactionCostEstimate}
+              onClick={prepareTransaction}
             >
               Continue
             </Button>

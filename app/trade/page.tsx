@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
+import NavBar from "@/components/navbar";
+
 
 export default function TradePage() {
   return (
@@ -18,6 +20,7 @@ export default function TradePage() {
         Trade
       </h1>
       <BackButton route="/" />
+      <NavBar />
     </div>
   );
 }
