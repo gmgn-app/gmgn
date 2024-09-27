@@ -34,6 +34,7 @@ import {
   ThumbsUp,
   Check,
   CircleX,
+  Ban
 } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
@@ -60,6 +61,7 @@ import {
   selectNativeAssetSymbol,
   selectJsonRpcProvider,
 } from "@/lib/utils";
+import { set } from "react-hook-form";
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -78,6 +80,7 @@ export default function SendTransactionForm() {
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [inputReadOnly, setInputReadOnly] = useState(false);
   const [continueButtonLoading, setContinueButtonLoading] = useState(false);
   const [sendButtonLoading, setSendButtonLoading] = useState(false);
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
@@ -150,7 +153,7 @@ export default function SendTransactionForm() {
   }
 
   async function prepareTransaction() {
-    if (!receivingAddress) {
+    if (receivingAddress === "") {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
@@ -168,7 +171,7 @@ export default function SendTransactionForm() {
         setIsValidAddress(false);
       }
     }
-    if (!sendingAmount) {
+    if (sendingAmount === "") {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
@@ -181,39 +184,38 @@ export default function SendTransactionForm() {
     if (sendingAmount) {
       const isValidAmount =
         parseEther(currentBalance) >= parseEther(sendingAmount);
-      if (isValidAmount) {
-        setIsValidAmount(true);
+        if (isValidAmount) {
+          setIsValidAmount(true);
+          setInputReadOnly(true);
+          setContinueButtonLoading(true);
+        const publicClient = createPublicClient({
+          chain: selectViemChainFromNetwork(network!),
+          transport: http(),
+        });
+        const gas = await publicClient.estimateGas({
+          account: address as Address,
+          to: receivingAddress as Address,
+          value: parseEther(sendingAmount),
+        });
+        const gasPrice = await publicClient.getGasPrice();
+        const gasCost = gas * gasPrice;
+        setTransactionCost(formatEther(gasCost));
+        const isValidTotal =
+          parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        if (isValidTotal) {
+          setIsValidTotal(true);
+          setReadyToTransfer(true);
+        } else {
+          setIsValidTotal(false);
+          setReadyToTransfer(false);
+          return;
+        }
+        setContinueButtonLoading(false);
       } else {
         setIsValidAmount(false);
         return;
       }
     }
-    if (receivingAddress && sendingAmount && isValidAddress && isValidAmount) {
-      setContinueButtonLoading(true);
-      const publicClient = createPublicClient({
-        chain: selectViemChainFromNetwork(network!),
-        transport: http(),
-      });
-      const gas = await publicClient.estimateGas({
-        account: address as Address,
-        to: receivingAddress as Address,
-        value: parseEther(sendingAmount),
-      });
-      const gasPrice = await publicClient.getGasPrice();
-      const gasCost = gas * gasPrice;
-      setTransactionCost(formatEther(gasCost));
-      const isValidTotal =
-        parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
-      if (isValidTotal) {
-        setIsValidTotal(true);
-        setReadyToTransfer(true);
-      } else {
-        setIsValidTotal(false);
-        setReadyToTransfer(false);
-        return;
-      }
-    }
-    setContinueButtonLoading(false);
   }
 
   // 2. Define a submit handler.
@@ -282,6 +284,7 @@ export default function SendTransactionForm() {
     }
     setSendButtonLoading(false);
     setReadyToTransfer(false);
+    setInputReadOnly(false);
   }
 
   async function submitDelegatedTransaction() {
@@ -383,6 +386,7 @@ export default function SendTransactionForm() {
               placeholder="0x..."
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
+              readOnly={inputReadOnly}
               required
             />
             <Dialog>
@@ -427,6 +431,7 @@ export default function SendTransactionForm() {
             placeholder="0"
             value={sendingAmount}
             onChange={(e) => setSendingAmount(e.target.value)}
+            readOnly={inputReadOnly}
             required
           />
         </div>
@@ -556,20 +561,34 @@ export default function SendTransactionForm() {
         )}
       </div>
       {sendButtonLoading ? (
-        <Button disabled>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Please wait
-        </Button>
+        <div className="flex flex-row gap-2 justify-between">     
+          <Button disabled variant="outline">
+            <Ban className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button className="w-[150px]" disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please wait
+          </Button>
+        </div>
       ) : (
-        <Button
-          disabled={!readyToTransfer}
-          onClick={
-            delegateFeeActive ? submitDelegatedTransaction : submitTransaction
-          }
-        >
-          <Send className="mr-2 h-4 w-4" />
-          Send
-        </Button>
+        <div className="flex flex-row gap-2 justify-between">
+          <Button variant="outline">
+            <Ban className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            disabled={!readyToTransfer}
+            onClick={
+              delegateFeeActive ? submitDelegatedTransaction : submitTransaction
+            }
+            className="w-[150px]"
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send
+          </Button>
+        </div>
+
       )}
     </div>
   );
