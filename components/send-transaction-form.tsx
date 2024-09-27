@@ -46,11 +46,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { redirect } from "next/navigation";
 import {
   formatBalance,
@@ -356,7 +355,7 @@ export default function SendTransactionForm() {
                 <DialogHeader>
                   <DialogTitle>QR Scanner</DialogTitle>
                   <DialogDescription>
-                    Scan the QR code to autofill the mint address
+                    Scan QR code to autofill
                   </DialogDescription>
                 </DialogHeader>
                 <Scanner
@@ -425,27 +424,23 @@ export default function SendTransactionForm() {
                   ? truncateAddress(receivingAddress as Address, 4)
                   : "-----"}
                 {isValidAddress ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Check className="w-4 h-4" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Valid address</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Popover>
+                    <PopoverTrigger>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-green-500">
+                      Valid address
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <CircleX className="w-4 h-4" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Invalid address</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Popover>
+                    <PopoverTrigger>
+                      <CircleX className="w-4 h-4 text-red-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-red-500">
+                      Invalid address
+                    </PopoverContent>
+                  </Popover>
                 )}
               </p>
             </div>
@@ -455,7 +450,25 @@ export default function SendTransactionForm() {
                 {`${
                   sendingAmount ? sendingAmount : "-----"
                 } ${selectNativeAssetSymbol(network)}`}
-                <Check className="w-4 h-4" />
+                {isValidAmount ? (
+                  <Popover>
+                    <PopoverTrigger>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-green-500">
+                      Valid amount
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger>
+                      <CircleX className="w-4 h-4 text-red-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-red-500">
+                      Invalid amount
+                    </PopoverContent>
+                  </Popover>
+                )}
               </p>
             </div>
             <div className="flex flex-row gap-2">
@@ -465,7 +478,25 @@ export default function SendTransactionForm() {
                 {`${
                   transactionCost ? transactionCost : "-----"
                 } ${selectNativeAssetSymbol(network)}`}
-                <Check className="w-4 h-4" />
+                {isValidAmount ? (
+                  <Popover>
+                    <PopoverTrigger>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-green-500">
+                      Valid total
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger>
+                      <CircleX className="w-4 h-4 text-red-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-red-500">
+                      Invalid total
+                    </PopoverContent>
+                  </Popover>
+                )}
               </p>
             </div>
             <Button
