@@ -408,7 +408,7 @@ export default function SendTransactionForm() {
                     {qrScanSuccess ? (
                       <p className="flex flex-row gap-2 text-blue-600">
                         <ThumbsUp className="h-6 w-6" />
-                        Scan completed
+                        Scan completed. Exit to continue.
                       </p>
                     ) : (
                       <p className="flex flex-row gap-2 text-yellow-600">

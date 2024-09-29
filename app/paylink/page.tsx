@@ -9,8 +9,18 @@ import BackButton from "@/components/back-button"
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ClipboardPaste, Check } from 'lucide-react';
+import { ArrowRight, ClipboardPaste, Check, ScanLine, ThumbsUp, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 
 export default function PayPage() {
@@ -20,7 +30,7 @@ export default function PayPage() {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const [paymentLink, setPaymentLink] = useState("");
-
+  const [qrScanSuccess, setQrScanSuccess] = useState(false);
   const [isPasted, setIsPasted] = useState(false);
  
   const paste = async () => {
@@ -34,6 +44,17 @@ export default function PayPage() {
  
   // Toast notifications.
   const { toast } = useToast();
+
+  function handleQrScan(data: string) {
+    if (data) {
+      setPaymentLink(data);
+      setQrScanSuccess(true);
+      // delay the success message for 2 seconds
+      setTimeout(() => {
+        setQrScanSuccess(false);
+      }, 5000);
+    }
+  }
 
   function handlePay() {
     // split the payment link into multiple parts
@@ -186,6 +207,37 @@ export default function PayPage() {
               <ClipboardPaste className="h-4 w-4" />
             }
           </Button>
+          <Dialog>
+              <DialogTrigger>
+                <ScanLine className="w-6 h-6" />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>QR Scanner</DialogTitle>
+                  <DialogDescription>
+                    Scan QR code to autofill
+                  </DialogDescription>
+                </DialogHeader>
+                <Scanner
+                  onScan={(result) => handleQrScan(result[0].rawValue)}
+                />
+                <DialogFooter>
+                  <div className="flex flex-col items-center justify-center">
+                    {qrScanSuccess ? (
+                      <p className="flex flex-row gap-2 text-blue-600">
+                        <ThumbsUp className="h-6 w-6" />
+                        Scan completed. Exit to continue.
+                      </p>
+                    ) : (
+                      <p className="flex flex-row gap-2 text-yellow-600">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        Scanning...
+                      </p>
+                    )}
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </div>
 
         <p className="text-sm text-muted-foreground">
