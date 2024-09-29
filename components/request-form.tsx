@@ -181,8 +181,7 @@ export default function RequestForm() {
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
           <p className="text-sm text-muted-foreground">
-            Optional but highly recommended to include a memo or autogenerate a
-            UID.
+            Enter a memo for the transaction or autogenerate a UID for reference.
           </p>
           <Button
             onClick={autogenerateUid}

@@ -7,21 +7,146 @@ import Link from "next/link"
 import Image from "next/image"
 import BackButton from "@/components/back-button"
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ArrowRight } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 
 export default function PayPage() {
   const router = useRouter();
   // Get the search params from the URL.
+
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const [paymentLink, setPaymentLink] = useState("");
 
+  // Toast notifications.
+  const { toast } = useToast();
+
   function handlePay() {
+    // split the payment link into multiple parts
+    const paymentLinkParts = paymentLink.split("/");
+    console.log(paymentLinkParts);
+    // Check the https: of the link
+    console.log(paymentLinkParts[0]);
+    if (paymentLinkParts[0] !== "http:" && paymentLinkParts[0] !== "https:") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check the domain of the link
+    console.log(paymentLinkParts[2]);
+    if (paymentLinkParts[2] !== `${process.env.NEXT_PUBLIC_BASE_URL}`.split("/").pop()) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check the path of the link
+    console.log(paymentLinkParts[3]);
+    if (paymentLinkParts[3] === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check the query params of the link
+    console.log(paymentLinkParts[3]);
+    // get the route of the paymentLinkParts[3]
+    const route = paymentLinkParts[3].split("?").shift();
+    // get the query params of the paymentLinkParts[3]
+    const queryParams = paymentLinkParts[3].split("?").pop();
+    // check if the route is pay
+    if (route !== "pay") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check if the query params are empty
+    if (queryParams === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // convert the query params to an object
+    const queryObject = JSON.parse(
+      `{"${queryParams!.replace(/&/g, '","').replace(/=/g,'":"')}"}`
+    );
+    console.log(queryObject);
+    // check if the query params contain the network
+    if (!queryObject.network) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check if the query params contain the sendingAmount
+    if (!queryObject.sendingAmount) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check if the query params contain the receivingAddress
+    if (!queryObject.receivingAddress) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
+    // check if the query params contain the transactionMemo
+    if (!queryObject.transactionMemo) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
     // with payment link, remove everythink left of the last slash
     const paymentConfig = paymentLink.split("?").pop();
     const newPaymentConfig = paymentConfig + `&address=${address}`;
-    router.push(`/pay?${newPaymentConfig}`);
+    console.log(newPaymentConfig);
+    // router.push(`/pay?${newPaymentConfig}`);
   }
 
   return (
@@ -39,15 +164,23 @@ export default function PayPage() {
         Pay
       </h1>
       <BackButton route={null} />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mt-12">
+        <Label htmlFor="sendingAmount">Payment Link</Label>
         <Input
+          id="paymentLink"
           placeholder="Enter payment link"
           type="text"
           required
           value={paymentLink}
           onChange={(e) => setPaymentLink(e.target.value)}
           />
-        <Button onClick={handlePay}>Proceed</Button>
+        <p className="text-sm text-muted-foreground">
+          Fill in the payment link that you have received.
+        </p>
+        <Button onClick={handlePay}>
+          Proceed
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </div>
     </div>
   )

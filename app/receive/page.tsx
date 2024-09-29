@@ -30,7 +30,7 @@ export default function ReceivePage() {
         Receive
       </h1>
       <BackButton route={"/"} />
-      <Tabs defaultValue="receive" className="w-[400px]">
+      <Tabs defaultValue="receive" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="receive">
             Receive

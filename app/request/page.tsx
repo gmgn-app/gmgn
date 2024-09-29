@@ -28,7 +28,7 @@ export default function RequestPage() {
         Request
       </h1>
       <BackButton route={"/"} />
-      <Tabs defaultValue="request" className="w-[400px]">
+      <Tabs defaultValue="request" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger asChild value="receive">
             <Link href={`/receive?network=${network}&address=${address}`}>
