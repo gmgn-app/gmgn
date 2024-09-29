@@ -8,6 +8,7 @@ import {
   klaytnBaobab,
   abstractTestnet,
   fraxtalTestnet,
+  berachainTestnetbArtio
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 
@@ -69,7 +70,9 @@ export function selectChainNameFromNetwork(network: string | null) {
       return "Abstract Testnet";
     case "fraxtal-testnet":
       return "Fraxtal Testnet";
-    default:
+    case "bartio-testnet":
+      return "bArtio Testnet";
+    default:  
       return "Unknown Network";
   }
 }
@@ -88,6 +91,8 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
       return abstractTestnet;
     case "fraxtal-testnet":
       return fraxtalTestnet;
+    case "bartio-testnet":
+      return berachainTestnetbArtio;
     default:
       return klaytnBaobab;
   }
@@ -109,6 +114,8 @@ export function selectBlockExplorer(network: string | undefined) {
       return "https://explorer.testnet.abs.xyz";
     case "fraxtal-testnet":
       return "https://holesky.fraxscan.com";
+    case "bartio-testnet":
+      return "https://bartio.beratrail.io";
     default:
       return "https://kairos.kaiascan.io";
   }
@@ -130,6 +137,8 @@ export function selectNativeAssetSymbol(network: string | undefined) {
       return "ETH";
     case "fraxtal-testnet":
       return "frxETH";
+    case "bartio-testnet":
+      return "BERA";
     default:
       return "KLAY";
   }

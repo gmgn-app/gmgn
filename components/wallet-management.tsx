@@ -284,6 +284,9 @@ export default function WalletManagement() {
                 <SelectItem value="abstract-testnet">
                   Abstract Testnet
                 </SelectItem>
+                <SelectItem value="bartio-testnet">
+                  bArtio Testnet
+                </SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
