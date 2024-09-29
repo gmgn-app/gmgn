@@ -8,6 +8,7 @@ import { truncateAddress, selectChainNameFromNetwork } from "@/lib/utils";
 import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
 import BackButton from "@/components/back-button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ReceivePage() {
   const searchParams = useSearchParams();
@@ -28,7 +29,19 @@ export default function ReceivePage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Receive
       </h1>
-      <BackButton route={null} />
+      <BackButton route={"/"} />
+      <Tabs defaultValue="receive" className="w-[400px]">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="receive">
+            Receive
+          </TabsTrigger>
+          <TabsTrigger asChild value="request">
+            <Link href={`/request?network=${network}&address=${address}`}>
+              Request
+            </Link>
+            </TabsTrigger>
+        </TabsList>
+      </Tabs>
       <div className="flex flex-col items-center">
         <QRCode
           className="mt-4"
@@ -46,7 +59,9 @@ export default function ReceivePage() {
           }
           buttonTitle={truncateAddress(address as Address, 6)}
         />
-        <p className="underline underline-offset-4">{selectChainNameFromNetwork(network)}</p>
+        <p className="underline underline-offset-4">
+          {selectChainNameFromNetwork(network)}
+        </p>
       </div>
       <div className="flex flex-col gap-4 items-center text-center p-8 text-sm">
         <p>
