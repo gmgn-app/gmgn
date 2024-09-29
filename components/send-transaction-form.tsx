@@ -64,6 +64,7 @@ import {
   selectNativeAssetSymbol,
   selectJsonRpcProvider,
 } from "@/lib/utils";
+import { set } from "react-hook-form";
 
 
 export default function SendTransactionForm() {
@@ -385,6 +386,7 @@ export default function SendTransactionForm() {
     setReceivingAddress("");
     setSendingAmount("");
     setTransactionMemo("");
+    setTransactionCost("");
     setReadyToTransfer(false);
     setInputReadOnly(false);
     setIsValidAddress(undefined);
@@ -462,6 +464,9 @@ export default function SendTransactionForm() {
               </DialogContent>
             </Dialog>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Fill in the address of the recipient
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
@@ -475,6 +480,9 @@ export default function SendTransactionForm() {
             readOnly={inputReadOnly}
             required
           />
+          <p className="text-sm text-muted-foreground">
+            Fill in the amount that you want to send
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="transactionMemo">Memo</Label>
@@ -485,6 +493,9 @@ export default function SendTransactionForm() {
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
+          <p className="text-sm text-muted-foreground">
+            Optional memo for the transaction or autogenerate an UID
+          </p>
           <Button
             onClick={autogenerateUid}
             variant="secondary"

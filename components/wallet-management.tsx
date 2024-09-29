@@ -21,7 +21,6 @@ import {
   Download,
   LoaderPinwheel,
   KeyRound,
-  Mail,
   Signature,
   Settings,
   Pencil,
@@ -61,6 +60,7 @@ import {
   formatBalance,
   selectViemChainFromNetwork,
 } from "@/lib/utils";
+import KaiaRequestFaucet from "./kaia-request-faucet";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -318,10 +318,15 @@ export default function WalletManagement() {
                   <p>{walletName ? walletName : "---"}</p>
                   <Pencil className="w-4 h-4" />
                 </div>
-                <WalletCopyButton
-                  copyText={walletAddress}
-                  buttonTitle={truncateAddress(walletAddress as Address, 6)}
-                />
+                <div className="flex flex-row gap-2">
+                  <WalletCopyButton
+                    copyText={walletAddress}
+                    buttonTitle={truncateAddress(walletAddress as Address, 6)}
+                  />
+                  {
+                    network === "kaia-kairos" && <KaiaRequestFaucet address={walletAddress as Address} />
+                  }
+                </div>
               </div>
             </div>
             <Button onClick={fetchBalance} size="icon">

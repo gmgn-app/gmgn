@@ -349,6 +349,7 @@ export default function MessageForm() {
     setReceivingAddress("");
     setSendingAmount("");
     setSendingMessage("");
+    setTransactionCost("");
     setReadyToTransfer(false);
     setInputReadOnly(false);
     setIsValidAddress(undefined);
