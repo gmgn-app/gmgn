@@ -16,14 +16,8 @@ import {
   createWalletClient,
   parseEther,
   toHex,
+  isAddress
 } from "viem";
-import {
-  klaytn,
-  klaytnBaobab,
-  arbitrumSepolia,
-  baseSepolia,
-  sepolia,
-} from "viem/chains";
 import {
   Dialog,
   DialogContent,
@@ -38,13 +32,35 @@ import { privateKeyToAccount } from "viem/accounts";
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { Mail, RotateCcw, ScanLine, ThumbsUp, Loader2 } from "lucide-react";
-import { redirect } from 'next/navigation'
+import {
+  Mail,
+  RotateCcw,
+  ScanLine,
+  ThumbsUp,
+  Loader2,
+  ClipboardPaste,
+  Check,
+  CircleX,
+  Fuel,
+  Ban
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { redirect } from "next/navigation";
 import { formatBalance } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { selectViemChainFromNetwork } from "@/lib/utils";
+import {
+  selectViemChainFromNetwork,
+  selectJsonRpcProvider,
+  selectNativeAssetSymbol,
+  truncateAddress,
+  truncateHash,
+  selectBlockExplorer,
+} from "@/lib/utils";
 import { Scanner } from "@yudiel/react-qr-scanner";
-
 
 export default function MessageForm() {
   // Get the search params from the URL.
@@ -53,20 +69,39 @@ export default function MessageForm() {
   const address = searchParams.get("address");
 
   if (!network || !address) {
-    redirect("/")
+    redirect("/");
   }
 
   const [currentBalance, setCurrentBalance] = useState("");
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [sendingMessage, setSendingMessage] = useState("");
-  const [gasEstimate, setGasEstimate] = useState("");
-  const [gasPrice, setGasPrice] = useState("");
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [inputReadOnly, setInputReadOnly] = useState(false);
+  const [continueButtonLoading, setContinueButtonLoading] = useState(false);
+  const [messageButtonLoading, setMessageButtonLoading] = useState(false);
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
+  const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidAmount, setIsValidAmount] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidTotal, setIsValidTotal] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isPasted, setIsPasted] = useState(false);
 
+  const paste = async () => {
+    setReceivingAddress(await navigator.clipboard.readText());
+    setIsPasted(true);
+
+    setTimeout(() => {
+      setIsPasted(false);
+    }, 1000);
+  };
 
   // Toast notifications.
   const { toast } = useToast();
@@ -74,7 +109,7 @@ export default function MessageForm() {
   useEffect(() => {
     if (address) {
       const publicClient = createPublicClient({
-        chain: selectViemChainConfig(network as string),
+        chain: selectViemChainFromNetwork(network as string),
         transport: http(),
       });
       const fetchBalance = async () => {
@@ -109,77 +144,8 @@ export default function MessageForm() {
     }
   }
 
-  // Truncate the hash for display
-  function truncateHash(address: String | undefined, numberOfChars: number) {
-    if (!address) return "No address";
-    let convertedAddress = address.toString();
-    return `${convertedAddress.slice(
-      0,
-      numberOfChars
-    )}...${convertedAddress.slice(-numberOfChars)}`;
-  }
-
-  // Select the block explorer based on the network
-  function selectBlockExplorer(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return "https://kaiascan.io";
-      case "kaia-kairos":
-        return "https://kairos.kaiascan.io";
-      default:
-        return "https://sepolia.etherscan.io";
-    }
-  }
-
-  function selectJsonRpcProvider(network: string | undefined) {
-    // https://rpc.ankr.com/arbitrum_sepolia
-    // https://rpc.ankr.com/base_sepolia
-    switch (network) {
-      case "kaia":
-        return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
-      case "kaia-kairos":
-        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
-      default:
-        return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
-    }
-  }
-
-  function selectViemChainConfig(network: string | undefined) {
-    switch (network) {
-      case "kaia":
-        return klaytn;
-      case "kaia-kairos":
-        return klaytnBaobab;
-      case "arbitrum-sepolia":
-        return arbitrumSepolia;
-      case "base-sepolia":
-        return baseSepolia;
-      case "ethereum-sepolia":
-        return sepolia;
-      default:
-        return klaytnBaobab;
-    }
-  }
-
-  function selectNativeAssetSymbol(network: string | undefined | null) {
-    switch (network) {
-      case "kaia":
-        return "KLAY";
-      case "kaia-kairos":
-        return "KLAY";
-      case "arbitrum-sepolia":
-        return "ETH";
-      case "base-sepolia":
-        return "ETH";
-      case "ethereum-sepolia":
-        return "ETH";
-      default:
-        return "ETH";
-    }
-  }
-
   const publicClient = createPublicClient({
-    chain: klaytnBaobab,
+    chain: selectViemChainFromNetwork(network as string),
     transport: http(),
   });
 
@@ -191,21 +157,51 @@ export default function MessageForm() {
   }
 
 
-  async function fetchTransactionCostEstimate() {
-    const publicClient = createPublicClient({
-      chain: klaytnBaobab,
-      transport: http(),
-    });
-    const gas = await publicClient.estimateGas({
-      account: address as Address,
-      to: receivingAddress as Address,
-      value: parseEther(sendingAmount),
-    });
-    const gasPrice = await publicClient.getGasPrice();
-    setGasEstimate(formatEther(gas));
-    setGasPrice(formatEther(gasPrice));
-    setTransactionCost(formatEther(gas * gasPrice));
-    setReadyToTransfer(true);
+  async function prepareTransaction() {
+    if (receivingAddress === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter a receiving address.",
+        description: "Please enter a receiving address to continue.",
+      });
+      return;
+    }
+    if (receivingAddress) {
+      const isValidAddress = isAddress(receivingAddress, { strict: false });
+      if (isValidAddress) {
+        setIsValidAmount(true);
+        setInputReadOnly(true);
+        setContinueButtonLoading(true);
+        const publicClient = createPublicClient({
+          chain: selectViemChainFromNetwork(network!),
+          transport: http(),
+        });
+        const gas = await publicClient.estimateGas({
+          account: address as Address,
+          to: receivingAddress as Address,
+          value: parseEther(sendingAmount),
+        });
+        const gasPrice = await publicClient.getGasPrice();
+        const gasCost = gas * gasPrice;
+        setTransactionCost(formatEther(gasCost));
+        const isValidTotal =
+          parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        if (isValidTotal) {
+          setIsValidTotal(true);
+          setReadyToTransfer(true);
+        } else {
+          setIsValidTotal(false);
+          setReadyToTransfer(false);
+          return;
+        }
+        setContinueButtonLoading(false);
+      } else {
+        setIsValidAddress(false);
+        return;
+      }
+    }
   }
 
   // 2. Define a submit handler.
@@ -213,6 +209,7 @@ export default function MessageForm() {
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
+    setMessageButtonLoading(true);
     const cache = await caches.open("gmgn-storage");
     const request = new Request("gmgn-wallet");
     const response = await cache.match(request);
@@ -262,8 +259,10 @@ export default function MessageForm() {
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
+    setMessageButtonLoading(false);
+    setReadyToTransfer(false);
+    setInputReadOnly(false);
   }
-  // =========== END OF FORM HANDLING ===========
 
   function handleDelegateFeeChange() {
     setDelegateFeeActive(!delegateFeeActive);
@@ -345,6 +344,20 @@ export default function MessageForm() {
     setSendingMessage("");
   }
 
+
+  function clearAllFields() {
+    setReceivingAddress("");
+    setSendingAmount("");
+    setSendingMessage("");
+    setReadyToTransfer(false);
+    setInputReadOnly(false);
+    setIsValidAddress(undefined);
+    setIsValidAmount(undefined);
+    setIsValidTotal(undefined);
+  }
+
+
+
   return (
     <div className="flex flex-col">
       <div>
@@ -352,9 +365,7 @@ export default function MessageForm() {
         <div className="flex flex-row items-center justify-between">
           <p className="text-2xl">
             {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
-            <span className="text-lg">
-              {selectNativeAssetSymbol(network)}
-            </span>
+            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
           </p>
           <Button onClick={fetchBalance} size="icon">
             <RotateCcw className="w-4 h-4" />
@@ -372,7 +383,20 @@ export default function MessageForm() {
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
               required
+              readOnly={inputReadOnly}
             />
+            <Button
+              variant="secondary"
+              size="icon"
+              disabled={isPasted}
+              onClick={paste}
+            >
+              {isPasted ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <ClipboardPaste className="h-4 w-4" />
+              )}
+            </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
@@ -415,6 +439,7 @@ export default function MessageForm() {
             className="rounded-none w-full border-primary border-2 p-2.5"
             placeholder="gm gn to you"
             value={sendingMessage}
+            readOnly={inputReadOnly}
             onChange={(e) => setSendingMessage(e.target.value)}
           />
         </div>
@@ -428,30 +453,113 @@ export default function MessageForm() {
         </div>
 
         {!delegateFeeActive && (
-          <div className="flex flex-col gap-2 border-2 border-primary p-2 text-right">
-            <h2 className="border-b pb-2 text-xl font-semibold">Details</h2>
-            <p>{gasEstimate} : Gas</p>
-            <p>{gasPrice} : Gas price</p>
-            <p>{transactionCost} : Cost</p>
-            <Button
-              disabled={readyToTransfer}
-              className="w-fit self-end"
-              onClick={fetchTransactionCostEstimate}
-            >
-              Continue
-            </Button>
+          <div className="flex flex-col gap-2 border-2 border-primary p-2">
+            <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
+            <div className="flex flex-row gap-2">
+              <h3 className="text-sm text-muted-foreground">
+                Receiving address
+              </h3>
+              <p className="flex flex-row gap-2 items-center text-sm">
+                {receivingAddress
+                  ? truncateAddress(receivingAddress as Address, 4)
+                  : "-----"}
+                {isValidAddress === undefined ? null : isValidAddress ===
+                  true ? (
+                  <Popover>
+                    <PopoverTrigger>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-green-500">
+                      Valid address
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger>
+                      <CircleX className="w-4 h-4 text-red-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-red-500">
+                      Invalid address
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </p>
+            </div>
+            <div className="flex flex-row gap-2">
+              <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
+              <p className="flex flex-row gap-2 items-center text-sm">
+                <Fuel className="w-4 h-4" />
+                {`${
+                  transactionCost ? transactionCost : "-----"
+                } ${selectNativeAssetSymbol(network)}`}
+                {isValidTotal === undefined ? null : isValidTotal === true ? (
+                  <Popover>
+                    <PopoverTrigger>
+                      <Check className="w-4 h-4 text-green-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-green-500">
+                      Valid total
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger>
+                      <CircleX className="w-4 h-4 text-red-500" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit text-red-500">
+                      Invalid total
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </p>
+            </div>
+            {continueButtonLoading ? (
+              <Button disabled className="w-fit self-end">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button
+                disabled={readyToTransfer}
+                className="w-fit self-end"
+                onClick={prepareTransaction}
+              >
+                Continue
+              </Button>
+            )}
           </div>
         )}
       </div>
-      <Button
-        disabled={!readyToTransfer}
-        onClick={
-          delegateFeeActive ? submitDelegatedTransaction : submitTransaction
-        }
-      >
-        <Mail className="mr-2 h-4 w-4" />
-        Message
-      </Button>
+      {messageButtonLoading ? (
+        <div className="flex flex-row gap-2 justify-between">     
+          <Button disabled variant="outline">
+            <Ban className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button className="w-[150px]" disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please wait
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-row gap-2 justify-between">
+          <Button variant="outline" onClick={clearAllFields}>
+            <Ban className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            disabled={!readyToTransfer}
+            onClick={
+              delegateFeeActive ? submitDelegatedTransaction : submitTransaction
+            }
+            className="w-[150px]"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Message
+          </Button>
+        </div>
+
+      )}
     </div>
   );
 }

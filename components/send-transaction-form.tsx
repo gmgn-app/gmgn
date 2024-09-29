@@ -34,7 +34,9 @@ import {
   ThumbsUp,
   Check,
   CircleX,
-  Ban
+  Ban,
+  ClipboardPaste,
+  WandSparkles,
 } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
@@ -52,6 +54,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { redirect } from "next/navigation";
+import { createId } from "@paralleldrive/cuid2";
 import {
   formatBalance,
   truncateHash,
@@ -93,6 +96,16 @@ export default function SendTransactionForm() {
   const [isValidTotal, setIsValidTotal] = useState<Boolean | undefined>(
     undefined
   );
+  const [isPasted, setIsPasted] = useState(false);
+ 
+  const paste = async () => {
+    setReceivingAddress(await navigator.clipboard.readText());
+    setIsPasted(true);
+ 
+    setTimeout(() => {
+      setIsPasted(false);
+    }, 1000);
+  };
 
   // Toast notifications.
   const { toast } = useToast();
@@ -145,6 +158,11 @@ export default function SendTransactionForm() {
         setQrScanSuccess(false);
       }, 5000);
     }
+  }
+
+  function autogenerateUid() {
+    const uid = createId();
+    setTransactionMemo(uid);
   }
 
   function handleDelegateFeeChange() {
@@ -362,6 +380,20 @@ export default function SendTransactionForm() {
     setTransactionMemo("");
   }
 
+
+  function clearAllFields() {
+    setReceivingAddress("");
+    setSendingAmount("");
+    setTransactionMemo("");
+    setReadyToTransfer(false);
+    setInputReadOnly(false);
+    setIsValidAddress(undefined);
+    setIsValidAmount(undefined);
+    setIsValidTotal(undefined);
+  }
+
+
+
   return (
     <div className="flex flex-col">
       <div className="flex flex-col">
@@ -389,6 +421,13 @@ export default function SendTransactionForm() {
               readOnly={inputReadOnly}
               required
             />
+            <Button variant="secondary" size="icon" disabled={isPasted} onClick={paste}>
+              {isPasted ?
+                <Check className="h-4 w-4" />
+                : 
+                <ClipboardPaste className="h-4 w-4" />
+              }
+            </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
@@ -446,6 +485,14 @@ export default function SendTransactionForm() {
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
+          <Button
+            onClick={autogenerateUid}
+            variant="secondary"
+            className="w-fit"
+          >
+            <WandSparkles className="mr-2 h-4 w-4" />
+            Autogenerate UID
+          </Button>
         </div>
         {network === "kaia" || network === "kaia-kairos" ? (
           <div className="flex items-center space-x-2">
@@ -575,7 +622,7 @@ export default function SendTransactionForm() {
         </div>
       ) : (
         <div className="flex flex-row gap-2 justify-between">
-          <Button variant="outline">
+          <Button variant="outline" onClick={clearAllFields}>
             <Ban className="mr-2 h-4 w-4" />
             Cancel
           </Button>
