@@ -104,39 +104,16 @@ export default function SignForm() {
     form.reset();
   }
 
-  // Truncate the address for display.
-  function truncateAddress(
-    address: Address | undefined,
-    numberOfChars: number
-  ) {
-    if (!address) return "No address";
-    let convertedAddress = address.toString();
-    return `${convertedAddress.slice(
-      0,
-      numberOfChars
-    )}...${convertedAddress.slice(-numberOfChars)}`;
-  }
-
-  // Truncate the hash for display
-  function truncateHash(address: String | undefined, numberOfChars: number) {
-    if (!address) return "No address";
-    let convertedAddress = address.toString();
-    return `${convertedAddress.slice(
-      0,
-      numberOfChars
-    )}...${convertedAddress.slice(-numberOfChars)}`;
-  }
-
   function unixTimestampToDateTime(unixTimestamp: number) {
     const date = new Date(unixTimestamp);
     return date.toLocaleString ? date.toLocaleString() : date.toUTCString();
   }
 
   function constructLink(signatureObject: SignatureObject) {
-    const baseUrl = "https://gmgn.app/signature";
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/signature`;
     const signatureString =
       baseUrl +
-      "?account=" +
+      "?address=" +
       signatureObject.address +
       "&timestamp=" +
       signatureObject.timestamp +
@@ -205,7 +182,7 @@ export default function SignForm() {
             <Input
               className="rounded-none w-full border-black border-2 p-2.5"
               placeholder="0x..."
-              value={address ? truncateAddress(address as Address, 6) : "No address"}
+              value={address ? address as Address : "No address"}
               readOnly
             />
           </div>
@@ -229,7 +206,7 @@ export default function SignForm() {
             <Textarea
               className="rounded-none w-full h-36 border-black border-2 p-2.5"
               placeholder="Enter your message"
-              value={signature ? truncateHash(signature, 6) : "No signature"}
+              value={signature ? signature : "No signature"}
               readOnly
             />
           </div>

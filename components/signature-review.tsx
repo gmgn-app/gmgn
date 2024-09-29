@@ -18,7 +18,7 @@ export default function SignatureReview() {
   }
 
   return (
-    <div className="flex flex-col border-black border-2 rounded-md p-4 w-[300px] md:w-[600px] lg:w-[900px]">
+    <div className="flex flex-col border-black border-2 rounded-md p-4">
       <h2 className="text-3xl font-semibold mb-4">Signature</h2>
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
