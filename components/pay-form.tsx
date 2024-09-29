@@ -71,7 +71,7 @@ export default function PayForm() {
   const address = searchParams.get("address");
 
   if (!network || !address) {
-    return null;
+    redirect("/");
   }
 
   const [currentBalance, setCurrentBalance] = useState("");
