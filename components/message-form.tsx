@@ -24,16 +24,26 @@ import {
   baseSepolia,
   sepolia,
 } from "viem/chains";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
 import { privateKeyToAccount } from "viem/accounts";
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { Mail, RotateCcw } from "lucide-react";
+import { Mail, RotateCcw, ScanLine, ThumbsUp, Loader2 } from "lucide-react";
 import { redirect } from 'next/navigation'
 import { formatBalance } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { selectViemChainFromNetwork } from "@/lib/utils";
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 
 export default function MessageForm() {
@@ -55,6 +65,8 @@ export default function MessageForm() {
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+  const [qrScanSuccess, setQrScanSuccess] = useState(false);
+
 
   // Toast notifications.
   const { toast } = useToast();
@@ -78,7 +90,24 @@ export default function MessageForm() {
     }
   }, [address, network]);
 
-
+  function handleQrScan(data: string) {
+    if (data.includes(":")) {
+      const splitData = data.split(":");
+      setReceivingAddress(splitData[1]);
+      setQrScanSuccess(true);
+      // delay the success message for 2 seconds
+      setTimeout(() => {
+        setQrScanSuccess(false);
+      }, 5000);
+    } else {
+      setReceivingAddress(data);
+      setQrScanSuccess(true);
+      // delay the success message for 2 seconds
+      setTimeout(() => {
+        setQrScanSuccess(false);
+      }, 5000);
+    }
+  }
 
   // Truncate the hash for display
   function truncateHash(address: String | undefined, numberOfChars: number) {
@@ -335,19 +364,55 @@ export default function MessageForm() {
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
-          <Input
-            id="receivingAddress"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-            placeholder="0x..."
-            value={receivingAddress}
-            onChange={(e) => setReceivingAddress(e.target.value)}
-          />
+          <div className="flex flex-row gap-2 items-center justify-center">
+            <Input
+              id="receivingAddress"
+              className="rounded-none w-full border-primary border-2 p-2.5"
+              placeholder="0x..."
+              value={receivingAddress}
+              onChange={(e) => setReceivingAddress(e.target.value)}
+              required
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="icon">
+                  <ScanLine className="w-6 h-6" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>QR Scanner</DialogTitle>
+                  <DialogDescription>
+                    Scan QR code to autofill
+                  </DialogDescription>
+                </DialogHeader>
+                <Scanner
+                  onScan={(result) => handleQrScan(result[0].rawValue)}
+                />
+                <DialogFooter>
+                  <div className="flex flex-col items-center justify-center">
+                    {qrScanSuccess ? (
+                      <p className="flex flex-row gap-2 text-blue-600">
+                        <ThumbsUp className="h-6 w-6" />
+                        Scan completed. Exit to continue.
+                      </p>
+                    ) : (
+                      <p className="flex flex-row gap-2 text-yellow-600">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        Scanning...
+                      </p>
+                    )}
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingMessage">Message</Label>
           <Textarea
             id="sendingMessage"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5"
             placeholder="gm gn to you"
             value={sendingMessage}
             onChange={(e) => setSendingMessage(e.target.value)}

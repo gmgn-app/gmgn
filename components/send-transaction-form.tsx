@@ -382,7 +382,7 @@ export default function SendTransactionForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="receivingAddress"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5"
               placeholder="0x..."
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
@@ -390,8 +390,10 @@ export default function SendTransactionForm() {
               required
             />
             <Dialog>
-              <DialogTrigger>
-                <ScanLine className="w-6 h-6" />
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="icon">
+                  <ScanLine className="w-6 h-6" />
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -426,7 +428,7 @@ export default function SendTransactionForm() {
           <Label htmlFor="sendingAmount">Amount</Label>
           <Input
             id="sendingAmount"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5"
             type="number"
             placeholder="0"
             value={sendingAmount}
@@ -439,7 +441,7 @@ export default function SendTransactionForm() {
           <Label htmlFor="transactionMemo">Memo</Label>
           <Textarea
             id="transactionMemo"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5"
             placeholder="gm and gn"
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}

@@ -208,8 +208,10 @@ export default function PayPage() {
             }
           </Button>
           <Dialog>
-              <DialogTrigger>
-                <ScanLine className="w-6 h-6" />
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="icon">
+                  <ScanLine className="w-6 h-6" />
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
