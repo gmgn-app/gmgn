@@ -167,7 +167,7 @@ export default function PayPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Pay
       </h1>
-      <BackButton route={null} />
+      <BackButton route={"/"} />
       <div className="flex flex-col gap-2 mt-12">
         <Label htmlFor="sendingAmount">Payment Link</Label>
         <div className="flex flex-row gap-2 items-center">

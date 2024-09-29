@@ -25,7 +25,7 @@ import {
   Signature,
   Settings,
   Pencil,
-  Handshake,
+  HandCoins,
 } from "lucide-react";
 import {
   Dialog,
@@ -78,6 +78,7 @@ export default function WalletManagement() {
   const { walletAddress, setWalletAddress } = useContext(
     WalletAddressContext
   ) as WalletAddressContextType;
+  // const [walletAddress, setWalletAddress] = useState<Address | null>(null);
   // Create the state variables for the wallet management
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
@@ -234,7 +235,7 @@ export default function WalletManagement() {
 
   async function handleInputNetworkChange(value: string) {
     setNetwork(value);
-    router.push('?network=' + value);
+    router.push(`?network=${value}`);
     const publicClient = createPublicClient({
       chain: selectViemChainFromNetwork(value as string),
       transport: http(),
@@ -403,19 +404,6 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`message?address=${walletAddress}&network=${network}`}>
-              <Mail className="mr-2 h-4 w-4" />
-              Message
-            </Link>
-          </Button>
-        ) : (
-          <Button disabled>
-            <Mail className="mr-2 h-4 w-4" />
-            Message
-          </Button>
-        )}
-        {!createWalletButtonActive && walletAddress ? (
-          <Button asChild>
             <Link href={`sign?address=${walletAddress}&network=${network}`}>
               <Signature className="mr-2 h-4 w-4" />
               Sign
@@ -430,13 +418,13 @@ export default function WalletManagement() {
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
             <Link href={`paylink?address=${walletAddress}`}>
-              <Handshake className="mr-2 h-4 w-4" />
+              <HandCoins className="mr-2 h-4 w-4" />
               Pay
             </Link>
           </Button>
         ) : (
           <Button disabled>
-            <Handshake className="mr-2 h-4 w-4" />
+            <HandCoins className="mr-2 h-4 w-4" />
             Pay
           </Button>
         )}

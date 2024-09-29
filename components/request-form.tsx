@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import {
   QrCode,
-  HandCoins,
+  CirclePlus,
   Link,
+  WandSparkles,
 } from "lucide-react";
 import {
   Select,
@@ -45,7 +46,7 @@ export default function RequestForm() {
   const { toast } = useToast();
 
   const [sendingAmount, setSendingAmount] = useState("");
-  const [receivingAddress, setReceivingAddress] = useState("");
+  const [receivingAddress, setReceivingAddress] = useState(searchParams.get("address") ?? "");
   const [transactionMemo, setTransactionMemo] = useState("");
   const [network, setNetwork] = useState<string>(
     searchParams.get("network") ?? "kaia-kairos"
@@ -188,11 +189,12 @@ export default function RequestForm() {
             variant="secondary"
             className="w-fit"
           >
+            <WandSparkles className="mr-2 h-4 w-4" />
             Autogenerate UID
           </Button>
         </div>
-        <Button onClick={constructLink} className="w-fit self-end">
-          <HandCoins className="mr-2 h-4 w-4" />
+        <Button onClick={constructLink}>
+          <CirclePlus className="mr-2 h-4 w-4" />
           Generate request
         </Button>
         <div className="flex flex-col w-full border-black border-2 rounded-md p-4">
@@ -230,9 +232,11 @@ export default function RequestForm() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Payer can scan this QR</DialogTitle>
+                  <DialogTitle>Payment link QR</DialogTitle>
                   <DialogDescription>
-                    <div className="flex flex-col items-center">
+                    Payer can scan this QR code to pay you
+                  </DialogDescription>
+                  <div className="flex flex-col items-center">
                       <QRCode
                         className="mt-4"
                         size={256}
@@ -244,10 +248,9 @@ export default function RequestForm() {
                         viewBox={`0 0 256 256`}
                       />
                     </div>
-                  </DialogDescription>
                 </DialogHeader>
-                <DialogFooter>
-                  <p>QR code will direct to a payment link.</p>
+                <DialogFooter className="text-center">
+                  QR code will direct to a payment link
                 </DialogFooter>
               </DialogContent>
             </Dialog>
