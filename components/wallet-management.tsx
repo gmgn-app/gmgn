@@ -25,6 +25,7 @@ import {
   Signature,
   Settings,
   Pencil,
+  Handshake,
 } from "lucide-react";
 import {
   Dialog,
@@ -424,6 +425,19 @@ export default function WalletManagement() {
           <Button disabled>
             <Signature className="mr-2 h-4 w-4" />
             Sign
+          </Button>
+        )}
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link href={`paylink?address=${walletAddress}`}>
+              <Handshake className="mr-2 h-4 w-4" />
+              Pay
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled>
+            <Handshake className="mr-2 h-4 w-4" />
+            Pay
           </Button>
         )}
       </div>
