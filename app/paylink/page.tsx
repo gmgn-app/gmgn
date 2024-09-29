@@ -9,9 +9,8 @@ import BackButton from "@/components/back-button"
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ClipboardPaste, Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 
 
 export default function PayPage() {
@@ -22,15 +21,24 @@ export default function PayPage() {
   const address = searchParams.get("address");
   const [paymentLink, setPaymentLink] = useState("");
 
+  const [isPasted, setIsPasted] = useState(false);
+ 
+  const paste = async () => {
+    setPaymentLink(await navigator.clipboard.readText());
+    setIsPasted(true);
+ 
+    setTimeout(() => {
+      setIsPasted(false);
+    }, 1000);
+  };
+ 
   // Toast notifications.
   const { toast } = useToast();
 
   function handlePay() {
     // split the payment link into multiple parts
     const paymentLinkParts = paymentLink.split("/");
-    console.log(paymentLinkParts);
     // Check the https: of the link
-    console.log(paymentLinkParts[0]);
     if (paymentLinkParts[0] !== "http:" && paymentLinkParts[0] !== "https:") {
       toast({
         className:
@@ -42,7 +50,6 @@ export default function PayPage() {
       return;
     }
     // check the domain of the link
-    console.log(paymentLinkParts[2]);
     if (paymentLinkParts[2] !== `${process.env.NEXT_PUBLIC_BASE_URL}`.split("/").pop()) {
       toast({
         className:
@@ -54,7 +61,6 @@ export default function PayPage() {
       return;
     }
     // check the path of the link
-    console.log(paymentLinkParts[3]);
     if (paymentLinkParts[3] === "") {
       toast({
         className:
@@ -66,7 +72,6 @@ export default function PayPage() {
       return;
     }
     // check the query params of the link
-    console.log(paymentLinkParts[3]);
     // get the route of the paymentLinkParts[3]
     const route = paymentLinkParts[3].split("?").shift();
     // get the query params of the paymentLinkParts[3]
@@ -145,8 +150,7 @@ export default function PayPage() {
     // with payment link, remove everythink left of the last slash
     const paymentConfig = paymentLink.split("?").pop();
     const newPaymentConfig = paymentConfig + `&address=${address}`;
-    console.log(newPaymentConfig);
-    // router.push(`/pay?${newPaymentConfig}`);
+    router.push(`/pay?${newPaymentConfig}`);
   }
 
   return (
@@ -166,18 +170,28 @@ export default function PayPage() {
       <BackButton route={null} />
       <div className="flex flex-col gap-2 mt-12">
         <Label htmlFor="sendingAmount">Payment Link</Label>
-        <Input
-          id="paymentLink"
-          placeholder="Enter payment link"
-          type="text"
-          required
-          value={paymentLink}
-          onChange={(e) => setPaymentLink(e.target.value)}
-          />
+        <div className="flex flex-row gap-2 items-center">
+          <Input
+            id="paymentLink"
+            placeholder="Enter payment link"
+            type="text"
+            required
+            value={paymentLink}
+            onChange={(e) => setPaymentLink(e.target.value)}
+            />
+          <Button variant="secondary" size="icon" disabled={isPasted} onClick={paste}>
+            {isPasted ?
+              <Check className="h-4 w-4" />
+              : 
+              <ClipboardPaste className="h-4 w-4" />
+            }
+          </Button>
+        </div>
+
         <p className="text-sm text-muted-foreground">
           Fill in the payment link that you have received.
         </p>
-        <Button onClick={handlePay}>
+        <Button className="mt-6" onClick={handlePay}>
           Proceed
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
