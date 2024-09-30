@@ -38,6 +38,7 @@ import {
   ClipboardPaste,
   WandSparkles,
   SearchCode,
+  Code,
 } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
@@ -66,11 +67,8 @@ import {
   selectNativeAssetSymbol,
   selectJsonRpcProvider,
 } from "@/lib/utils";
-import { normalize } from 'viem/ens'
-import { mainnet } from 'viem/chains'
-import { set } from "react-hook-form";
-
-
+import { normalize } from "viem/ens";
+import { mainnet } from "viem/chains";
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -104,35 +102,47 @@ export default function SendTransactionForm() {
   );
   const [isPasted, setIsPasted] = useState(false);
   const [isEnsResolved, setIsEnsResolved] = useState(false);
+  const [ensLookUpLoading, setEnsLookUpLoading] = useState(false);
   const [ensName, setEnsName] = useState("");
-  
+
   const mainnetPublicClient = createPublicClient({
-    chain: mainnet, 
+    chain: mainnet,
     transport: http(),
-  })
+  });
 
   const resolveEns = async () => {
-    if (receivingAddress.includes('.eth')) {
+    if (receivingAddress.includes(".")) {
+      setEnsLookUpLoading(true);
       const ensAddress = await mainnetPublicClient.getEnsAddress({
         name: normalize(receivingAddress),
-      })
+      });
       if (ensAddress) {
         setReceivingAddress(ensAddress);
         setIsEnsResolved(true);
         setEnsName(receivingAddress);
+        setEnsLookUpLoading(false);
         setTimeout(() => {
           setIsEnsResolved(false);
         }, 1000);
       } else {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Uh oh! ENS lookup failed.",
+          description: "Please try again.",
+        });
+        setEnsName("");
         setIsEnsResolved(false);
+        setEnsLookUpLoading(false);
       }
     }
-  }
- 
+  };
+
   const paste = async () => {
     setReceivingAddress(await navigator.clipboard.readText());
     setIsPasted(true);
- 
+
     setTimeout(() => {
       setIsPasted(false);
     }, 1000);
@@ -233,10 +243,10 @@ export default function SendTransactionForm() {
     if (sendingAmount) {
       const isValidAmount =
         parseEther(currentBalance) >= parseEther(sendingAmount);
-        if (isValidAmount) {
-          setIsValidAmount(true);
-          setInputReadOnly(true);
-          setContinueButtonLoading(true);
+      if (isValidAmount) {
+        setIsValidAmount(true);
+        setInputReadOnly(true);
+        setContinueButtonLoading(true);
         const publicClient = createPublicClient({
           chain: selectViemChainFromNetwork(network!),
           transport: http(),
@@ -411,7 +421,6 @@ export default function SendTransactionForm() {
     setTransactionMemo("");
   }
 
-
   function clearAllFields() {
     setReceivingAddress("");
     setSendingAmount("");
@@ -425,8 +434,6 @@ export default function SendTransactionForm() {
     setEnsName("");
     setIsEnsResolved(false);
   }
-
-
 
   return (
     <div className="flex flex-col">
@@ -445,7 +452,7 @@ export default function SendTransactionForm() {
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
-          <div className="flex flex-row gap-2 items-center justify-center"> 
+          <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="receivingAddress"
               className="rounded-none w-full border-primary border-2 p-2.5"
@@ -455,19 +462,31 @@ export default function SendTransactionForm() {
               readOnly={inputReadOnly}
               required
             />
-            <Button variant="secondary" size="icon" disabled={isEnsResolved} onClick={resolveEns}>
-              {isEnsResolved ?
+            <Button
+              variant="secondary"
+              size="icon"
+              disabled={isEnsResolved}
+              onClick={resolveEns}
+            >
+              {isEnsResolved ? (
                 <Check className="h-4 w-4" />
-                : 
+              ) : ensLookUpLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
                 <SearchCode className="h-4 w-4" />
-              }
+              )}
             </Button>
-            <Button variant="secondary" size="icon" disabled={isPasted} onClick={paste}>
-              {isPasted ?
+            <Button
+              variant="secondary"
+              size="icon"
+              disabled={isPasted}
+              onClick={paste}
+            >
+              {isPasted ? (
                 <Check className="h-4 w-4" />
-                : 
+              ) : (
                 <ClipboardPaste className="h-4 w-4" />
-              }
+              )}
             </Button>
             <Dialog>
               <DialogTrigger asChild>
@@ -503,9 +522,17 @@ export default function SendTransactionForm() {
               </DialogContent>
             </Dialog>
           </div>
-          {
-            ensName ? <Badge className="w-fit" variant="secondary">{ensName}</Badge> : <Badge className="w-fit" variant="secondary">------</Badge>
-          }
+          {ensName ? (
+            <Badge className="w-fit" variant="secondary">
+              <Code className="mr-2 w-4 h-4" />
+              {ensName}
+            </Badge>
+          ) : (
+            <Badge className="w-fit" variant="secondary">
+              <Code className="mr-2 w-4 h-4" />
+              ------
+            </Badge>
+          )}
           <p className="text-sm text-muted-foreground">
             Fill in the address of the recipient
           </p>
@@ -663,7 +690,7 @@ export default function SendTransactionForm() {
         )}
       </div>
       {sendButtonLoading ? (
-        <div className="flex flex-row gap-2 justify-between">     
+        <div className="flex flex-row gap-2 justify-between">
           <Button disabled variant="outline">
             <Ban className="mr-2 h-4 w-4" />
             Cancel
@@ -690,7 +717,6 @@ export default function SendTransactionForm() {
             Send
           </Button>
         </div>
-
       )}
     </div>
   );
