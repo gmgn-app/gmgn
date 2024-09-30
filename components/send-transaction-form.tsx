@@ -76,21 +76,33 @@ export default function SendTransactionForm() {
   const network = searchParams.get("network");
   const address = searchParams.get("address");
 
+  // Redirect to the home page if the network or address is not provided.
   if (!network || !address) {
     redirect("/");
   }
 
+  // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
+
+  // Main state for the send form
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState("");
   const [transactionMemo, setTransactionMemo] = useState("");
+
+  // optional state for ENS lookup
+  const [ensName, setEnsName] = useState("");
+
+  // State for transaction cost
   const [transactionCost, setTransactionCost] = useState("");
-  const [readyToTransfer, setReadyToTransfer] = useState(false);
+
+  // State for delegate fee on Kaia
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+
+  // Handle UX states
+  const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [inputReadOnly, setInputReadOnly] = useState(false);
   const [continueButtonLoading, setContinueButtonLoading] = useState(false);
   const [sendButtonLoading, setSendButtonLoading] = useState(false);
-  const [qrScanSuccess, setQrScanSuccess] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
     undefined
   );
@@ -103,13 +115,17 @@ export default function SendTransactionForm() {
   const [isPasted, setIsPasted] = useState(false);
   const [isEnsResolved, setIsEnsResolved] = useState(false);
   const [ensLookUpLoading, setEnsLookUpLoading] = useState(false);
-  const [ensName, setEnsName] = useState("");
 
+  // QR Scan for input
+  const [qrScanSuccess, setQrScanSuccess] = useState(false);
+
+  // publicClient for ENS lookup
   const mainnetPublicClient = createPublicClient({
     chain: mainnet,
     transport: http(),
   });
 
+  // Function to resolve ENS
   const resolveEns = async () => {
     if (receivingAddress.includes(".")) {
       setEnsLookUpLoading(true);
@@ -139,6 +155,7 @@ export default function SendTransactionForm() {
     }
   };
 
+  // Function to paste from clipboard
   const paste = async () => {
     setReceivingAddress(await navigator.clipboard.readText());
     setIsPasted(true);
@@ -151,6 +168,7 @@ export default function SendTransactionForm() {
   // Toast notifications.
   const { toast } = useToast();
 
+  // Fetch the current balance upon page load
   useEffect(() => {
     if (address) {
       const publicClient = createPublicClient({
@@ -170,11 +188,13 @@ export default function SendTransactionForm() {
     }
   }, [address, network]);
 
+  // public client for balance refresh
   const publicClient = createPublicClient({
     chain: selectViemChainFromNetwork(network!),
     transport: http(),
   });
 
+  // Function to fetch balance
   async function fetchBalance() {
     const balance = await publicClient.getBalance({
       address: address as Address,
@@ -182,6 +202,7 @@ export default function SendTransactionForm() {
     setCurrentBalance(formatEther(balance).toString());
   }
 
+  // Function to handle QR scan
   function handleQrScan(data: string) {
     if (data.includes(":")) {
       const splitData = data.split(":");
@@ -201,16 +222,18 @@ export default function SendTransactionForm() {
     }
   }
 
+  // Function to autogenerate UID
   function autogenerateUid() {
     const uid = createId();
     setTransactionMemo(uid);
   }
 
+  // Function to handle delegate fee
   function handleDelegateFeeChange() {
     setDelegateFeeActive(!delegateFeeActive);
-    setReadyToTransfer(true);
   }
 
+  // Function to prepare transaction before sending
   async function prepareTransaction() {
     if (receivingAddress === "") {
       toast({
@@ -277,12 +300,15 @@ export default function SendTransactionForm() {
     }
   }
 
-  // 2. Define a submit handler.
+  // Function to submit transaction
   async function submitTransaction() {
+
+    // Set the send button to loading state
+    setSendButtonLoading(true);
+
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
-    setSendButtonLoading(true);
     const cache = await caches.open("gmgn-storage");
     const request = new Request("gmgn-wallet");
     const response = await cache.match(request);
@@ -346,7 +372,72 @@ export default function SendTransactionForm() {
     setInputReadOnly(false);
   }
 
+  // Function to prepare transaction before sending
+  async function prepareDelegatedTransaction() {
+    if (receivingAddress === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter a receiving address.",
+        description: "Please enter a receiving address to continue.",
+      });
+      return;
+    }
+    if (receivingAddress) {
+      const isValidAddress = isAddress(receivingAddress, { strict: false });
+      if (isValidAddress) {
+        setIsValidAddress(true);
+      } else {
+        setIsValidAddress(false);
+      }
+    }
+    if (sendingAmount === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter an amount to send.",
+        description: "Please enter an amount to send to continue.",
+      });
+      return;
+    }
+    if (sendingAmount) {
+      const isValidAmount =
+        parseEther(currentBalance) >= parseEther(sendingAmount);
+      if (isValidAmount) {
+        setIsValidAmount(true);
+        setInputReadOnly(true);
+        setContinueButtonLoading(true);
+        const publicClient = createPublicClient({
+          chain: selectViemChainFromNetwork(network!),
+          transport: http(),
+        });
+        setTransactionCost("0");
+        const isValidTotal =
+          parseEther(currentBalance) >= parseEther(sendingAmount);
+        if (isValidTotal) {
+          setIsValidTotal(true);
+          setReadyToTransfer(true);
+        } else {
+          setIsValidTotal(false);
+          setReadyToTransfer(false);
+          return;
+        }
+        setContinueButtonLoading(false);
+      } else {
+        setIsValidAmount(false);
+        return;
+      }
+    }
+  }
+
+  // Function to submit delegated transaction
   async function submitDelegatedTransaction() {
+
+    // Set the send button to loading state
+    setSendButtonLoading(true);
+
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
@@ -416,11 +507,12 @@ export default function SendTransactionForm() {
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
-    setReadyToTransfer(true);
-    setReceivingAddress("");
-    setTransactionMemo("");
+    setSendButtonLoading(false);
+    setReadyToTransfer(false);
+    setInputReadOnly(false);
   }
 
+  // Function to clear all fields
   function clearAllFields() {
     setReceivingAddress("");
     setSendingAmount("");
@@ -433,6 +525,7 @@ export default function SendTransactionForm() {
     setIsValidTotal(undefined);
     setEnsName("");
     setIsEnsResolved(false);
+    setEnsLookUpLoading(false);
   }
 
   return (
@@ -584,110 +677,113 @@ export default function SendTransactionForm() {
             <Label htmlFor="delegate-fee">Delegate gas fee</Label>
           </div>
         ) : null}
-        {!delegateFeeActive && (
-          <div className="flex flex-col gap-2 border-2 border-primary p-2">
-            <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
-            <div className="flex flex-row gap-2">
-              <h3 className="text-sm text-muted-foreground">
-                Receiving address
-              </h3>
-              <p className="flex flex-row gap-2 items-center text-sm">
-                {receivingAddress
-                  ? truncateAddress(receivingAddress as Address, 4)
-                  : "-----"}
-                {isValidAddress === undefined ? null : isValidAddress ===
-                  true ? (
-                  <Popover>
-                    <PopoverTrigger>
-                      <Check className="w-4 h-4 text-green-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-green-500">
-                      Valid address
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleX className="w-4 h-4 text-red-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-red-500">
-                      Invalid address
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <h3 className="text-sm text-muted-foreground">Sending amount</h3>
-              <p className="flex flex-row gap-2 items-center text-sm">
-                {`${
-                  sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
-                } ${selectNativeAssetSymbol(network)}`}
-                {isValidAmount === undefined ? null : isValidAmount === true ? (
-                  <Popover>
-                    <PopoverTrigger>
-                      <Check className="w-4 h-4 text-green-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-green-500">
-                      Valid amount
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleX className="w-4 h-4 text-red-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-red-500">
-                      Invalid amount
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
-              <p className="flex flex-row gap-2 items-center text-sm">
-                <Fuel className="w-4 h-4" />
-                {`${
-                  transactionCost ? transactionCost : "-----"
-                } ${selectNativeAssetSymbol(network)}`}
-                {isValidTotal === undefined ? null : isValidTotal === true ? (
-                  <Popover>
-                    <PopoverTrigger>
-                      <Check className="w-4 h-4 text-green-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-green-500">
-                      Valid total
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleX className="w-4 h-4 text-red-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-red-500">
-                      Invalid total
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </p>
-            </div>
-            {continueButtonLoading ? (
-              <Button disabled className="w-fit self-end">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </Button>
-            ) : (
-              <Button
-                disabled={readyToTransfer}
-                className="w-fit self-end"
-                onClick={prepareTransaction}
-              >
-                Continue
-              </Button>
-            )}
+        <div className="flex flex-col gap-2 border-2 border-primary p-2">
+          <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Receiving address</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {receivingAddress
+                ? truncateAddress(receivingAddress as Address, 4)
+                : "-----"}
+              {isValidAddress === undefined ? null : isValidAddress === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid address
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid address
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
           </div>
-        )}
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Sending amount</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {`${
+                sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
+              } ${selectNativeAssetSymbol(network)}`}
+              {isValidAmount === undefined ? null : isValidAmount === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid amount
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid amount
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              <Fuel className="w-4 h-4" />
+              {`${
+                transactionCost ? transactionCost : "-----"
+              } ${selectNativeAssetSymbol(network)}`}
+              {isValidTotal === undefined ? null : isValidTotal === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid total
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid total
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          {continueButtonLoading ? (
+            <Button disabled className="w-fit self-end">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button>
+          ) : delegateFeeActive ? (
+            <Button
+              disabled={readyToTransfer}
+              className="w-fit self-end"
+              onClick={prepareDelegatedTransaction}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              disabled={readyToTransfer}
+              className="w-fit self-end"
+              onClick={prepareTransaction}
+            >
+              Continue
+            </Button>
+          )}
+        </div>
       </div>
       {sendButtonLoading ? (
         <div className="flex flex-row gap-2 justify-between">
