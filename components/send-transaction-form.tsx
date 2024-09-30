@@ -37,6 +37,7 @@ import {
   Ban,
   ClipboardPaste,
   WandSparkles,
+  SearchCode,
 } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
@@ -53,6 +54,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { createId } from "@paralleldrive/cuid2";
 import {
@@ -64,7 +66,10 @@ import {
   selectNativeAssetSymbol,
   selectJsonRpcProvider,
 } from "@/lib/utils";
+import { normalize } from 'viem/ens'
+import { mainnet } from 'viem/chains'
 import { set } from "react-hook-form";
+
 
 
 export default function SendTransactionForm() {
@@ -98,6 +103,31 @@ export default function SendTransactionForm() {
     undefined
   );
   const [isPasted, setIsPasted] = useState(false);
+  const [isEnsResolved, setIsEnsResolved] = useState(false);
+  const [ensName, setEnsName] = useState("");
+  
+  const mainnetPublicClient = createPublicClient({
+    chain: mainnet, 
+    transport: http(),
+  })
+
+  const resolveEns = async () => {
+    if (receivingAddress.includes('.eth')) {
+      const ensAddress = await mainnetPublicClient.getEnsAddress({
+        name: normalize(receivingAddress),
+      })
+      if (ensAddress) {
+        setReceivingAddress(ensAddress);
+        setIsEnsResolved(true);
+        setEnsName(receivingAddress);
+        setTimeout(() => {
+          setIsEnsResolved(false);
+        }, 1000);
+      } else {
+        setIsEnsResolved(false);
+      }
+    }
+  }
  
   const paste = async () => {
     setReceivingAddress(await navigator.clipboard.readText());
@@ -392,6 +422,8 @@ export default function SendTransactionForm() {
     setIsValidAddress(undefined);
     setIsValidAmount(undefined);
     setIsValidTotal(undefined);
+    setEnsName("");
+    setIsEnsResolved(false);
   }
 
 
@@ -413,7 +445,7 @@ export default function SendTransactionForm() {
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
-          <div className="flex flex-row gap-2 items-center justify-center">
+          <div className="flex flex-row gap-2 items-center justify-center"> 
             <Input
               id="receivingAddress"
               className="rounded-none w-full border-primary border-2 p-2.5"
@@ -423,6 +455,13 @@ export default function SendTransactionForm() {
               readOnly={inputReadOnly}
               required
             />
+            <Button variant="secondary" size="icon" disabled={isEnsResolved} onClick={resolveEns}>
+              {isEnsResolved ?
+                <Check className="h-4 w-4" />
+                : 
+                <SearchCode className="h-4 w-4" />
+              }
+            </Button>
             <Button variant="secondary" size="icon" disabled={isPasted} onClick={paste}>
               {isPasted ?
                 <Check className="h-4 w-4" />
@@ -464,6 +503,9 @@ export default function SendTransactionForm() {
               </DialogContent>
             </Dialog>
           </div>
+          {
+            ensName ? <Badge className="w-fit" variant="secondary">{ensName}</Badge> : <Badge className="w-fit" variant="secondary">------</Badge>
+          }
           <p className="text-sm text-muted-foreground">
             Fill in the address of the recipient
           </p>
