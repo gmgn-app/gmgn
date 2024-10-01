@@ -7,23 +7,50 @@ import { Button } from "@/components/ui/button";
 import { OctagonX, CircleArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { WebAuthnStorage } from "@/lib/webauthnstorage";
+import { fromBytes } from "viem";
 
 export default function DeletePage() {
   const { toast } = useToast();
 
-  function deleteLocalWallet() {
-    localStorage.removeItem("gmgn-wallet");
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      title: "Wallet deleted!",
-      description: "Go back to home and refresh the page to create new wallet",
-      action: (
-        <ToastAction altText="Home">
-          <Link href="/">Home</Link>
-        </ToastAction>
-      ),
-    });
+  async function deleteLocalWallet() {
+    /**
+     * Retrieve the handle to the private key from some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("gmgn-wallet");
+    const response = await cache.match(request);
+    const handle = response
+      ? new Uint8Array(await response.arrayBuffer())
+      : new Uint8Array();
+    /**
+     * Retrieve the private key from authenticated storage
+     */
+    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const privateKey = fromBytes(bytes, "hex");
+    if (privateKey) {
+      localStorage.removeItem("gmgn-wallet");
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        title: "Wallet deleted!",
+        description:
+          "Go back to home and refresh the page to create new wallet",
+        action: (
+          <ToastAction altText="Home">
+            <Link href="/">Home</Link>
+          </ToastAction>
+        ),
+      });
+    } else {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Error",
+        description: "There was an error deleting the wallet",
+      });
+    }
   }
 
   return (

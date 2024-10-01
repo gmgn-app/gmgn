@@ -5,7 +5,7 @@ import {
   sepolia,
   arbitrumSepolia,
   baseSepolia,
-  klaytnBaobab,
+  kairos,
   abstractTestnet,
   fraxtalTestnet,
   berachainTestnetbArtio,
@@ -83,7 +83,7 @@ export function selectChainNameFromNetwork(network: string | null) {
 export function selectViemChainFromNetwork(network: string | undefined | null) {
   switch (network) {
     case "kaia-kairos":
-      return klaytnBaobab;
+      return kairos;
     case "arbitrum-sepolia":
       return arbitrumSepolia;
     case "base-sepolia":
@@ -99,7 +99,7 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
     case "lukso-testnet":
       return luksoTestnet;
     default:
-      return klaytnBaobab;
+      return kairos;
   }
 }
 
