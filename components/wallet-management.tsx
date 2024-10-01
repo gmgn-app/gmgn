@@ -88,7 +88,7 @@ export default function WalletManagement() {
   const [walletIcon, setWalletIcon] = useState("");
 
   useEffect(() => {
-    router.push('?network=' + network);
+    router.push(`?network=${network}&address=${walletAddress}`);
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
       const wallet = JSON.parse(GMGN_WALLET);
@@ -163,6 +163,7 @@ export default function WalletManagement() {
       setCreateWalletButtonActive(false);
       const account = privateKeyToAccount(privateKey as Address);
       setWalletAddress(account.address);
+      router.push(`?network=${network}&address=${account.address}`);
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4 bg-green-600 text-white",
@@ -236,7 +237,7 @@ export default function WalletManagement() {
 
   async function handleInputNetworkChange(value: string) {
     setNetwork(value);
-    router.push(`?network=${value}`);
+    router.push(`?network=${value}&address=${walletAddress}`);
     const publicClient = createPublicClient({
       chain: selectViemChainFromNetwork(value as string),
       transport: http(),
