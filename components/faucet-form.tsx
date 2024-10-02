@@ -157,7 +157,7 @@ export default function FaucetForm() {
           </Button>
         )}
         <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY!}
+          siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY!}
           onError={() => setCloudflareTurnstileStatus("error")}
           onExpire={() => setCloudflareTurnstileStatus("expired")}
           onSuccess={handleCloudflareTurnstileSuccess}
