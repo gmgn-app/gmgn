@@ -163,6 +163,7 @@ export default function PayForm() {
           account: address as Address,
           to: receivingAddress as Address,
           value: parseEther(sendingAmount),
+          data: toHex(transactionMemo),
         });
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
