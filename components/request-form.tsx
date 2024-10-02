@@ -13,14 +13,12 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   QrCode,
   CirclePlus,
-  Link,
   WandSparkles,
   Info,
   CircleX,

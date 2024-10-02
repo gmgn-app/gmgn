@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import {
@@ -68,6 +67,8 @@ import {
 } from "@/lib/utils";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
+import { useMediaQuery } from "@/hooks/use-media-query"
+
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
@@ -79,6 +80,9 @@ export default function SendTransactionForm() {
   if (!network || !address) {
     redirect("/");
   }
+
+  // Check if the user is on a desktop or mobile device.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
@@ -628,16 +632,31 @@ export default function SendTransactionForm() {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
-          <Input
-            id="sendingAmount"
-            className="rounded-none w-full border-primary border-2 p-2.5"
-            type="number"
-            placeholder="0"
-            value={sendingAmount}
-            onChange={(e) => setSendingAmount(e.target.value)}
-            readOnly={inputReadOnly}
-            required
-          />
+          {
+            isDesktop ? (
+              <Input
+                id="sendingAmount"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                type="number"
+                placeholder="0"
+                value={sendingAmount}
+                onChange={(e) => setSendingAmount(e.target.value)}
+                required
+              />
+            ) : (
+              <Input
+                id="sendingAmount"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                placeholder="0"
+                value={sendingAmount}
+                onChange={(e) => setSendingAmount(e.target.value)}
+                required
+              />
+            )
+          }
           <p className="text-sm text-muted-foreground">
             Fill in the amount that you want to send
           </p>
