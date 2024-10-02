@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { House, Repeat, Image, Telescope } from "lucide-react";
+import { House, Repeat, Image as ImageIcon, Telescope } from "lucide-react";
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -47,7 +47,9 @@ export default function NavBar() {
         variant="ghost"
       >
         <Link className="flex flex-col items-center" href="/collections">
-          <Image className="w-4 h-4 mr-2" />
+          
+
+          <ImageIcon className="w-4 h-4 mr-2" />
           Collections
         </Link>
       </Button>
