@@ -539,7 +539,7 @@ export default function MessageForm() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
-                  <ScanLine className="w-6 h-6" />
+                  <ScanLine className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent>

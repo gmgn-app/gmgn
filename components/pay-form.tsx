@@ -408,6 +408,9 @@ export default function PayForm() {
               readOnly
             />
           </div>
+          <p className="text-sm text-muted-foreground">
+            Network to send the transaction
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
@@ -420,6 +423,9 @@ export default function PayForm() {
               readOnly
             />
           </div>
+          <p className="text-sm text-muted-foreground">
+            Address to receive the payment
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
@@ -431,6 +437,9 @@ export default function PayForm() {
             value={sendingAmount}
             readOnly
           />
+          <p className="text-sm text-muted-foreground">
+            Amount to send to the receiving address
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="transactionMemo">Memo</Label>
@@ -441,6 +450,9 @@ export default function PayForm() {
             value={transactionMemo}
             readOnly
           />
+          <p className="text-sm text-muted-foreground">
+            Message to include with the transaction
+          </p>
         </div>
         {network === "kaia" || network === "kaia-kairos" ? (
           <div className="flex items-center space-x-2">
