@@ -65,8 +65,7 @@ export default function ReceivePage() {
       </div>
       <div className="flex flex-col gap-4 items-center text-center p-8 text-sm">
         <p>
-          You can receive tokens & NFTs on Ethereum Sepolia, Arbitrum Sepolia,
-          Base Sepolia, Kaia Kairos.
+          You can receive tokens & NFTs on EVM compatible networks
         </p>
         <Link className="text-blue-500" href="/learn">
           Learn more

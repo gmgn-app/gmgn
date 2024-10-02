@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { Address, toHex } from "viem";
+import { toHex } from "viem";
 import {
   Dialog,
   DialogContent,
@@ -17,12 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  QrCode,
-  CirclePlus,
-  Link,
-  WandSparkles,
-} from "lucide-react";
+import { QrCode, CirclePlus, Link, WandSparkles, Info } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -46,7 +41,9 @@ export default function RequestForm() {
   const { toast } = useToast();
 
   const [sendingAmount, setSendingAmount] = useState("");
-  const [receivingAddress, setReceivingAddress] = useState(searchParams.get("address") ?? "");
+  const [receivingAddress, setReceivingAddress] = useState(
+    searchParams.get("address") ?? ""
+  );
   const [transactionMemo, setTransactionMemo] = useState("");
   const [network, setNetwork] = useState<string>(
     searchParams.get("network") ?? "kaia-kairos"
@@ -162,7 +159,9 @@ export default function RequestForm() {
           <Input
             id="sendingAmount"
             className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-            type="number"
+            type="text" 
+            inputMode="decimal" 
+            pattern="[0-9]*"
             placeholder="0"
             value={sendingAmount}
             onChange={(e) => setSendingAmount(e.target.value)}
@@ -182,7 +181,8 @@ export default function RequestForm() {
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
           <p className="text-sm text-muted-foreground">
-            Enter a memo for the transaction or autogenerate a UID for reference.
+            Enter a memo for the transaction or autogenerate a UID for
+            reference.
           </p>
           <Button
             onClick={autogenerateUid}
@@ -232,26 +232,29 @@ export default function RequestForm() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Payment link QR</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-center">
+                    Payment link QR
+                  </DialogTitle>
+                  <DialogDescription className="text-center">
                     Payer can scan this QR code to pay you
                   </DialogDescription>
                   <div className="flex flex-col items-center">
-                      <QRCode
-                        className="mt-4"
-                        size={256}
-                        value={
-                          requestLink
-                            ? requestLink
-                            : "https://gmgn.app/pay?network=kaia-kairos"
-                        }
-                        viewBox={`0 0 256 256`}
-                      />
-                    </div>
+                    <QRCode
+                      className="mt-4"
+                      size={256}
+                      value={
+                        requestLink
+                          ? requestLink
+                          : `https://gmgn.app/pay?network=${network}`
+                      }
+                      viewBox={`0 0 256 256`}
+                    />
+                    <p className="flex flex-row items-center text-center mt-8">
+                      <Info className="mr-2 w-4 h-4" />
+                      Only works with GM GN wallet Pay feature
+                    </p>
+                  </div>
                 </DialogHeader>
-                <DialogFooter className="text-center">
-                  QR code will direct to a payment link
-                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
