@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { toHex } from "viem";
+import { toHex, Address, isAddress } from "viem";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { QrCode, CirclePlus, Link, WandSparkles, Info } from "lucide-react";
+import {
+  QrCode,
+  CirclePlus,
+  Link,
+  WandSparkles,
+  Info,
+  CircleX,
+  Check,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,15 +35,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import CopyButton from "@/components/copy-button";
 import { createId } from "@paralleldrive/cuid2";
 import { useToast } from "@/hooks/use-toast";
+import { useMediaQuery } from "@/hooks/use-media-query"
+import {
+  formatBalance,
+  truncateAddress,
+  selectNativeAssetSymbol,
+} from "@/lib/utils";
 import QRCode from "react-qr-code";
 
 export default function RequestForm() {
   const router = useRouter();
   // Get the search params from the URL.
   const searchParams = useSearchParams();
+
+  // Check if the user is on a desktop or mobile device.
+  const isDesktop = useMediaQuery("(min-width: 768px)")
 
   // Toast notifications.
   const { toast } = useToast();
@@ -48,11 +70,20 @@ export default function RequestForm() {
   const [network, setNetwork] = useState<string>(
     searchParams.get("network") ?? "kaia-kairos"
   );
+  const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidAmount, setIsValidAmount] = useState<Boolean | undefined>(
+    undefined
+  );
+  const [isValidTransactionMemo, setIsValidTransactionMemo] = useState<Boolean>(
+    false
+  );
   const [requestLink, setRequestLink] = useState("");
   const [shareLinkActive, setShareLinkActive] = useState(false);
 
   function constructLink() {
-    if (!receivingAddress) {
+    if (receivingAddress === "") {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
@@ -62,39 +93,75 @@ export default function RequestForm() {
       });
       return;
     }
-    if (!sendingAmount) {
+    if (receivingAddress) {
+      const isValidAddress = isAddress(receivingAddress, { strict: false });
+      if (isValidAddress) {
+        setIsValidAddress(true);
+      } else {
+        setIsValidAddress(false);
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Uh oh! You did not enter a valid address.",
+          description: "Please enter a valid address to continue.",
+        });
+        return;
+      }
+    }
+    if (sendingAmount === "") {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
         variant: "destructive",
-        title: "Uh oh! You did not enter a sending amount.",
-        description: "Please enter a sending amount to continue.",
+        title: "Uh oh! You did not enter an amount to send.",
+        description: "Please enter an amount to send to continue.",
       });
       return;
     }
-    if (!transactionMemo) {
+    if (sendingAmount) {
+      const isValidAmount = !isNaN(parseFloat(sendingAmount));
+      if (isValidAmount) {
+        setIsValidAmount(true);
+      } else {
+        setIsValidAmount(false);
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Uh oh! You did not enter a valid amount.",
+          description: "Please enter a valid amount to continue.",
+        });
+        return;
+      }
+      if (!transactionMemo) {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Uh oh! You did not enter a transaction memo.",
+          description:
+            "Please enter a transaction memo or autogenerate one to continue.",
+        });
+        return;
+      }
+      if (transactionMemo) {
+        setIsValidTransactionMemo(true);
+      }
+      const link = `${
+        process.env.NEXT_PUBLIC_BASE_URL
+      }/pay?network=${network}&sendingAmount=${sendingAmount}&receivingAddress=${receivingAddress}&transactionMemo=${toHex(
+        transactionMemo
+      )}`;
+      setRequestLink(link);
+      setShareLinkActive(true);
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        variant: "destructive",
-        title: "Uh oh! You did not enter a transaction memo.",
-        description: "Please enter a transaction memo to continue.",
+        title: "Request generated!",
+        description: "You can now share the request with others.",
       });
-      return;
     }
-    const link = `${
-      process.env.NEXT_PUBLIC_BASE_URL
-    }/pay?network=${network}&sendingAmount=${sendingAmount}&receivingAddress=${receivingAddress}&transactionMemo=${toHex(
-      transactionMemo
-    )}`;
-    setRequestLink(link);
-    setShareLinkActive(true);
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      title: "Request generated!",
-      description: "You can now share the request with others.",
-    });
   }
 
   function autogenerateUid() {
@@ -104,7 +171,7 @@ export default function RequestForm() {
 
   function handleInputNetworkChange(value: string) {
     setNetwork(value);
-    router.push(`/request?network=${value}`);
+    router.push(`/request?network=${value}&address=${receivingAddress}`);
   }
 
   return (
@@ -156,26 +223,31 @@ export default function RequestForm() {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
-          {/* <Input
-            id="sendingAmount"
-            className="hidden lg:block rounded-none w-full border-primary border-2 p-2.5 mt-2"
-            type="number"
-            placeholder="0"
-            value={sendingAmount}
-            onChange={(e) => setSendingAmount(e.target.value)}
-            required
-          /> */}
-          <Input
-            id="sendingAmount"
-            className="lg:hidden rounded-none w-full border-primary border-2 p-2.5 mt-2"
-            type="text" 
-            inputMode="decimal" 
-            pattern="[0-9]*"
-            placeholder="0"
-            value={sendingAmount}
-            onChange={(e) => setSendingAmount(e.target.value)}
-            required
-          />
+          {
+            isDesktop ? (
+              <Input
+                id="sendingAmount"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                type="number"
+                placeholder="0"
+                value={sendingAmount}
+                onChange={(e) => setSendingAmount(e.target.value)}
+                required
+              />
+            ) : (
+              <Input
+                id="sendingAmount"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                placeholder="0"
+                value={sendingAmount}
+                onChange={(e) => setSendingAmount(e.target.value)}
+                required
+              />
+            )
+          }
           <p className="text-sm text-muted-foreground">
             Fill in the amount you want to receive.
           </p>
@@ -202,36 +274,100 @@ export default function RequestForm() {
             Autogenerate UID
           </Button>
         </div>
+        <div className="flex flex-col gap-2 border-2 border-primary p-2">
+          <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Receiving address</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {receivingAddress
+                ? truncateAddress(receivingAddress as Address, 4)
+                : "-----"}
+              {isValidAddress === undefined ? null : isValidAddress === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid address
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid address
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Sending amount</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {`${
+                sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
+              } ${selectNativeAssetSymbol(network)}`}
+              {isValidAmount === undefined ? null : isValidAmount === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid amount
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid amount
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Memo</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {isValidTransactionMemo === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid memo
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid memo
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+        </div>
         <Button onClick={constructLink}>
           <CirclePlus className="mr-2 h-4 w-4" />
           Generate request
         </Button>
-        <div className="flex flex-col w-full border-black border-2 rounded-md p-4">
-          <h2 className="text-3xl font-semibold mb-4">Share</h2>
+        <div className="flex flex-col gap-4 w-full border-black border-2 rounded-md p-4">
+          <h2 className="text-3xl font-semibold">Share</h2>
+          <Input
+            className="rounded-none w-full border-black border-2 p-2.5"
+            value={requestLink}
+            readOnly
+          />
           <div className="flex flex-row gap-2">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button disabled={!shareLinkActive}>
-                  <Link className="mr-2 h-4 w-4" />
-                  Link
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>You can share this link</DialogTitle>
-                  <DialogDescription>
-                    <Input
-                      className="rounded-none w-full border-black border-2 p-2.5 mt-2"
-                      value={requestLink}
-                      readOnly
-                    />
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <CopyButton text={requestLink} />
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <CopyButton text={requestLink} />
             <Dialog>
               <DialogTrigger asChild>
                 <Button disabled={!shareLinkActive}>
