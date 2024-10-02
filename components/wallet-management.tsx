@@ -46,8 +46,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { WebAuthnStorage } from "@/lib/webauthnstorage";
-import { createIcon } from "@/lib/blockies";
-import { createId } from "@paralleldrive/cuid2";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -85,7 +83,7 @@ export default function WalletManagement() {
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
   const [network, setNetwork] = useState<string>(searchParams.get("network") ?? "kaia-kairos");
   const [walletName, setWalletName] = useState("");
-  const [walletIcon, setWalletIcon] = useState("");
+  const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
 
   useEffect(() => {
     router.push(`?network=${network}&address=${walletAddress}`);
@@ -100,14 +98,6 @@ export default function WalletManagement() {
       }
     } else {
       setLoadingWalletStorage(false);
-      setWalletIcon(
-        createIcon({
-          // All options are optional
-          seed: createId(), // seed used to generate icon data, default: random
-          size: 15, // width/height of the icon in blocks, default: 10
-          scale: 3, // width/height of each block in pixels, default: 5
-        }).toDataURL()
-      );
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -179,7 +169,13 @@ export default function WalletManagement() {
       // call the function
       fetchBalance()
         // make sure to catch any error
-        .catch(console.error);
+        .catch(() => toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Fetch balance failed!",
+          description: "Uh oh! Something went wrong. please try again.",
+        }));
     } else {
       toast({
         className:
@@ -204,15 +200,9 @@ export default function WalletManagement() {
     const request = new Request("gmgn-wallet");
     const response = new Response(handle);
     await cache.put(request, response);
-    const icon = createIcon({
-      // All options are optional
-      seed: createId, // seed used to generate icon data, default: random
-      size: 15, // width/height of the icon in blocks, default: 10
-      scale: 3, // width/height of each block in pixels, default: 5
-    });
     const GMGN_WALLET_STORAGE = {
       status: "created",
-      icon: icon.toDataURL(),
+      icon: "/default-profile.svg",
       username: walletName,
     };
     localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
@@ -310,18 +300,20 @@ export default function WalletManagement() {
         <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              <Image
-                src={walletIcon ? walletIcon : "/gmgn-placeholder-icon.svg"}
-                alt="avatar"
-                width={50}
-                height={50}
-                className="rounded-full border-primary border-2"
-              />
+              <Link href="/profile">
+                <Image
+                  src={walletIcon ? walletIcon : "/default-profile.svg"}
+                  alt="avatar"
+                  width={50}
+                  height={50}
+                  className="rounded-full border-primary border-2"
+                />
+              </Link>
               <div className="flex flex-col text-sm">
-                <div className="flex flex-row gap-2 items-center p-2">
+                <Link href="/profile" className="flex flex-row gap-2 items-center p-2">
                   <p>{walletName ? walletName : "---"}</p>
                   <Pencil className="w-4 h-4" />
-                </div>
+                </Link>
                 <div className="flex flex-row gap-2">
                   <WalletCopyButton
                     copyText={walletAddress}
