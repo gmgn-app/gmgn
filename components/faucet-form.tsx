@@ -71,7 +71,7 @@ export default function FaucetForm() {
 
   async function requestFaucet() {
     setRequestFaucetLoading(true);
-    const res = await fetch('/api/verify', {
+    const res = await fetch('/api/cf-verify', {
       method: 'POST',
       body: JSON.stringify({ token }),
       headers: {
