@@ -92,8 +92,8 @@ export default function RequestForm() {
     toast({
       className:
         "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      title: "Link generated!",
-      description: "You can now share this link with others.",
+      title: "Request generated!",
+      description: "You can now share the request with others.",
     });
   }
 
