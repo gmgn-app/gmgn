@@ -25,6 +25,7 @@ import {
   Settings,
   Pencil,
   HandCoins,
+  Droplets
 } from "lucide-react";
 import {
   Dialog,
@@ -320,7 +321,7 @@ export default function WalletManagement() {
                     buttonTitle={truncateAddress(walletAddress as Address, 6)}
                   />
                   {
-                    network === "kaia-kairos" && <KaiaRequestFaucet address={walletAddress as Address} />
+                    network === "kaia-kairos" && <Button variant="ghost" size="icon" asChild><Link href={`/faucet?network=${network}&address=${walletAddress}`}><Droplets className="w-4 h-4" /></Link></Button>
                   }
                 </div>
               </div>
