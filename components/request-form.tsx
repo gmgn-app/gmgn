@@ -156,9 +156,18 @@ export default function RequestForm() {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
+          {/* <Input
+            id="sendingAmount"
+            className="hidden lg:block rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            type="number"
+            placeholder="0"
+            value={sendingAmount}
+            onChange={(e) => setSendingAmount(e.target.value)}
+            required
+          /> */}
           <Input
             id="sendingAmount"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="lg:hidden rounded-none w-full border-primary border-2 p-2.5 mt-2"
             type="text" 
             inputMode="decimal" 
             pattern="[0-9]*"
