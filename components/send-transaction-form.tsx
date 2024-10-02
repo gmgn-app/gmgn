@@ -17,7 +17,6 @@ import {
   createWalletClient,
   parseEther,
   toHex,
-  getAddress,
   isAddress,
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
@@ -278,6 +277,7 @@ export default function SendTransactionForm() {
           account: address as Address,
           to: receivingAddress as Address,
           value: parseEther(sendingAmount),
+          data: toHex(transactionMemo),
         });
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
@@ -409,10 +409,6 @@ export default function SendTransactionForm() {
         setIsValidAmount(true);
         setInputReadOnly(true);
         setContinueButtonLoading(true);
-        const publicClient = createPublicClient({
-          chain: selectViemChainFromNetwork(network!),
-          transport: http(),
-        });
         setTransactionCost("0");
         const isValidTotal =
           parseEther(currentBalance) >= parseEther(sendingAmount);

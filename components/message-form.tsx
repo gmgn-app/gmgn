@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -16,8 +17,31 @@ import {
   createWalletClient,
   parseEther,
   toHex,
-  isAddress
+  isAddress,
 } from "viem";
+import { Wallet, TxType } from "@kaiachain/ethers-ext";
+import { privateKeyToAccount } from "viem/accounts";
+import { getOrThrow } from "@/lib/passkey-auth";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import {
+  Send,
+  RotateCcw,
+  Fuel,
+  Loader2,
+  ScanLine,
+  ThumbsUp,
+  Check,
+  CircleX,
+  Ban,
+  ClipboardPaste,
+  WandSparkles,
+  SearchCode,
+  Code,
+  ArrowRight,
+  Mail
+} from "lucide-react";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import {
   Dialog,
   DialogContent,
@@ -27,40 +51,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Wallet, JsonRpcProvider, TxType } from "@kaiachain/ethers-ext";
-import { privateKeyToAccount } from "viem/accounts";
-import { getOrThrow } from "@/lib/passkey-auth";
-import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import {
-  Mail,
-  RotateCcw,
-  ScanLine,
-  ThumbsUp,
-  Loader2,
-  ClipboardPaste,
-  Check,
-  CircleX,
-  Fuel,
-  Ban
-} from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
-import { formatBalance } from "@/lib/utils";
-import { Textarea } from "@/components/ui/textarea";
+import { createId } from "@paralleldrive/cuid2";
 import {
-  selectViemChainFromNetwork,
-  selectJsonRpcProvider,
-  selectNativeAssetSymbol,
-  truncateAddress,
+  formatBalance,
   truncateHash,
+  truncateAddress,
   selectBlockExplorer,
+  selectViemChainFromNetwork,
+  selectNativeAssetSymbol,
+  selectJsonRpcProvider,
 } from "@/lib/utils";
-import { Scanner } from "@yudiel/react-qr-scanner";
+import { normalize } from "viem/ens";
+import { mainnet } from "viem/chains";
 
 export default function MessageForm() {
   // Get the search params from the URL.
@@ -68,21 +77,32 @@ export default function MessageForm() {
   const network = searchParams.get("network");
   const address = searchParams.get("address");
 
+  // Redirect to the home page if the network or address is not provided.
   if (!network || !address) {
     redirect("/");
   }
 
+  // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
-  const [sendingAmount, setSendingAmount] = useState("");
+
+  // Main state for the send form
   const [receivingAddress, setReceivingAddress] = useState("");
-  const [sendingMessage, setSendingMessage] = useState("");
+  const [transactionMemo, setTransactionMemo] = useState("");
+
+  // optional state for ENS lookup
+  const [ensName, setEnsName] = useState("");
+
+  // State for transaction cost
   const [transactionCost, setTransactionCost] = useState("");
-  const [readyToTransfer, setReadyToTransfer] = useState(false);
+
+  // State for delegate fee on Kaia
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
+
+  // Handle UX states
+  const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [inputReadOnly, setInputReadOnly] = useState(false);
   const [continueButtonLoading, setContinueButtonLoading] = useState(false);
-  const [messageButtonLoading, setMessageButtonLoading] = useState(false);
-  const [qrScanSuccess, setQrScanSuccess] = useState(false);
+  const [sendButtonLoading, setSendButtonLoading] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
     undefined
   );
@@ -93,7 +113,49 @@ export default function MessageForm() {
     undefined
   );
   const [isPasted, setIsPasted] = useState(false);
+  const [isEnsResolved, setIsEnsResolved] = useState(false);
+  const [ensLookUpLoading, setEnsLookUpLoading] = useState(false);
 
+  // QR Scan for input
+  const [qrScanSuccess, setQrScanSuccess] = useState(false);
+
+  // publicClient for ENS lookup
+  const mainnetPublicClient = createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  });
+
+  // Function to resolve ENS
+  const resolveEns = async () => {
+    if (receivingAddress.includes(".")) {
+      setEnsLookUpLoading(true);
+      const ensAddress = await mainnetPublicClient.getEnsAddress({
+        name: normalize(receivingAddress),
+      });
+      if (ensAddress) {
+        setReceivingAddress(ensAddress);
+        setIsEnsResolved(true);
+        setEnsName(receivingAddress);
+        setEnsLookUpLoading(false);
+        setTimeout(() => {
+          setIsEnsResolved(false);
+        }, 1000);
+      } else {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          variant: "destructive",
+          title: "Uh oh! ENS lookup failed.",
+          description: "Please try again.",
+        });
+        setEnsName("");
+        setIsEnsResolved(false);
+        setEnsLookUpLoading(false);
+      }
+    }
+  };
+
+  // Function to paste from clipboard
   const paste = async () => {
     setReceivingAddress(await navigator.clipboard.readText());
     setIsPasted(true);
@@ -106,6 +168,7 @@ export default function MessageForm() {
   // Toast notifications.
   const { toast } = useToast();
 
+  // Fetch the current balance upon page load
   useEffect(() => {
     if (address) {
       const publicClient = createPublicClient({
@@ -125,6 +188,21 @@ export default function MessageForm() {
     }
   }, [address, network]);
 
+  // public client for balance refresh
+  const publicClient = createPublicClient({
+    chain: selectViemChainFromNetwork(network!),
+    transport: http(),
+  });
+
+  // Function to fetch balance
+  async function fetchBalance() {
+    const balance = await publicClient.getBalance({
+      address: address as Address,
+    });
+    setCurrentBalance(formatEther(balance).toString());
+  }
+
+  // Function to handle QR scan
   function handleQrScan(data: string) {
     if (data.includes(":")) {
       const splitData = data.split(":");
@@ -144,19 +222,18 @@ export default function MessageForm() {
     }
   }
 
-  const publicClient = createPublicClient({
-    chain: selectViemChainFromNetwork(network as string),
-    transport: http(),
-  });
-
-  async function fetchBalance() {
-    const balance = await publicClient.getBalance({
-      address: address as Address,
-    });
-    setCurrentBalance(formatEther(balance).toString());
+  // Function to autogenerate UID
+  function autogenerateUid() {
+    const uid = createId();
+    setTransactionMemo(uid);
   }
 
+  // Function to handle delegate fee
+  function handleDelegateFeeChange() {
+    setDelegateFeeActive(!delegateFeeActive);
+  }
 
+  // Function to prepare transaction before sending
   async function prepareTransaction() {
     if (receivingAddress === "") {
       toast({
@@ -171,7 +248,7 @@ export default function MessageForm() {
     if (receivingAddress) {
       const isValidAddress = isAddress(receivingAddress, { strict: false });
       if (isValidAddress) {
-        setIsValidAmount(true);
+        setIsValidAddress(true);
         setInputReadOnly(true);
         setContinueButtonLoading(true);
         const publicClient = createPublicClient({
@@ -181,13 +258,14 @@ export default function MessageForm() {
         const gas = await publicClient.estimateGas({
           account: address as Address,
           to: receivingAddress as Address,
-          value: parseEther(sendingAmount),
+          value: BigInt(0),
+          data: toHex(transactionMemo),
         });
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
         setTransactionCost(formatEther(gasCost));
         const isValidTotal =
-          parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+          parseEther(currentBalance) >= gasCost;
         if (isValidTotal) {
           setIsValidTotal(true);
           setReadyToTransfer(true);
@@ -199,17 +277,19 @@ export default function MessageForm() {
         setContinueButtonLoading(false);
       } else {
         setIsValidAddress(false);
-        return;
       }
     }
   }
 
-  // 2. Define a submit handler.
+  // Function to submit transaction
   async function submitTransaction() {
+
+    // Set the send button to loading state
+    setSendButtonLoading(true);
+
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
-    setMessageButtonLoading(true);
     const cache = await caches.open("gmgn-storage");
     const request = new Request("gmgn-wallet");
     const response = await cache.match(request);
@@ -225,31 +305,40 @@ export default function MessageForm() {
       const account = privateKeyToAccount(privateKey as Address);
       const walletClient = createWalletClient({
         account: privateKeyToAccount(privateKey as Address),
-        chain: selectViemChainFromNetwork(network),
+        chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
       const hash = await walletClient.sendTransaction({
         account,
         to: receivingAddress as Address,
         value: BigInt(0),
-        data: toHex(sendingMessage),
+        data: toHex(transactionMemo),
       });
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        title: "Transaction sent!",
-        description: "Hash: " + truncateHash(hash, 6),
-        action: (
-          <ToastAction altText="view">
-            <a
-              target="_blank"
-              href={`${selectBlockExplorer(network!)}/tx/${hash}`}
-            >
-              View
-            </a>
-          </ToastAction>
-        ),
+      const publicClient = createPublicClient({
+        chain: selectViemChainFromNetwork(network!),
+        transport: http(),
       });
+      const transaction = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      if (transaction) {
+        toast({
+          className:
+            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+          title: "Transaction sent!",
+          description: "Hash: " + truncateHash(hash, 6),
+          action: (
+            <ToastAction altText="view">
+              <a
+                target="_blank"
+                href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+              >
+                View
+              </a>
+            </ToastAction>
+          ),
+        });
+      }
     } else {
       toast({
         className:
@@ -259,17 +348,52 @@ export default function MessageForm() {
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
-    setMessageButtonLoading(false);
+    setSendButtonLoading(false);
     setReadyToTransfer(false);
     setInputReadOnly(false);
   }
 
-  function handleDelegateFeeChange() {
-    setDelegateFeeActive(!delegateFeeActive);
-    setReadyToTransfer(!readyToTransfer);
+  // Function to prepare transaction before sending
+  async function prepareDelegatedTransaction() {
+    if (receivingAddress === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter a receiving address.",
+        description: "Please enter a receiving address to continue.",
+      });
+      return;
+    }
+    if (receivingAddress) {
+      const isValidAddress = isAddress(receivingAddress, { strict: false });
+      if (isValidAddress) {
+        setIsValidAddress(true);
+        setInputReadOnly(true);
+        setContinueButtonLoading(true);
+        setTransactionCost("0");
+        const isValidTotal = true;
+        if (isValidTotal) {
+          setIsValidTotal(true);
+          setReadyToTransfer(true);
+        } else {
+          setIsValidTotal(false);
+          setReadyToTransfer(false);
+          return;
+        }
+        setContinueButtonLoading(false);
+      } else {
+        setIsValidAddress(false);
+      }
+    }
   }
 
+  // Function to submit delegated transaction
   async function submitDelegatedTransaction() {
+
+    // Set the send button to loading state
+    setSendButtonLoading(true);
+
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
@@ -290,8 +414,8 @@ export default function MessageForm() {
       type: TxType.FeeDelegatedValueTransferMemo,
       to: receivingAddress,
       from: address as Address,
-      value: 0,
-      input: toHex(sendingMessage),
+      value: BigInt(0),
+      input: toHex(transactionMemo),
     };
     const preparedTx = await kaiaSdkWalletClient.populateTransaction(tx);
     const hash = await kaiaSdkWalletClient.signTransaction(preparedTx);
@@ -339,29 +463,29 @@ export default function MessageForm() {
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
-    setReadyToTransfer(true);
-    setReceivingAddress("");
-    setSendingMessage("");
+    setSendButtonLoading(false);
+    setReadyToTransfer(false);
+    setInputReadOnly(false);
   }
 
-
+  // Function to clear all fields
   function clearAllFields() {
     setReceivingAddress("");
-    setSendingAmount("");
-    setSendingMessage("");
+    setTransactionMemo("");
     setTransactionCost("");
     setReadyToTransfer(false);
     setInputReadOnly(false);
     setIsValidAddress(undefined);
     setIsValidAmount(undefined);
     setIsValidTotal(undefined);
+    setEnsName("");
+    setIsEnsResolved(false);
+    setEnsLookUpLoading(false);
   }
-
-
 
   return (
     <div className="flex flex-col">
-      <div>
+      <div className="flex flex-col">
         <h2 className="text-xl">Balance</h2>
         <div className="flex flex-row items-center justify-between">
           <p className="text-2xl">
@@ -383,9 +507,23 @@ export default function MessageForm() {
               placeholder="0x..."
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
-              required
               readOnly={inputReadOnly}
+              required
             />
+            <Button
+              variant="secondary"
+              size="icon"
+              disabled={isEnsResolved}
+              onClick={resolveEns}
+            >
+              {isEnsResolved ? (
+                <Check className="h-4 w-4" />
+              ) : ensLookUpLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <SearchCode className="h-4 w-4" />
+              )}
+            </Button>
             <Button
               variant="secondary"
               size="icon"
@@ -432,107 +570,137 @@ export default function MessageForm() {
               </DialogContent>
             </Dialog>
           </div>
+          {ensName ? (
+            <Badge className="w-fit" variant="secondary">
+              <Code className="mr-2 w-4 h-4" />
+              {ensName}
+            </Badge>
+          ) : (
+            <Badge className="w-fit" variant="secondary">
+              <Code className="mr-2 w-4 h-4" />
+              ------
+            </Badge>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Fill in the address of the recipient
+          </p>
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="sendingMessage">Message</Label>
+          <Label htmlFor="transactionMemo">Message</Label>
           <Textarea
-            id="sendingMessage"
+            id="transactionMemo"
             className="rounded-none w-full border-primary border-2 p-2.5"
-            placeholder="gm gn to you"
-            value={sendingMessage}
-            readOnly={inputReadOnly}
-            onChange={(e) => setSendingMessage(e.target.value)}
+            placeholder="gm and gn"
+            value={transactionMemo}
+            onChange={(e) => setTransactionMemo(e.target.value)}
           />
+          <p className="text-sm text-muted-foreground">
+            Optional memo for the transaction or autogenerate an UID
+          </p>
+          <Button
+            onClick={autogenerateUid}
+            variant="secondary"
+            className="w-fit"
+          >
+            <WandSparkles className="mr-2 h-4 w-4" />
+            Autogenerate UID
+          </Button>
         </div>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="delegate-fee"
-            checked={delegateFeeActive}
-            onCheckedChange={handleDelegateFeeChange}
-          />
-          <Label htmlFor="delegate-fee">Delegate fee</Label>
-        </div>
-
-        {!delegateFeeActive && (
-          <div className="flex flex-col gap-2 border-2 border-primary p-2">
-            <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
-            <div className="flex flex-row gap-2">
-              <h3 className="text-sm text-muted-foreground">
-                Receiving address
-              </h3>
-              <p className="flex flex-row gap-2 items-center text-sm">
-                {receivingAddress
-                  ? truncateAddress(receivingAddress as Address, 4)
-                  : "-----"}
-                {isValidAddress === undefined ? null : isValidAddress ===
-                  true ? (
-                  <Popover>
-                    <PopoverTrigger>
-                      <Check className="w-4 h-4 text-green-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-green-500">
-                      Valid address
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleX className="w-4 h-4 text-red-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-red-500">
-                      Invalid address
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </p>
-            </div>
-            <div className="flex flex-row gap-2">
-              <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
-              <p className="flex flex-row gap-2 items-center text-sm">
-                <Fuel className="w-4 h-4" />
-                {`${
-                  transactionCost ? transactionCost : "-----"
-                } ${selectNativeAssetSymbol(network)}`}
-                {isValidTotal === undefined ? null : isValidTotal === true ? (
-                  <Popover>
-                    <PopoverTrigger>
-                      <Check className="w-4 h-4 text-green-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-green-500">
-                      Valid total
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleX className="w-4 h-4 text-red-500" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-fit text-red-500">
-                      Invalid total
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </p>
-            </div>
-            {continueButtonLoading ? (
-              <Button disabled className="w-fit self-end">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </Button>
-            ) : (
-              <Button
-                disabled={readyToTransfer}
-                className="w-fit self-end"
-                onClick={prepareTransaction}
-              >
-                Continue
-              </Button>
-            )}
+        {network === "kaia" || network === "kaia-kairos" ? (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="delegate-fee"
+              checked={delegateFeeActive}
+              onCheckedChange={handleDelegateFeeChange}
+            />
+            <Label htmlFor="delegate-fee">Delegate gas fee</Label>
           </div>
-        )}
+        ) : null}
+        <div className="flex flex-col gap-2 border-2 border-primary p-2">
+          <h2 className="border-b pb-1 text-md font-semibold">Details</h2>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Receiving address</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              {receivingAddress
+                ? truncateAddress(receivingAddress as Address, 4)
+                : "-----"}
+              {isValidAddress === undefined ? null : isValidAddress === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid address
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid address
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-row gap-2">
+            <h3 className="text-sm text-muted-foreground">Estimated fees</h3>
+            <p className="flex flex-row gap-2 items-center text-sm">
+              <Fuel className="w-4 h-4" />
+              {`${
+                transactionCost ? transactionCost : "-----"
+              } ${selectNativeAssetSymbol(network)}`}
+              {isValidTotal === undefined ? null : isValidTotal === true ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Check className="w-4 h-4 text-green-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-green-500">
+                    Valid total
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Popover>
+                  <PopoverTrigger>
+                    <CircleX className="w-4 h-4 text-red-500" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-fit text-red-500">
+                    Invalid total
+                  </PopoverContent>
+                </Popover>
+              )}
+            </p>
+          </div>
+          {continueButtonLoading ? (
+            <Button disabled className="w-fit self-end">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button>
+          ) : delegateFeeActive ? (
+            <Button
+              disabled={readyToTransfer}
+              className="w-fit self-end"
+              onClick={prepareDelegatedTransaction}
+            >
+              Continue
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              disabled={readyToTransfer}
+              className="w-fit self-end"
+              onClick={prepareTransaction}
+            >
+              Continue
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
-      {messageButtonLoading ? (
-        <div className="flex flex-row gap-2 justify-between">     
+      {sendButtonLoading ? (
+        <div className="flex flex-row gap-2 justify-between">
           <Button disabled variant="outline">
             <Ban className="mr-2 h-4 w-4" />
             Cancel
@@ -559,7 +727,6 @@ export default function MessageForm() {
             Message
           </Button>
         </div>
-
       )}
     </div>
   );
