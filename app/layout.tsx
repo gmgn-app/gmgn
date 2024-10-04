@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import Script from "next/script";
-import WalletAddressProvider from "@/app/wallet-context";
+import Footer from "@/components/footer";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,12 +49,11 @@ export default function RootLayout({
         src="https://analytics.pyhash.com/js/script.js"
       ></Script>
       <body className={inter.className}>
-        <WalletAddressProvider>
-          <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
-            {children}
-            <Toaster />
-          </main>
-        </WalletAddressProvider>
+        <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
+          {children}
+          <Toaster />
+          <Footer />
+        </main>
       </body>
     </html>
   );

@@ -1,13 +1,12 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link"
-import Image from "next/image"
-import BackButton from "@/components/back-button"
-import SettingsForm from "@/components/settings-form";
+import Link from "next/link";
+import Image from "next/image";
+import BackButton from "@/components/back-button";
 import { constructNavUrl } from "@/lib/utils";
 
-export default function SettingsPage() {
+export default function GettingStartedPage() {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const network = searchParams.get("network");
@@ -24,10 +23,9 @@ export default function SettingsPage() {
         />
       </Link>
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-        Settings
+        Getting started
       </h1>
       <BackButton route={constructNavUrl(network, address)} />
-      <SettingsForm />
     </div>
   );
 }

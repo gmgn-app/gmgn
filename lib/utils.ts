@@ -168,3 +168,14 @@ export function selectJsonRpcProvider(network: string | undefined | null) {
       return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
   }
 }
+
+
+export function constructNavUrl(
+  network: string | undefined | null,
+  address: string | undefined | null,
+) {
+  if (address === null || address === undefined || address === "null") {
+    return `/?network=${network}`;
+  }
+  return `/?network=${network}&address=${address}`;
+}

@@ -51,10 +51,6 @@ import { WebAuthnStorage } from "@/lib/webauthnstorage";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  WalletContext,
-  WalletContextType,
-} from "@/app/wallet-context";
-import {
   selectNativeAssetSymbol,
   truncateAddress,
   formatBalance,
@@ -88,8 +84,12 @@ export default function WalletManagement() {
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
 
-  useEffect(() => { 
-    router.push(`?network=${network}&address=${walletAddress}`);
+  useEffect(() => {
+    if (paramAddress === null || paramAddress === "null") {
+      router.push(`?network=${network}`);
+    } else {
+      router.push(`?network=${network}&address=${walletAddress}`);
+    }
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
       const wallet = JSON.parse(GMGN_WALLET);
@@ -246,7 +246,7 @@ export default function WalletManagement() {
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-row justify-between items-center">
-        <Link href="/">
+        <Link href={`/?network=${network}&address=${walletAddress}`}>
           <Image
             src="/gmgn-logo.svg"
             alt="gmgn logo"
@@ -292,7 +292,7 @@ export default function WalletManagement() {
             </SelectContent>
           </Select>
           <Button asChild size="icon" variant="outline">
-            <Link href="/settings">
+            <Link href={`/settings?network=${network}&address=${walletAddress}`}>
               <Settings className="w-6 h-6" />
             </Link>
           </Button>
@@ -418,7 +418,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`sign?address=${walletAddress}&network=${network}`}>
+            <Link href={`sign?network=${network}&address=${walletAddress}`}>
               <Signature className="mr-2 h-4 w-4" />
               Sign
             </Link>
@@ -431,7 +431,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`paylink?address=${walletAddress}`}>
+            <Link href={`paylink?network=${network}&address=${walletAddress}`}>
               <HandCoins className="mr-2 h-4 w-4" />
               Pay
             </Link>

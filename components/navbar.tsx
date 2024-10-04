@@ -1,12 +1,16 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { House, Repeat, Sprout, Telescope } from "lucide-react";
+import { constructNavUrl } from "@/lib/utils";
 
 export default function NavBar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const address = searchParams.get("address");
+  const network = searchParams.get("network");
 
   function isActivePath(path: string) {
     if (path === pathname) {
@@ -24,7 +28,7 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
-        <Link className="flex flex-col items-center" href="/">
+        <Link className="flex flex-col items-center" href={constructNavUrl(network, address)}>
           <House className="w-4 h-4 mr-2" />
           Home
         </Link>
@@ -35,7 +39,7 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
-        <Link className="flex flex-col items-center" href="/trade">
+        <Link className="flex flex-col items-center" href={`/trade?network=${network}&address=${address}`}>
           <Repeat className="w-4 h-4 mr-2" />
           Trade
         </Link>
@@ -46,7 +50,7 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
-        <Link className="flex flex-col items-center" href="/earn">
+        <Link className="flex flex-col items-center" href={`/earn?network=${network}&address=${address}`}>
           
 
           <Sprout className="w-4 h-4 mr-2" />
@@ -59,7 +63,7 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
-        <Link className="flex flex-col items-center" href="/explore">
+        <Link className="flex flex-col items-center" href={`/explore?network=${network}&address=${address}`}>
           <Telescope className="w-4 h-4 mr-2" />
           Explore
         </Link>
