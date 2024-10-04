@@ -9,7 +9,8 @@ import {
   abstractTestnet,
   fraxtalTestnet,
   berachainTestnetbArtio,
-  luksoTestnet
+  luksoTestnet,
+  kaia
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 
@@ -67,6 +68,8 @@ export function selectChainNameFromNetwork(network: string | null) {
       return "Base Sepolia";
     case "kaia-kairos":
       return "Kaia Kairos";
+    case "kaia":
+      return "Kaia";
     case "abstract-testnet":
       return "Abstract Testnet";
     case "fraxtal-testnet":
@@ -84,6 +87,8 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
   switch (network) {
     case "kaia-kairos":
       return kairos;
+    case "kaia":
+      return kaia;
     case "arbitrum-sepolia":
       return arbitrumSepolia;
     case "base-sepolia":

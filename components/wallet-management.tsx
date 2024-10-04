@@ -27,7 +27,6 @@ import {
   HandCoins,
   Droplets,
   ScrollText,
-  ChevronRight
 } from "lucide-react";
 import {
   Dialog,
@@ -267,6 +266,7 @@ export default function WalletManagement() {
               <SelectGroup>
                 <SelectLabel>Select a network</SelectLabel>
                 <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
+                <SelectItem value="kaia">Kaia</SelectItem>
                 <SelectItem value="arbitrum-sepolia">
                   Aribtrum Sepolia
                 </SelectItem>
