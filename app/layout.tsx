@@ -8,12 +8,12 @@ import WalletAddressProvider from "@/app/wallet-context";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "gm gn",
-  description: "share your thoughts onchain",
+  title: "GM GN wallet",
+  description: "vox populi - voice of the people",
   metadataBase: new URL("https://www.gmgn.app"),
   openGraph: {
-    title: "gmgn",
-    description: "share your thoughts onchain",
+    title: "GM GN wallet",
+    description: "vox populi - voice of the people",
     url: "https://www.gmgn.app",
     siteName: "gmgn",
     images: [
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "gmgn",
-    description: "share your thoughts onchain",
+    title: "GM GN wallet",
+    description: "vox populi - voice of the people",
     creator: "@zxstim",
     images: ["/gmgn-tbn.png"],
   },
