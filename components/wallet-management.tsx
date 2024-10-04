@@ -51,8 +51,8 @@ import { WebAuthnStorage } from "@/lib/webauthnstorage";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  WalletAddressContext,
-  WalletAddressContextType,
+  WalletContext,
+  WalletContextType,
 } from "@/app/wallet-context";
 import {
   selectNativeAssetSymbol,
@@ -66,6 +66,8 @@ import {
 export default function WalletManagement() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
+  const paramNetwork = searchParams.get("network");
+  const paramAddress = searchParams.get("address");
 
   const router = useRouter();
   // Get the toast function from the useToast hook.
@@ -74,19 +76,19 @@ export default function WalletManagement() {
   // Create the state variables for the wallet management
   const [balance, setBalance] = useState("");
   // Get the wallet address and set the wallet address from the WalletAddressContext.
-  const { walletAddress, setWalletAddress } = useContext(
-    WalletAddressContext
-  ) as WalletAddressContextType;
-  // const [walletAddress, setWalletAddress] = useState<Address | null>(null);
+  // const { walletAddress, setWalletAddress, network, setNetwork } = useContext(
+  //   WalletContext
+  // ) as WalletContextType;
+  const [walletAddress, setWalletAddress] = useState<Address | null>(paramAddress as Address || null);
   // Create the state variables for the wallet management
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
-  const [network, setNetwork] = useState<string>(searchParams.get("network") ?? "kaia-kairos");
+  const [network, setNetwork] = useState<string | null>(paramNetwork || "kaia-kairos");
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
 
-  useEffect(() => {
+  useEffect(() => { 
     router.push(`?network=${network}&address=${walletAddress}`);
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
@@ -255,7 +257,7 @@ export default function WalletManagement() {
         </Link>
         <div className="flex flex-row gap-2">
           <Select
-            value={network}
+            value={network!}
             onValueChange={handleInputNetworkChange}
             defaultValue="kaia-kairos"
           >

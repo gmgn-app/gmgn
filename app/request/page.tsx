@@ -15,7 +15,7 @@ export default function RequestPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href="/">
+      <Link href={`/?network=${network}&address=${address}`}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -27,7 +27,7 @@ export default function RequestPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Request
       </h1>
-      <BackButton route={"/"} />
+      <BackButton route={`/?network=${network}&address=${address}`} />
       <Tabs defaultValue="request" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger asChild value="receive">

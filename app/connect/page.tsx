@@ -19,11 +19,11 @@ export default function ConnectPage() {
 
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-  const network = searchParams.get("network") || "kaia-kairos";
+  const network = searchParams.get("network");
   const address = searchParams.get("address");
 
   if (!network || !address) {
-    redirect("/");
+    redirect(`?network=${network}&address=${address}`);
   }
 
   const router = useRouter();
@@ -89,7 +89,7 @@ export default function ConnectPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href="/">
+      <Link href={`/?network=${network}&address=${address}`}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -101,7 +101,7 @@ export default function ConnectPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Connect
       </h1>
-      <BackButton route={"/"} />
+      <BackButton route={`/?network=${network}&address=${address}`} />
       <Input
         value={wcSessionString}
         onChange={(e) => setWcSessionString(e.target.value)}

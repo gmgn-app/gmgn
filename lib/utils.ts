@@ -57,7 +57,7 @@ export function formatBalance(number: string, maxDecimal: number) {
   return `${formattedWhole}.${decimal.slice(0, maxDecimal)}`;
 }
 
-export function selectChainNameFromNetwork(network: string | null) {
+export function selectChainNameFromNetwork(network: string | undefined | null) {
   if (!network) return "Unknown Network";
   switch (network) {
     case "ethereum-sepolia":
@@ -108,7 +108,7 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
   }
 }
 
-export function selectBlockExplorer(network: string | undefined) {
+export function selectBlockExplorer(network: string | undefined | null) {
   switch (network) {
     case "kaia":
       return "https://kaiascan.io";
@@ -133,7 +133,7 @@ export function selectBlockExplorer(network: string | undefined) {
   }
 }
 
-export function selectNativeAssetSymbol(network: string | undefined) {
+export function selectNativeAssetSymbol(network: string | undefined | null) {
   switch (network) {
     case "kaia":
       return "KLAY";
@@ -158,7 +158,7 @@ export function selectNativeAssetSymbol(network: string | undefined) {
   }
 }
 
-export function selectJsonRpcProvider(network: string | undefined) {
+export function selectJsonRpcProvider(network: string | undefined | null) {
   switch (network) {
     case "kaia":
       return new JsonRpcProvider("https://public-en.node.kaia.io");

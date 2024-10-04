@@ -29,6 +29,7 @@ export default function PayPage() {
 
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
+  const network = searchParams.get("network");
   const [paymentLink, setPaymentLink] = useState("");
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
   const [isPasted, setIsPasted] = useState(false);
@@ -176,7 +177,7 @@ export default function PayPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href="/">
+      <Link href={`/?network=${network}&address=${address}`}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -188,7 +189,7 @@ export default function PayPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Pay
       </h1>
-      <BackButton route={"/"} />
+      <BackButton route={`/?network=${network}&address=${address}`} />
       <div className="flex flex-col gap-2 mt-12">
         <Label htmlFor="sendingAmount">Payment Link</Label>
         <div className="flex flex-row gap-2 items-center">
