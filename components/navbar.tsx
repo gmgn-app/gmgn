@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { House, Repeat, Image as ImageIcon, Telescope } from "lucide-react";
+import { House, Repeat, Sprout, Telescope } from "lucide-react";
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -17,7 +17,7 @@ export default function NavBar() {
   }
 
   return (
-    <div className="grid grid-cols-4 fixed bottom-0 md:w-[768px] h-[80px] bg-white">
+    <div className="grid grid-cols-4 fixed bottom-0 w-full md:w-[768px] h-[80px] bg-white">
       <Button
         className={`${isActivePath(
           "/"
@@ -42,15 +42,15 @@ export default function NavBar() {
       </Button>
       <Button
         className={`${isActivePath(
-          "/collections"
+          "/earn"
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
         <Link className="flex flex-col items-center" href="/collections">
           
 
-          <ImageIcon className="w-4 h-4 mr-2" />
-          Collections
+          <Sprout className="w-4 h-4 mr-2" />
+          Earn
         </Link>
       </Button>
       <Button

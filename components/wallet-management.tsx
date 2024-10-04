@@ -25,7 +25,9 @@ import {
   Settings,
   Pencil,
   HandCoins,
-  Droplets
+  Droplets,
+  ScrollText,
+  ChevronRight
 } from "lucide-react";
 import {
   Dialog,
@@ -59,7 +61,6 @@ import {
   formatBalance,
   selectViemChainFromNetwork,
 } from "@/lib/utils";
-import KaiaRequestFaucet from "./kaia-request-faucet";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -330,10 +331,18 @@ export default function WalletManagement() {
               <RotateCcw className="w-4 h-4" />
             </Button>
           </div>
-          <p className="self-end text-3xl font-semibold">
-            {balance ? formatBalance(balance, 8) : "-/-"}{" "}
-            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
-          </p>
+          <div className="flex flex-row gap-2 items-center justify-between">
+            <Button asChild size="icon">
+              <Link href={`/portfolio?network=${network}&address=${walletAddress}`}>
+                <ScrollText className="h-4 w-4" />
+              </Link>
+            </Button>
+            <p className="text-3xl font-semibold">
+              {balance ? formatBalance(balance, 8) : "-/-"}{" "}
+              <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
+            </p>
+          </div>
+
         </div>
       ) : createWalletButtonActive === true &&
         loadingWalletStorage === false ? (
