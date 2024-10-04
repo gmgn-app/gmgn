@@ -46,7 +46,7 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full items-start`}
         variant="ghost"
       >
-        <Link className="flex flex-col items-center" href="/collections">
+        <Link className="flex flex-col items-center" href="/earn">
           
 
           <Sprout className="w-4 h-4 mr-2" />

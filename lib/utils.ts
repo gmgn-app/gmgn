@@ -161,7 +161,7 @@ export function selectNativeAssetSymbol(network: string | undefined) {
 export function selectJsonRpcProvider(network: string | undefined) {
   switch (network) {
     case "kaia":
-      return new JsonRpcProvider("https://public-en-kaia.node.kaia.io");
+      return new JsonRpcProvider("https://public-en.node.kaia.io");
     case "kaia-kairos":
       return new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
     default:

@@ -54,6 +54,7 @@
     "react-medium-image-zoom": "^5.2.10",
     "react-qr-code": "^2.0.15",
     "react-syntax-highlighter": "^15.5.0",
+    "remark-gfm": "^4.0.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",

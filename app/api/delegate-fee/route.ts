@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   function selectJsonRpcProvider(network: string | undefined) {
     switch (network) {
       case "kaia":
-        return "https://public-en-kaia.node.kaia.io";
+        return "https://public-en.node.kaia.io";
       case "kaia-kairos":
         return "https://public-en-kairos.node.kaia.io";
       default:
