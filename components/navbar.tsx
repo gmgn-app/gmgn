@@ -21,49 +21,53 @@ export default function NavBar() {
   }
 
   return (
-    <div className="grid grid-cols-4 fixed bottom-0 w-full md:w-[768px] h-[80px] bg-white">
+    <div className="grid grid-cols-4 fixed bottom-0 left-0 md:left- w-full md:w-[768px] h-[80px] bg-white">
       <Button
-        className={`${isActivePath(
+        className={`flex flex-col justify-start ${isActivePath(
           "/"
-        )} rounded-none border-t-2 h-full items-start`}
+        )} rounded-none border-t-2 h-full`}
         variant="ghost"
+        asChild
       >
-        <Link className="flex flex-col items-center" href={constructNavUrl(network, address)}>
+        <Link href={constructNavUrl(network, address)}>
           <House className="w-4 h-4 mr-2" />
           Home
         </Link>
       </Button>
       <Button
-        className={`${isActivePath(
+        className={`flex flex-col justify-start ${isActivePath(
           "/trade"
-        )} rounded-none border-t-2 h-full items-start`}
+        )} rounded-none border-t-2 h-full`}
         variant="ghost"
+        asChild
+        disabled
       >
-        <Link className="flex flex-col items-center" href={`/trade?network=${network}&address=${address}`}>
+        <Link href={`/trade?network=${network}&address=${address}`}>
           <Repeat className="w-4 h-4 mr-2" />
           Trade
         </Link>
       </Button>
       <Button
-        className={`${isActivePath(
+        className={`flex flex-col justify-start ${isActivePath(
           "/earn"
-        )} rounded-none border-t-2 h-full items-start`}
+        )} rounded-none border-t-2 h-full`}
         variant="ghost"
+        asChild
       >
-        <Link className="flex flex-col items-center" href={`/earn?network=${network}&address=${address}`}>
-          
-
+        <Link href={`/earn?network=${network}&address=${address}`}>
           <Sprout className="w-4 h-4 mr-2" />
           Earn
         </Link>
       </Button>
       <Button
-        className={`${isActivePath(
+        className={`flex flex-col justify-start ${isActivePath(
           "/explore"
-        )} rounded-none border-t-2 h-full items-start`}
+        )} rounded-none border-t-2 h-full`}
         variant="ghost"
+        asChild
+        disabled
       >
-        <Link className="flex flex-col items-center" href={`/explore?network=${network}&address=${address}`}>
+        <Link href={`/explore?network=${network}&address=${address}`}>
           <Telescope className="w-4 h-4 mr-2" />
           Explore
         </Link>
