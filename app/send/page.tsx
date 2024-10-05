@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import SendTransactionForm from "@/components/send-transaction-form";
 import Link from "next/link";
-import Image from "next/image";
 import BackButton from "@/components/back-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";

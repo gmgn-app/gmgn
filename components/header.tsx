@@ -23,7 +23,7 @@ export default function Header() {
   const network = searchParams.get("network");
   const address = searchParams.get("address");
 
-  async function handleInputNetworkChange(value: string) {
+  function handleInputNetworkChange(value: string) {
     router.push(`?network=${value}&address=${address}`);
   }
 
