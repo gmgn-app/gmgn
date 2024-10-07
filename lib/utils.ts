@@ -10,7 +10,7 @@ import {
   fraxtalTestnet,
   berachainTestnetbArtio,
   luksoTestnet,
-  kaia
+  kaia,
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 
@@ -78,7 +78,7 @@ export function selectChainNameFromNetwork(network: string | undefined | null) {
       return "bArtio Testnet";
     case "lukso-testnet":
       return "Lukso Testnet";
-    default:  
+    default:
       return "Unknown Network";
   }
 }
@@ -169,10 +169,9 @@ export function selectJsonRpcProvider(network: string | undefined | null) {
   }
 }
 
-
 export function constructNavUrl(
   network: string | undefined | null,
-  address: string | undefined | null,
+  address: string | undefined | null
 ) {
   if (address === null || address === undefined || address === "null") {
     return `/?network=${network}`;
@@ -191,21 +190,25 @@ export const GMGN_NETWORKS = [
   "bartio-testnet",
   "lukso-testnet",
 ];
-  
 
 export function manageAvailableNetworksInLocalStorage() {
-
   // if the user has not set the GMGN_NETWORKS in the local storage, set it.
-  if (!localStorage.getItem("gmgn-networks")) {
-    localStorage.setItem("gmgn-available-networks", JSON.stringify(GMGN_NETWORKS));
+  if (!localStorage.getItem("gmgn-available-networks")) {
+    localStorage.setItem(
+      "gmgn-available-networks",
+      JSON.stringify(GMGN_NETWORKS)
+    );
     return GMGN_NETWORKS;
   }
 
   // get the GMGN_NETWORKS from the local storage
-  if (localStorage.getItem("gmgn-networks")) {
-    const GMGN_NETWORKS_FROM_LOCAL_STORAGE = JSON.parse(
-      localStorage.getItem("gmgn-networks")!
+  const GMGN_NETWORKS_FROM_LOCAL_STORAGE = localStorage.getItem(
+    "gmgn-available-networks"
+  );
+  if (GMGN_NETWORKS_FROM_LOCAL_STORAGE) {
+    const GMGN_AVAILABLE_NETWORKS = JSON.parse(
+      GMGN_NETWORKS_FROM_LOCAL_STORAGE!
     );
-    return GMGN_NETWORKS_FROM_LOCAL_STORAGE;
+    return GMGN_AVAILABLE_NETWORKS;
   }
 }

@@ -15,9 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
-import { GMGN_NETWORKS, selectChainNameFromNetwork, constructNavUrl } from "@/lib/utils";
+import { Save, RotateCcw } from "lucide-react";
+import {
+  GMGN_NETWORKS,
+  selectChainNameFromNetwork,
+  constructNavUrl,
+} from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -28,9 +33,14 @@ export default function NetworksPage() {
   const network = searchParams.get("network");
   const [availableNetworks, setAvailableNetworks] = useState(GMGN_NETWORKS);
 
+  // Toast notifications.
+  const { toast } = useToast();
+
   useEffect(() => {
     // Get the available networks from the user local storage.
-    const GMGN_AVAILABLE_NETWORKS = JSON.parse(localStorage.getItem("gmgn-available-networks")!);
+    const GMGN_AVAILABLE_NETWORKS = JSON.parse(
+      localStorage.getItem("gmgn-available-networks")!
+    );
     setAvailableNetworks(GMGN_AVAILABLE_NETWORKS);
     // Get the default network from the user local storage.
     const GMGN_DEFAULT_NETWORK = localStorage.getItem("gmgn-default-network");
@@ -49,12 +59,18 @@ export default function NetworksPage() {
     // Save the default network to the user local storage.
     const GMGN_DEFAULT_NETWORK = network;
     localStorage.setItem("gmgn-default-network", GMGN_DEFAULT_NETWORK!);
+    toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+      title: "Default network saved!",
+      description: "Go ahead and start using the wallet.",
+    });
   }
 
   function handleChangeActiveNetwork(network: string) {
     let newAvailableNetworks = [...availableNetworks];
     if (newAvailableNetworks.includes(network)) {
-      newAvailableNetworks = newAvailableNetworks.filter(n => n !== network);
+      newAvailableNetworks = newAvailableNetworks.filter((n) => n !== network);
     } else {
       newAvailableNetworks.push(network);
     }
@@ -63,11 +79,33 @@ export default function NetworksPage() {
   }
 
   function handleSaveAvailableNetworks() {
-    console.log(availableNetworks);
     // Save the available networks to the user local storage.
-    localStorage.setItem("gmgn-available-networks", JSON.stringify(availableNetworks.sort()));
+    localStorage.setItem(
+      "gmgn-available-networks",
+      JSON.stringify(availableNetworks.sort())
+    );
+    toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+      title: "Available networks saved!",
+      description: "Go ahead and start using the wallet.",
+    });
   }
 
+  function handleResetAvailableNetworks() {
+    setAvailableNetworks(GMGN_NETWORKS);
+    localStorage.setItem(
+      "gmgn-available-networks",
+      JSON.stringify(GMGN_NETWORKS)
+    );
+    toast({
+      className:
+        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+      title: "Available networks reset!",
+      description: "Go ahead and start using the wallet.",
+    });
+  }
+  
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
       <Link href={constructNavUrl(network, address)}>
@@ -84,7 +122,7 @@ export default function NetworksPage() {
       </h1>
       <BackButton route={constructNavUrl(network, address)} />
       <div className="flex flex-col gap-2">
-        <h2>Default network</h2>
+        <h2 className="text-md font-semibold">Default network</h2>
         <Select
           value={network!}
           onValueChange={handleInputNetworkChange}
@@ -110,10 +148,13 @@ export default function NetworksPage() {
         </Button>
       </div>
       <div className="flex flex-col gap-4">
-        <h2>Available networks</h2>
+        <h2 className="text-md font-semibold">Available networks</h2>
         <div className="flex flex-col gap-2">
           {GMGN_NETWORKS.map((network) => (
-            <div key={network} className="flex flex-row items-center justify-between">
+            <div
+              key={network}
+              className="flex flex-row items-center justify-between"
+            >
               <h3>{selectChainNameFromNetwork(network)}</h3>
               <div className="flex flex-row gap-2 items-center">
                 <Switch
@@ -125,10 +166,23 @@ export default function NetworksPage() {
             </div>
           ))}
         </div>
-        <Button onClick={handleSaveAvailableNetworks} className="w-fit self-end">
-          <Save className="mr-2 w-4 h-4" />
-          Save available networks
-        </Button>
+        <div className="flex flex-row justify-between items-center">
+          <Button
+            variant="secondary"
+            onClick={handleResetAvailableNetworks}
+            className="w-fit self-start"
+          >
+            <RotateCcw className="mr-2 w-4 h-4" />
+            Reset
+          </Button>
+          <Button
+            onClick={handleSaveAvailableNetworks}
+            className="w-fit self-end"
+          >
+            <Save className="mr-2 w-4 h-4" />
+            Save available networks
+          </Button>
+        </div>
       </div>
     </div>
   );
