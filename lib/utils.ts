@@ -179,3 +179,32 @@ export function constructNavUrl(
   }
   return `/?network=${network}&address=${address}`;
 }
+
+export const GMGN_NETWORKS = [
+  "kaia-kairos",
+  "kaia",
+  "arbitrum-sepolia",
+  "base-sepolia",
+  "ethereum-sepolia",
+  "abstract-testnet",
+  "fraxtal-testnet",
+  "bartio-testnet",
+  "lukso-testnet",
+];
+  
+
+export function manageAvailableNetworksInLocalStorage() {
+
+  // if the user has not set the GMGN_NETWORKS in the local storage, set it.
+  if (!localStorage.getItem("gmgn-networks")) {
+    localStorage.setItem("gmgn-available-networks", JSON.stringify(GMGN_NETWORKS));
+  }
+
+  // get the GMGN_NETWORKS from the local storage
+  if (localStorage.getItem("gmgn-networks")) {
+    const GMGN_NETWORKS_FROM_LOCAL_STORAGE = JSON.parse(
+      localStorage.getItem("gmgn-networks")!
+    );
+    return GMGN_NETWORKS_FROM_LOCAL_STORAGE;
+  }
+}

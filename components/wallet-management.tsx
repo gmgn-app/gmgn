@@ -55,6 +55,8 @@ import {
   truncateAddress,
   formatBalance,
   selectViemChainFromNetwork,
+  manageAvailableNetworksInLocalStorage,
+  constructNavUrl,
 } from "@/lib/utils";
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
@@ -85,11 +87,21 @@ export default function WalletManagement() {
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
 
   useEffect(() => {
-    if (paramAddress === null || paramAddress === "null") {
-      router.push(`?network=${network}`);
+    const GMGN_DEFAULT_NETWORK = localStorage.getItem("gmgn-default-network");
+    if (GMGN_DEFAULT_NETWORK) {
+      setNetwork(GMGN_DEFAULT_NETWORK);
+    }
+    if ((paramAddress === null || paramAddress === "null") && (paramNetwork === null || paramNetwork === "null") && GMGN_DEFAULT_NETWORK) {
+      router.push(`?network=${GMGN_DEFAULT_NETWORK}`);
+    } else if ((paramAddress === null || paramAddress === "null") && paramNetwork) {
+      router.push(`?network=${paramNetwork}`);
+      setNetwork(paramNetwork);
     } else {
       router.push(`?network=${network}&address=${walletAddress}`);
     }
+
+    const GMGN_AVAILABLE_NETWORKS = manageAvailableNetworksInLocalStorage();
+
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
       const wallet = JSON.parse(GMGN_WALLET);
@@ -230,7 +242,11 @@ export default function WalletManagement() {
 
   async function handleInputNetworkChange(value: string) {
     setNetwork(value);
-    router.push(`?network=${value}&address=${walletAddress}`);
+    if (walletAddress) {
+      router.push(`?network=${value}&address=${walletAddress}`);
+    } else {
+      router.push(`?network=${value}`);
+    }
     const publicClient = createPublicClient({
       chain: selectViemChainFromNetwork(value as string),
       transport: http(),
@@ -246,7 +262,7 @@ export default function WalletManagement() {
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-row justify-between items-center">
-        <Link href={`/?network=${network}&address=${walletAddress}`}>
+        <Link href={constructNavUrl(network, walletAddress)}>
           <Image
             src="/gmgn-logo.svg"
             alt="gmgn logo"
@@ -304,7 +320,7 @@ export default function WalletManagement() {
         <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              <Link href="/profile">
+              <Link href={`/profile?network=${network}&address=${walletAddress}`}>
                 <Image
                   src={walletIcon ? walletIcon : "/default-profile.svg"}
                   alt="avatar"
@@ -314,7 +330,7 @@ export default function WalletManagement() {
                 />
               </Link>
               <div className="flex flex-col text-sm">
-                <Link href="/profile" className="flex flex-row gap-2 items-center p-2">
+                <Link href={`/profile?network=${network}&address=${walletAddress}`} className="flex flex-row gap-2 items-center p-2">
                   <p>{walletName ? walletName : "---"}</p>
                   <Pencil className="w-4 h-4" />
                 </Link>
