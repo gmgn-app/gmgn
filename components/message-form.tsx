@@ -119,6 +119,9 @@ export default function MessageForm() {
   // QR Scan for input
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
 
+  // QR Scan open/close state
+  const [isQrScanOpen, setIsQrScanOpen] = useState(false);
+
   // publicClient for ENS lookup
   const mainnetPublicClient = createPublicClient({
     chain: mainnet,
@@ -211,14 +214,15 @@ export default function MessageForm() {
       // delay the success message for 2 seconds
       setTimeout(() => {
         setQrScanSuccess(false);
-      }, 5000);
+      }, 500);
     } else {
       setReceivingAddress(data);
       setQrScanSuccess(true);
       // delay the success message for 2 seconds
       setTimeout(() => {
         setQrScanSuccess(false);
-      }, 5000);
+        setIsQrScanOpen(false);
+      }, 500);
     }
   }
 
@@ -536,7 +540,7 @@ export default function MessageForm() {
                 <ClipboardPaste className="h-4 w-4" />
               )}
             </Button>
-            <Dialog>
+            <Dialog open={isQrScanOpen} onOpenChange={setIsQrScanOpen}>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
                   <ScanLine className="w-4 h-4" />

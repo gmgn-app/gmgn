@@ -32,6 +32,9 @@ export default function PayPage() {
   const network = searchParams.get("network");
   const [paymentLink, setPaymentLink] = useState("");
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
+
+  const [isQrScanOpen, setIsQrScanOpen] = useState(false);
+
   const [isPasted, setIsPasted] = useState(false);
  
   const paste = async () => {
@@ -53,7 +56,8 @@ export default function PayPage() {
       // delay the success message for 2 seconds
       setTimeout(() => {
         setQrScanSuccess(false);
-      }, 5000);
+        setIsQrScanOpen(false);
+      }, 500);
     }
   }
 
@@ -208,7 +212,7 @@ export default function PayPage() {
               <ClipboardPaste className="h-4 w-4" />
             }
           </Button>
-          <Dialog>
+          <Dialog open={isQrScanOpen} onOpenChange={setIsQrScanOpen}>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
                   <ScanLine className="w-4 h-4" />
