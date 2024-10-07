@@ -122,6 +122,9 @@ export default function SendTransactionForm() {
   // QR Scan for input
   const [qrScanSuccess, setQrScanSuccess] = useState(false);
 
+  // QR Scan open/close state
+  const [isQrScanOpen, setIsQrScanOpen] = useState(false);
+
   // publicClient for ENS lookup
   const mainnetPublicClient = createPublicClient({
     chain: mainnet,
@@ -221,6 +224,7 @@ export default function SendTransactionForm() {
       // delay the success message for 2 seconds
       setTimeout(() => {
         setQrScanSuccess(false);
+        setIsQrScanOpen(false);
       }, 5000);
     }
   }
@@ -581,7 +585,7 @@ export default function SendTransactionForm() {
                 <ClipboardPaste className="h-4 w-4" />
               )}
             </Button>
-            <Dialog>
+            <Dialog open={isQrScanOpen} onOpenChange={setIsQrScanOpen}>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="icon">
                   <ScanLine className="w-4 h-4" />
