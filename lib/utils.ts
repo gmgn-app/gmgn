@@ -198,6 +198,7 @@ export function manageAvailableNetworksInLocalStorage() {
   // if the user has not set the GMGN_NETWORKS in the local storage, set it.
   if (!localStorage.getItem("gmgn-networks")) {
     localStorage.setItem("gmgn-available-networks", JSON.stringify(GMGN_NETWORKS));
+    return GMGN_NETWORKS;
   }
 
   // get the GMGN_NETWORKS from the local storage

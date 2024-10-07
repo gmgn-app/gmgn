@@ -15,6 +15,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { constructNavUrl } from "@/lib/utils";
 
 
 export default function Header() {
@@ -29,7 +30,7 @@ export default function Header() {
 
   return (
     <div className="flex flex-row justify-between items-center">
-      <Link href={`/?network=${network}&address=${address}`}>
+      <Link href={constructNavUrl(network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"

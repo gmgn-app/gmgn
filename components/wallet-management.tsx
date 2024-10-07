@@ -57,7 +57,9 @@ import {
   selectViemChainFromNetwork,
   manageAvailableNetworksInLocalStorage,
   constructNavUrl,
+  selectChainNameFromNetwork,
 } from "@/lib/utils";
+
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
 
@@ -85,6 +87,7 @@ export default function WalletManagement() {
   const [network, setNetwork] = useState<string | null>(paramNetwork || "kaia-kairos");
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
+  const [availableNetworks, setAvailableNetworks] = useState([]);
 
   useEffect(() => {
     const GMGN_DEFAULT_NETWORK = localStorage.getItem("gmgn-default-network");
@@ -101,6 +104,7 @@ export default function WalletManagement() {
     }
 
     const GMGN_AVAILABLE_NETWORKS = manageAvailableNetworksInLocalStorage();
+    setAvailableNetworks(GMGN_AVAILABLE_NETWORKS);
 
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
@@ -283,27 +287,13 @@ export default function WalletManagement() {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Select a network</SelectLabel>
-                <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
-                <SelectItem value="kaia">Kaia</SelectItem>
-                <SelectItem value="arbitrum-sepolia">
-                  Aribtrum Sepolia
-                </SelectItem>
-                <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
-                <SelectItem value="ethereum-sepolia">
-                  Ethereum Sepolia
-                </SelectItem>
-                <SelectItem value="fraxtal-testnet">
-                  Fraxtal Testnet
-                </SelectItem>
-                <SelectItem value="abstract-testnet">
-                  Abstract Testnet
-                </SelectItem>
-                <SelectItem value="bartio-testnet">
-                  bArtio Testnet
-                </SelectItem>
-                <SelectItem value="lukso-testnet">
-                  Lukso Testnet
-                </SelectItem>
+                {
+                  availableNetworks.sort().map((network) => (
+                    <SelectItem key={network} value={network}>
+                      {selectChainNameFromNetwork(network)}
+                    </SelectItem>
+                  ))
+                }
               </SelectGroup>
             </SelectContent>
           </Select>
