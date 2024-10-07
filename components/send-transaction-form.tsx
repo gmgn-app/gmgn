@@ -217,7 +217,7 @@ export default function SendTransactionForm() {
       // delay the success message for 2 seconds
       setTimeout(() => {
         setQrScanSuccess(false);
-      }, 5000);
+      }, 500);
     } else {
       setReceivingAddress(data);
       setQrScanSuccess(true);
@@ -225,7 +225,7 @@ export default function SendTransactionForm() {
       setTimeout(() => {
         setQrScanSuccess(false);
         setIsQrScanOpen(false);
-      }, 5000);
+      }, 500);
     }
   }
 
