@@ -75,11 +75,7 @@ export default function WalletManagement() {
 
   // Create the state variables for the wallet management
   const [balance, setBalance] = useState("");
-  // Get the wallet address and set the wallet address from the WalletAddressContext.
-  // const { walletAddress, setWalletAddress, network, setNetwork } = useContext(
-  //   WalletContext
-  // ) as WalletContextType;
-  const [walletAddress, setWalletAddress] = useState<Address | null>(paramAddress as Address || null);
+  const [walletAddress, setWalletAddress] = useState<Address | null>(paramAddress && paramAddress !== "null" ? paramAddress as Address : null);
   // Create the state variables for the wallet management
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
