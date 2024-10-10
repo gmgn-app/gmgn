@@ -11,13 +11,13 @@ export default function MoreBlocks() {
   return (
     <div className="flex flex-col gap-4 w-full">
       <Link href={`/getting-started?network=${network}&address=${address}`}>
-        <div className="flex flex-col gap-2 border-2 p-4 rounded-md">
+        <div className="flex flex-col gap-2 border-2 border-primary p-4 rounded-md">
           <h2>Getting started</h2>
           <p className="text-muted-foreground text-sm">Master GM GN wallet, unlock rewards and opportunities</p>
         </div>
       </Link>
       <Link href={`/learn?network=${network}&address=${address}`}>
-        <div className="flex flex-col gap-2 border-2 p-4 rounded-md">
+        <div className="flex flex-col gap-2 border-2 border-primary p-4 rounded-md">
           <h2>Learn</h2>
           <p className="text-muted-foreground text-sm">Explore the world of blockchains and cryptocurrencies</p>
         </div>

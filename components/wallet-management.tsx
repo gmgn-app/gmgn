@@ -91,12 +91,12 @@ export default function WalletManagement() {
       setNetwork(GMGN_DEFAULT_NETWORK);
     }
     if ((paramAddress === null || paramAddress === "null") && (paramNetwork === null || paramNetwork === "null") && GMGN_DEFAULT_NETWORK) {
-      router.push(`?network=${GMGN_DEFAULT_NETWORK}`);
+      router.push(`/?network=${GMGN_DEFAULT_NETWORK}`);
     } else if ((paramAddress === null || paramAddress === "null") && paramNetwork) {
-      router.push(`?network=${paramNetwork}`);
+      router.push(`/?network=${paramNetwork}`);
       setNetwork(paramNetwork);
     } else {
-      router.push(`?network=${network}&address=${walletAddress}`);
+      router.push(`/?network=${network}&address=${walletAddress}`);
     }
 
     const GMGN_AVAILABLE_NETWORKS = manageAvailableNetworksInLocalStorage();
@@ -112,6 +112,7 @@ export default function WalletManagement() {
         setLoadingWalletStorage(false);
       }
     } else {
+      router.push(`/?network=${network}`);
       setLoadingWalletStorage(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
