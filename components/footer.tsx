@@ -4,7 +4,7 @@ import { ExternalLink, Rss } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col gap-2 p-4 item-center justify-center w-screen md:w-[768px] pt-12 text-left text-sm">
+    <footer className="flex flex-col gap-2 px-4 py-12 item-center justify-center w-screen md:w-[768px] text-left text-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 border-2 border-primary">
         <div className="flex flex-col">
           <div className="flex flex-col gap-4 border border-primary p-10">

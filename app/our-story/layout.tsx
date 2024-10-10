@@ -22,7 +22,7 @@ export default function MdxLayout({ children }: { children: React.ReactNode }) {
         />
       </Link>
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-        About
+        Our story
       </h1>
       <BackButton route={`/?network=${network}&address=${address}`} />
       {children}
