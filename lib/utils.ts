@@ -11,8 +11,10 @@ import {
   berachainTestnetbArtio,
   luksoTestnet,
   kaia,
+  moonbaseAlpha
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
+import { GMGN_NETWORKS } from "@/lib/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -78,6 +80,8 @@ export function selectChainNameFromNetwork(network: string | undefined | null) {
       return "bArtio Testnet";
     case "lukso-testnet":
       return "Lukso Testnet";
+    case "moonbase-alpha-testnet":
+      return "Moonbase Alpha";
     default:
       return "Unknown Network";
   }
@@ -103,6 +107,8 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
       return berachainTestnetbArtio;
     case "lukso-testnet":
       return luksoTestnet;
+    case "moonbase-alpha-testnet":
+      return moonbaseAlpha;
     default:
       return kairos;
   }
@@ -128,6 +134,8 @@ export function selectBlockExplorer(network: string | undefined | null) {
       return "https://bartio.beratrail.io";
     case "lukso-testnet":
       return "https://explorer.execution.testnet.lukso.network";
+    case "moonbase-alpha-testnet":
+      return "https://moonbase.moonscan.io";
     default:
       return "https://kairos.kaiascan.io";
   }
@@ -153,6 +161,8 @@ export function selectNativeAssetSymbol(network: string | undefined | null) {
       return "BERA";
     case "lukso-testnet":
       return "LYXt";
+    case "moonbase-alpha-testnet":
+      return "DEV";
     default:
       return "KLAY";
   }
@@ -179,17 +189,6 @@ export function constructNavUrl(
   return `/?network=${network}&address=${address}`;
 }
 
-export const GMGN_NETWORKS = [
-  "kaia-kairos",
-  "kaia",
-  "arbitrum-sepolia",
-  "base-sepolia",
-  "ethereum-sepolia",
-  "abstract-testnet",
-  "fraxtal-testnet",
-  "bartio-testnet",
-  "lukso-testnet",
-];
 
 export function manageAvailableNetworksInLocalStorage() {
   // if the user has not set the GMGN_NETWORKS in the local storage, set it.

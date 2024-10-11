@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Select,
@@ -15,7 +16,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
-import { constructNavUrl } from "@/lib/utils";
+import { constructNavUrl, selectChainNameFromNetwork } from "@/lib/utils";
+import { GMGN_NETWORKS } from "@/lib/chains";
 
 
 export default function Header() {
@@ -23,9 +25,37 @@ export default function Header() {
   const searchParams = useSearchParams();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
+  const [availableNetworks, setAvailableNetworks] = useState<string[]>([]);
+
+  useEffect(() => {
+    // if the user has not set the GMGN_NETWORKS in the local storage, set it.
+    if (!localStorage.getItem("gmgn-available-networks")) {
+      localStorage.setItem(
+        "gmgn-available-networks",
+        JSON.stringify(GMGN_NETWORKS)
+      );
+      setAvailableNetworks(GMGN_NETWORKS);
+    }
+
+    // get the GMGN_NETWORKS from the local storage
+    const GMGN_NETWORKS_FROM_LOCAL_STORAGE = localStorage.getItem(
+      "gmgn-available-networks"
+    );
+    if (GMGN_NETWORKS_FROM_LOCAL_STORAGE) {
+      const GMGN_AVAILABLE_NETWORKS = JSON.parse(
+        GMGN_NETWORKS_FROM_LOCAL_STORAGE!
+      );
+      setAvailableNetworks(GMGN_AVAILABLE_NETWORKS);
+    }
+  }, []);
 
   function handleInputNetworkChange(value: string) {
-    router.push(`?network=${value}&address=${address}`);
+    if (address === null || address === undefined || address === "null") {
+      router.push(`?network=${value}`);
+      return;
+    } else {
+      router.push(`?network=${value}&address=${address}`);
+    }
   }
 
   return (
@@ -51,15 +81,11 @@ export default function Header() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Select a network</SelectLabel>
-              <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
-              <SelectItem value="kaia">Kaia</SelectItem>
-              <SelectItem value="arbitrum-sepolia">Aribtrum Sepolia</SelectItem>
-              <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
-              <SelectItem value="ethereum-sepolia">Ethereum Sepolia</SelectItem>
-              <SelectItem value="fraxtal-testnet">Fraxtal Testnet</SelectItem>
-              <SelectItem value="abstract-testnet">Abstract Testnet</SelectItem>
-              <SelectItem value="bartio-testnet">bArtio Testnet</SelectItem>
-              <SelectItem value="lukso-testnet">Lukso Testnet</SelectItem>
+              {availableNetworks.sort().map((network) => (
+                <SelectItem key={network} value={network}>
+                  {selectChainNameFromNetwork(network)}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>

@@ -26,7 +26,7 @@ import {
   Pencil,
   HandCoins,
   Droplets,
-  ScrollText,
+  ChartPie,
 } from "lucide-react";
 import {
   Dialog,
@@ -339,7 +339,7 @@ export default function WalletManagement() {
           <div className="flex flex-row gap-2 items-center justify-between">
             <Button asChild size="icon">
               <Link href={`/portfolio?network=${network}&address=${walletAddress}`}>
-                <ScrollText className="h-4 w-4" />
+                <ChartPie className="h-4 w-4" />
               </Link>
             </Button>
             <p className="text-3xl font-semibold">
@@ -347,7 +347,6 @@ export default function WalletManagement() {
               <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
             </p>
           </div>
-
         </div>
       ) : createWalletButtonActive === true &&
         loadingWalletStorage === false ? (

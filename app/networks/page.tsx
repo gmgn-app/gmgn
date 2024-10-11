@@ -19,10 +19,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Save, RotateCcw } from "lucide-react";
 import {
-  GMGN_NETWORKS,
   selectChainNameFromNetwork,
   constructNavUrl,
 } from "@/lib/utils";
+import { GMGN_NETWORKS } from "@/lib/chains";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 

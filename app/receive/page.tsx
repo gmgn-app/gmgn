@@ -2,13 +2,13 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import QRCode from "react-qr-code";
 import { truncateAddress, selectChainNameFromNetwork } from "@/lib/utils";
 import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
 import BackButton from "@/components/back-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Header from "@/components/header";
 
 export default function ReceivePage() {
   const searchParams = useSearchParams();
@@ -17,15 +17,7 @@ export default function ReceivePage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Receive
       </h1>

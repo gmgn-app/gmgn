@@ -1,3 +1,16 @@
+export const GMGN_NETWORKS = [
+  "kaia-kairos",
+  "kaia",
+  "arbitrum-sepolia",
+  "base-sepolia",
+  "ethereum-sepolia",
+  "abstract-testnet",
+  "fraxtal-testnet",
+  "bartio-testnet",
+  "lukso-testnet",
+  "moonbase-alpha-testnet",
+];
+
 export const CHAINS_INFO = [
   {
     id: 1,
