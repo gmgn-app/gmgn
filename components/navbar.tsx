@@ -29,7 +29,7 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl(network, address)}>
+        <Link href={constructNavUrl("/", network, address)}>
           <House className="w-4 h-4 mr-2" />
           Home
         </Link>
@@ -42,7 +42,7 @@ export default function NavBar() {
         asChild
         disabled
       >
-        <Link href={`/trade?network=${network}&address=${address}`}>
+        <Link href={constructNavUrl("/trade", network, address)}>
           <Repeat className="w-4 h-4 mr-2" />
           Trade
         </Link>
@@ -54,7 +54,7 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href={`/earn?network=${network}&address=${address}`}>
+        <Link href={constructNavUrl("/earn", network, address)}>
           <Sprout className="w-4 h-4 mr-2" />
           Earn
         </Link>
@@ -67,7 +67,7 @@ export default function NavBar() {
         asChild
         disabled
       >
-        <Link href={`/explore?network=${network}&address=${address}`}>
+        <Link href={constructNavUrl("/explore", network, address)}>
           <Telescope className="w-4 h-4 mr-2" />
           Explore
         </Link>
