@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +41,15 @@ import {
   SearchCode,
   Code,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
   Dialog,
@@ -72,10 +82,12 @@ import { mainnet } from "viem/chains";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { CHAINS_INFO } from "@/lib/chains";
 import { mockStablecoinAbi } from "@/lib/abis";
+import { useRouter } from "next/navigation";
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
+  const router = useRouter();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
   const token = searchParams.get("token");
@@ -204,7 +216,8 @@ export default function SendTransactionForm() {
     }
     if (
       address &&
-      network && token !== "0x0000000000000000000000000000000000000000"
+      network &&
+      token !== "0x0000000000000000000000000000000000000000"
     ) {
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network as string),
@@ -228,7 +241,7 @@ export default function SendTransactionForm() {
         // make sure to catch any error
         .catch(console.error);
     }
-  }, [address, network]);
+  }, [address, network, token]);
 
   // public client for balance refresh
   const publicClient = createPublicClient({
@@ -237,11 +250,51 @@ export default function SendTransactionForm() {
   });
 
   // Function to fetch balance
-  async function fetchBalance() {
-    const balance = await publicClient.getBalance({
-      address: address as Address,
-    });
-    setCurrentBalance(formatEther(balance).toString());
+  async function fetchBalances() {
+    if (
+      address &&
+      network &&
+      token === "0x0000000000000000000000000000000000000000"
+    ) {
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        setCurrentBalance(formatEther(balance).toString());
+        setCurrentNativeBalance(formatEther(balance).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+    if (
+      address &&
+      network &&
+      token !== "0x0000000000000000000000000000000000000000"
+    ) {
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        const tokenBalance = await publicClient.readContract({
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "balanceOf",
+          args: [address as Address],
+        });
+        setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
+        setCurrentNativeBalance(formatEther(balance as bigint).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+  }
+
+  function handleInputTokenChange(value: string) {
+    router.push(`?network=${network}&address=${address}&token=${value}`);
   }
 
   // Function to handle QR scan
@@ -332,7 +385,7 @@ export default function SendTransactionForm() {
             abi: mockStablecoinAbi,
             functionName: "transfer",
             account: address as Address,
-            args: [receivingAddress as Address, parseUnits(sendingAmount, 6)]
+            args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
           });
         }
         const gasPrice = await publicClient.getGasPrice();
@@ -413,11 +466,13 @@ export default function SendTransactionForm() {
           abi: mockStablecoinAbi,
           functionName: "transfer",
           args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
-        })
-        await walletClient.writeContract(request)
-      } 
+        });
+        hash = await walletClient.writeContract(request);
+        transaction = await publicClient.waitForTransactionReceipt({
+          hash: hash,
+        });
+      }
 
-      
       if (transaction) {
         toast({
           className:
@@ -435,6 +490,7 @@ export default function SendTransactionForm() {
             </ToastAction>
           ),
         });
+        fetchBalances();
       }
     } else {
       toast({
@@ -448,6 +504,10 @@ export default function SendTransactionForm() {
     setSendButtonLoading(false);
     setReadyToTransfer(false);
     setInputReadOnly(false);
+    setTransactionCost("");
+    setIsValidTotal(undefined);
+    setIsValidAddress(undefined);
+    setIsValidAmount(undefined);
   }
 
   // Function to prepare transaction before sending
@@ -612,7 +672,7 @@ export default function SendTransactionForm() {
               {selectNativeAssetSymbol(network, token)}
             </span>
           </p>
-          <Button onClick={fetchBalance} size="icon">
+          <Button onClick={fetchBalances} size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
@@ -626,6 +686,70 @@ export default function SendTransactionForm() {
         </p>
       </div>
       <div className="flex flex-col gap-8 mt-4 mb-6">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="sendingToken">Sending token</Label>
+          <Select
+            value={token!}
+            onValueChange={handleInputTokenChange}
+            defaultValue="0x0000000000000000000000000000000000000000"
+          >
+            <SelectTrigger className="w-full border-2 border-primary">
+              <SelectValue placeholder="Select a token" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select a token</SelectLabel>
+                <SelectItem value="0x0000000000000000000000000000000000000000">
+                  <div className="flex flex-row gap-2">
+                    <Image
+                      src="/kaia.png"
+                      alt="kaia logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    <p>
+                      {selectNativeAssetSymbol(
+                        network,
+                        "0x0000000000000000000000000000000000000000"
+                      )}
+                    </p>
+                  </div>
+                </SelectItem>
+                <SelectItem value="0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746">
+                  <div className="flex flex-row gap-2">
+                    <Image
+                      src="/usdc.svg"
+                      alt="usdc logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    {selectNativeAssetSymbol(
+                      network,
+                      "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746"
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d">
+                <div className="flex flex-row gap-2">
+                    <Image
+                      src="/usdt.svg"
+                      alt="usdt logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    {selectNativeAssetSymbol(
+                      network,
+                      "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d"
+                    )}
+                  </div>
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
           <div className="flex flex-row gap-2 items-center justify-center">
