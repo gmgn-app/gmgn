@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { constructNavUrl } from "@/lib/utils";
 
 
 export default function ConnectPage() {
@@ -23,7 +24,7 @@ export default function ConnectPage() {
   const address = searchParams.get("address");
 
   if (!network || !address) {
-    redirect(`?network=${network}&address=${address}`);
+    redirect(constructNavUrl("/", network, address));
   }
 
   const router = useRouter();
@@ -89,7 +90,7 @@ export default function ConnectPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
+      <Link href={constructNavUrl("/", network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -101,7 +102,7 @@ export default function ConnectPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Connect
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <Input
         value={wcSessionString}
         onChange={(e) => setWcSessionString(e.target.value)}

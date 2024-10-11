@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={constructNavUrl(network, address)}>
+      <Link href={constructNavUrl("/", network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -26,7 +26,7 @@ export default function SettingsPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Settings
       </h1>
-      <BackButton route={constructNavUrl(network, address)} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <SettingsForm />
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import BackButton from "@/components/back-button";
 import { useState } from "react";
 import { fromBytes } from "viem";
@@ -12,6 +11,8 @@ import { ScanEye, CircleArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import CopyButton from "@/components/copy-button";
+import Header from "@/components/header";
+import { constructNavUrl } from "@/lib/utils";
 
 export default function DeletePage() {
   const { toast } = useToast();
@@ -48,19 +49,11 @@ export default function DeletePage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Export wallet
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <h2 className="text-2xl font-semibold mt-6">
         When you export wallet, you will see your private key. Make sure to only
         do this in a private place.
@@ -81,7 +74,7 @@ export default function DeletePage() {
         </div>
 
         <Button asChild>
-          <Link href="/">
+          <Link href={constructNavUrl("/", network, address)}>
             <CircleArrowLeft className="w-4 h-4 mr-2" />
             No! Take me back
           </Link>
