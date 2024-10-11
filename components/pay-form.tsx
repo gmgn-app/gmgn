@@ -18,6 +18,8 @@ import {
   toHex,
   fromHex,
   isAddress,
+  formatUnits,
+  parseUnits
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
 import { privateKeyToAccount } from "viem/accounts";
@@ -48,6 +50,8 @@ import {
   selectJsonRpcProvider,
   selectChainNameFromNetwork,
 } from "@/lib/utils";
+import { mockStablecoinAbi } from "@/lib/abis";
+
 
 export default function PayForm() {
   // Get the search params from the URL.
@@ -58,14 +62,16 @@ export default function PayForm() {
   if (!network || !address) {
     redirect("/");
   }
-  const token = searchParams.get("token") || "0x0000000000000000000000000000000000000000";
-  const sendingAmount = searchParams.get("sendingAmount") || "";
+  const token =
+    searchParams.get("token") || "0x0000000000000000000000000000000000000000";
+  const sendingAmount = searchParams.get("sendingAmount") && token === "0x0000000000000000000000000000000000000000" ? formatEther(BigInt(searchParams.get("sendingAmount") || "0")) : formatUnits(BigInt(searchParams.get("sendingAmount") || "0"), 6);
   const receivingAddress = searchParams.get("receivingAddress") || "";
   const transactionMemo =
     fromHex(searchParams.get("transactionMemo") as `0x${string}`, "string") ||
     "";
 
   const [currentBalance, setCurrentBalance] = useState("");
+  const [currentNativeBalance, setCurrentNativeBalance] = useState("");
   const [transactionCost, setTransactionCost] = useState("");
   const [readyToTransfer, setReadyToTransfer] = useState(false);
   const [delegateFeeActive, setDelegateFeeActive] = useState(false);
@@ -85,7 +91,11 @@ export default function PayForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (address) {
+    if (
+      address &&
+      network &&
+      token === "0x0000000000000000000000000000000000000000"
+    ) {
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network as string),
         transport: http(),
@@ -95,24 +105,88 @@ export default function PayForm() {
           address: address as Address,
         });
         setCurrentBalance(formatEther(balance).toString());
+        setCurrentNativeBalance(formatEther(balance).toString());
       };
       // call the function
       fetchBalance()
         // make sure to catch any error
         .catch(console.error);
     }
-  }, [address, network]);
+    if (
+      address &&
+      network &&
+      token !== "0x0000000000000000000000000000000000000000"
+    ) {
+      const publicClient = createPublicClient({
+        chain: selectViemChainFromNetwork(network as string),
+        transport: http(),
+      });
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        const tokenBalance = await publicClient.readContract({
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "balanceOf",
+          args: [address as Address],
+        });
+        setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
+        setCurrentNativeBalance(formatEther(balance as bigint).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+  }, [address, network, token]);
 
   const publicClient = createPublicClient({
     chain: selectViemChainFromNetwork(network!),
     transport: http(),
   });
 
-  async function fetchBalance() {
-    const balance = await publicClient.getBalance({
-      address: address as Address,
-    });
-    setCurrentBalance(formatEther(balance).toString());
+  async function fetchBalances() {
+    if (
+      address &&
+      network &&
+      token === "0x0000000000000000000000000000000000000000"
+    ) {
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        setCurrentBalance(formatEther(balance).toString());
+        setCurrentNativeBalance(formatEther(balance).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+    if (
+      address &&
+      network &&
+      token !== "0x0000000000000000000000000000000000000000"
+    ) {
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        const tokenBalance = await publicClient.readContract({
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "balanceOf",
+          args: [address as Address],
+        });
+        setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
+        setCurrentNativeBalance(formatEther(balance as bigint).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
   }
 
   function handleDelegateFeeChange() {
@@ -159,17 +233,36 @@ export default function PayForm() {
           chain: selectViemChainFromNetwork(network!),
           transport: http(),
         });
-        const gas = await publicClient.estimateGas({
-          account: address as Address,
-          to: receivingAddress as Address,
-          value: parseEther(sendingAmount),
-          data: toHex(transactionMemo),
-        });
+
+        let gas;
+        if (token === "0x0000000000000000000000000000000000000000") {
+          gas = await publicClient.estimateGas({
+            account: address as Address,
+            to: receivingAddress as Address,
+            value: parseEther(sendingAmount),
+            data: toHex(transactionMemo),
+          });
+        } else {
+          gas = await publicClient.estimateContractGas({
+            address: token as Address,
+            abi: mockStablecoinAbi,
+            functionName: "transfer",
+            account: address as Address,
+            args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+          });
+        }
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
         setTransactionCost(formatEther(gasCost));
-        const isValidTotal =
-          parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        let isValidTotal;
+        if (token === "0x0000000000000000000000000000000000000000") {
+          isValidTotal =
+            parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        } else {
+          isValidTotal =
+            parseEther(currentBalance) >= parseEther(sendingAmount) &&
+            parseEther(currentNativeBalance) >= gasCost;
+        }
         if (isValidTotal) {
           setIsValidTotal(true);
           setReadyToTransfer(true);
@@ -210,25 +303,44 @@ export default function PayForm() {
         chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
-      const hash = await walletClient.sendTransaction({
-        account,
-        to: receivingAddress as Address,
-        value: parseEther(sendingAmount),
-        data: toHex(transactionMemo),
-      });
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
-      const transaction = await publicClient.waitForTransactionReceipt({
-        hash: hash,
-      });
+      let transaction = null;
+      let hash = null;
+
+      if (token === "0x0000000000000000000000000000000000000000") {
+        hash = await walletClient.sendTransaction({
+          account,
+          to: receivingAddress as Address,
+          value: parseEther(sendingAmount),
+          data: toHex(transactionMemo),
+        });
+        transaction = await publicClient.waitForTransactionReceipt({
+          hash: hash,
+        });
+      } else {
+        const { request } = await publicClient.simulateContract({
+          account: privateKeyToAccount(privateKey as Address),
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "transfer",
+          args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+          dataSuffix: toHex(`-${transactionMemo}`),
+        });
+        hash = await walletClient.writeContract(request);
+        transaction = await publicClient.waitForTransactionReceipt({
+          hash: hash,
+        });
+      }
+
       if (transaction) {
         toast({
           className:
             "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
           title: "Transaction sent!",
-          description: "Hash: " + truncateHash(hash, 6),
+          description: "Hash: " + truncateHash(hash ?? undefined, 6),
           action: (
             <ToastAction altText="view">
               <a
@@ -240,6 +352,7 @@ export default function PayForm() {
             </ToastAction>
           ),
         });
+        fetchBalances();
       }
     } else {
       toast({
@@ -387,14 +500,24 @@ export default function PayForm() {
       <div className="flex flex-col">
         <h2 className="text-xl">Balance</h2>
         <div className="flex flex-row items-center justify-between">
-          <p className="text-2xl">
+        <p className="text-2xl font-semibold">
             {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
-            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
+            <span className="text-lg">
+              {selectNativeAssetSymbol(network, token)}
+            </span>
           </p>
-          <Button onClick={fetchBalance} size="icon">
+          <Button onClick={fetchBalances} size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
+        <p className="text-sm text-muted-foreground">
+          {currentNativeBalance
+            ? formatBalance(currentNativeBalance, 4)
+            : "-/-"}{" "}
+          <span className="text-sm text-muted-foreground">
+            {selectNativeAssetSymbol(network)}
+          </span>
+        </p>
       </div>
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
@@ -423,9 +546,7 @@ export default function PayForm() {
               readOnly
             />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Token to pay
-          </p>
+          <p className="text-sm text-muted-foreground">Token to pay</p>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="receivingAddress">Receiving address</Label>
@@ -469,7 +590,7 @@ export default function PayForm() {
             Message to include with the transaction
           </p>
         </div>
-        {network === "kaia" || network === "kaia-kairos" ? (
+        {(network === "kaia" || network === "kaia-kairos") && token === "0x0000000000000000000000000000000000000000" ? (
           <div className="flex items-center space-x-2">
             <Switch
               id="delegate-fee"
@@ -513,7 +634,7 @@ export default function PayForm() {
             <p className="flex flex-row gap-2 items-center text-sm">
               {`${
                 sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
-              } ${selectNativeAssetSymbol(network)}`}
+              } ${selectNativeAssetSymbol(network, token)}`}
               {isValidAmount === undefined ? null : isValidAmount === true ? (
                 <Popover>
                   <PopoverTrigger>

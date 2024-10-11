@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { toHex, Address, isAddress } from "viem";
+import { toHex, Address, isAddress, parseUnits, parseEther } from "viem";
 import {
   Dialog,
   DialogContent,
@@ -157,8 +157,8 @@ export default function RequestForm() {
       
       const link = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/pay?network=${network}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
-        `-${transactionMemo}`
+      }/pay?network=${network}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${token === "0x0000000000000000000000000000000000000000" ? parseEther(sendingAmount).toString() : parseUnits(sendingAmount, 6).toString()}&transactionMemo=${toHex(
+        transactionMemo
       )}`;
       setRequestLink(link);
       setShareLinkActive(true);

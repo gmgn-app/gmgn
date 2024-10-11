@@ -26,6 +26,7 @@ export default function Header() {
   const network = searchParams.get("network") !== "null" ? searchParams.get("network") : "kaia-kairos";
   const address = searchParams.get("address") !== "null" ? searchParams.get("address") : null;
   const token = searchParams.get("token") !== "null" ? searchParams.get("token") : null;
+  const sendingAmount = searchParams.get("sendingAmount") !== "null" ? searchParams.get("sendingAmount") : null;
   const transactionMemo = searchParams.get("transactionMemo") !== "null" ? searchParams.get("transactionMemo") : null;
   const receivingAddress = searchParams.get("receivingAddress") !== "null" ? searchParams.get("receivingAddress") : null;
   const [availableNetworks, setAvailableNetworks] = useState<string[]>([]);
@@ -35,8 +36,8 @@ export default function Header() {
       router.push(`?network=${network}`);
     } else if (token === null || token === undefined || token === "null") {
       router.push(`?network=${network}&address=${address}`);
-    } else if (transactionMemo && receivingAddress) {
-      router.push(`?network=${network}&address=${address}&token=${token}&receivingAddress=${receivingAddress}&transactionMemo=${transactionMemo}`);
+    } else if (transactionMemo && receivingAddress && sendingAmount) {
+      router.push(`?network=${network}&address=${address}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${transactionMemo}`);
     } else {
       router.push(`?network=${network}&address=${address}&token=${token}`);
     }
