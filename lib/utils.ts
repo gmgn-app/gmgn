@@ -142,7 +142,7 @@ export function selectBlockExplorer(network: string | undefined | null) {
 }
 
 export function selectNativeAssetSymbol(network: string | undefined | null, token?: string | undefined | null) {
-  if (!token) {
+  if (!token || token === "0x0000000000000000000000000000000000000000") {
     switch (network) {
       case "kaia":
         return "KLAY";

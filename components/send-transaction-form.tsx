@@ -204,9 +204,7 @@ export default function SendTransactionForm() {
     }
     if (
       address &&
-      network === "kaia-kairos" &&
-      (token === "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746" ||
-        token === "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d")
+      network && token !== "0x0000000000000000000000000000000000000000"
     ) {
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network as string),
@@ -220,7 +218,7 @@ export default function SendTransactionForm() {
           address: token as Address,
           abi: mockStablecoinAbi,
           functionName: "balanceOf",
-          args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+          args: [address as Address],
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
@@ -334,6 +332,7 @@ export default function SendTransactionForm() {
             abi: mockStablecoinAbi,
             functionName: "transfer",
             account: address as Address,
+            args: [receivingAddress as Address, parseUnits(sendingAmount, 6)]
           });
         }
         const gasPrice = await publicClient.getGasPrice();
