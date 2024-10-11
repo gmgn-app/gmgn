@@ -141,30 +141,41 @@ export function selectBlockExplorer(network: string | undefined | null) {
   }
 }
 
-export function selectNativeAssetSymbol(network: string | undefined | null) {
-  switch (network) {
-    case "kaia":
-      return "KLAY";
-    case "kaia-kairos":
-      return "KLAY";
-    case "arbitrum-sepolia":
-      return "ETH";
-    case "base-sepolia":
-      return "ETH";
-    case "ethereum-sepolia":
-      return "ETH";
-    case "abstract-testnet":
-      return "ETH";
-    case "fraxtal-testnet":
-      return "frxETH";
-    case "bartio-testnet":
-      return "BERA";
-    case "lukso-testnet":
-      return "LYXt";
-    case "moonbase-alpha-testnet":
-      return "DEV";
-    default:
-      return "KLAY";
+export function selectNativeAssetSymbol(network: string | undefined | null, token?: string | undefined | null) {
+  if (!token) {
+    switch (network) {
+      case "kaia":
+        return "KLAY";
+      case "kaia-kairos":
+        return "KLAY";
+      case "arbitrum-sepolia":
+        return "ETH";
+      case "base-sepolia":
+        return "ETH";
+      case "ethereum-sepolia":
+        return "ETH";
+      case "abstract-testnet":
+        return "ETH";
+      case "fraxtal-testnet":
+        return "frxETH";
+      case "bartio-testnet":
+        return "BERA";
+      case "lukso-testnet":
+        return "LYXt";
+      case "moonbase-alpha-testnet":
+        return "DEV";
+      default:
+        return "KLAY";
+    }
+  } else {
+    switch (token) {
+      case "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
+        return "tUSDC";
+      case "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
+        return "tUSDT";
+      default:
+        return "Unknown Token";
+    }
   }
 }
 
@@ -182,12 +193,16 @@ export function selectJsonRpcProvider(network: string | undefined | null) {
 export function constructNavUrl(
   path: string,
   network: string | undefined | null,
-  address: string | undefined | null
+  address: string | undefined | null,
+  token?: string | undefined | null
 ) {
   if (address === null || address === undefined || address === "null") {
     return `${path}?network=${network}`;
+  } else if (token === null || token === undefined || token === "null") {
+    return `${path}?network=${network}&address=${address}`;
+  } else {
+    return `${path}?network=${network}&address=${address}&token=${token}`;
   }
-  return `${path}?network=${network}&address=${address}`;
 }
 
 

@@ -17,6 +17,7 @@ import {
   parseEther,
   toHex,
   isAddress,
+  formatUnits,
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
 import { privateKeyToAccount } from "viem/accounts";
@@ -67,14 +68,16 @@ import {
 } from "@/lib/utils";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
-import { useMediaQuery } from "@/hooks/use-media-query"
-
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { CHAINS_INFO } from "@/lib/chains";
+import { mockStablecoinAbi } from "@/lib/abis";
 
 export default function SendTransactionForm() {
   // Get the search params from the URL.
   const searchParams = useSearchParams();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
+  const token = searchParams.get("token");
 
   // Redirect to the home page if the network or address is not provided.
   if (!network || !address) {
@@ -86,6 +89,7 @@ export default function SendTransactionForm() {
 
   // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
+  const [currentNativeBalance, setCurrentNativeBalance] = useState("");
 
   // Main state for the send form
   const [sendingAmount, setSendingAmount] = useState("");
@@ -176,7 +180,11 @@ export default function SendTransactionForm() {
 
   // Fetch the current balance upon page load
   useEffect(() => {
-    if (address) {
+    if (
+      address &&
+      network &&
+      token === "0x0000000000000000000000000000000000000000"
+    ) {
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network as string),
         transport: http(),
@@ -186,6 +194,35 @@ export default function SendTransactionForm() {
           address: address as Address,
         });
         setCurrentBalance(formatEther(balance).toString());
+        setCurrentNativeBalance(formatEther(balance).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+    if (
+      address &&
+      network === "kaia-kairos" &&
+      (token === "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746" ||
+        token === "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d")
+    ) {
+      const publicClient = createPublicClient({
+        chain: selectViemChainFromNetwork(network as string),
+        transport: http(),
+      });
+      const fetchBalance = async () => {
+        const balance = await publicClient.getBalance({
+          address: address as Address,
+        });
+        const tokenBalance = await publicClient.readContract({
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "balanceOf",
+          args: [address as Address],
+        });
+        setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
+        setCurrentNativeBalance(formatEther(balance as bigint).toString());
       };
       // call the function
       fetchBalance()
@@ -281,17 +318,37 @@ export default function SendTransactionForm() {
           chain: selectViemChainFromNetwork(network!),
           transport: http(),
         });
-        const gas = await publicClient.estimateGas({
-          account: address as Address,
-          to: receivingAddress as Address,
-          value: parseEther(sendingAmount),
-          data: toHex(transactionMemo),
-        });
+
+        let gas;
+        if (token === "0x0000000000000000000000000000000000000000") {
+          gas = await publicClient.estimateGas({
+            account: address as Address,
+            to: receivingAddress as Address,
+            value: parseEther(sendingAmount),
+            data: toHex(transactionMemo),
+          });
+        } else {
+          gas = await publicClient.estimateContractGas({
+            address: token as Address,
+            abi: mockStablecoinAbi,
+            functionName: "balanceOf",
+            account: address as Address,
+          });
+        }
+
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
         setTransactionCost(formatEther(gasCost));
-        const isValidTotal =
-          parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        let isValidTotal;
+
+        if (token === "0x0000000000000000000000000000000000000000") {
+          isValidTotal =
+            parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+        } else {
+          isValidTotal =
+            parseEther(currentBalance) >= parseEther(sendingAmount) &&
+            parseEther(currentNativeBalance) >= gasCost;
+        }
         if (isValidTotal) {
           setIsValidTotal(true);
           setReadyToTransfer(true);
@@ -310,7 +367,6 @@ export default function SendTransactionForm() {
 
   // Function to submit transaction
   async function submitTransaction() {
-
     // Set the send button to loading state
     setSendButtonLoading(true);
 
@@ -438,7 +494,6 @@ export default function SendTransactionForm() {
 
   // Function to submit delegated transaction
   async function submitDelegatedTransaction() {
-
     // Set the send button to loading state
     setSendButtonLoading(true);
 
@@ -537,14 +592,24 @@ export default function SendTransactionForm() {
       <div className="flex flex-col">
         <h2 className="text-xl">Balance</h2>
         <div className="flex flex-row items-center justify-between">
-          <p className="text-2xl">
+          <p className="text-2xl font-semibold">
             {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
-            <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
+            <span className="text-lg">
+              {selectNativeAssetSymbol(network, token)}
+            </span>
           </p>
           <Button onClick={fetchBalance} size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
+        <p className="text-sm text-muted-foreground">
+          {currentNativeBalance
+            ? formatBalance(currentNativeBalance, 4)
+            : "-/-"}{" "}
+          <span className="text-sm text-muted-foreground">
+            {selectNativeAssetSymbol(network)}
+          </span>
+        </p>
       </div>
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
@@ -636,31 +701,29 @@ export default function SendTransactionForm() {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="sendingAmount">Amount</Label>
-          {
-            isDesktop ? (
-              <Input
-                id="sendingAmount"
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                type="number"
-                placeholder="0"
-                value={sendingAmount}
-                onChange={(e) => setSendingAmount(e.target.value)}
-                required
-              />
-            ) : (
-              <Input
-                id="sendingAmount"
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*"
-                placeholder="0"
-                value={sendingAmount}
-                onChange={(e) => setSendingAmount(e.target.value)}
-                required
-              />
-            )
-          }
+          {isDesktop ? (
+            <Input
+              id="sendingAmount"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              type="number"
+              placeholder="0"
+              value={sendingAmount}
+              onChange={(e) => setSendingAmount(e.target.value)}
+              required
+            />
+          ) : (
+            <Input
+              id="sendingAmount"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*"
+              placeholder="0"
+              value={sendingAmount}
+              onChange={(e) => setSendingAmount(e.target.value)}
+              required
+            />
+          )}
           <p className="text-sm text-muted-foreground">
             Fill in the amount that you want to send
           </p>
@@ -730,7 +793,7 @@ export default function SendTransactionForm() {
             <p className="flex flex-row gap-2 items-center text-sm">
               {`${
                 sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
-              } ${selectNativeAssetSymbol(network)}`}
+              } ${selectNativeAssetSymbol(network, token)}`}
               {isValidAmount === undefined ? null : isValidAmount === true ? (
                 <Popover>
                   <PopoverTrigger>

@@ -394,7 +394,7 @@ export default function WalletManagement() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/send", network, walletAddress)}>
+            <Link href={constructNavUrl("/send", network, walletAddress, "0x0000000000000000000000000000000000000000")}>
               <Send className="mr-2 h-4 w-4" />
               Send
             </Link>

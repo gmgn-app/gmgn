@@ -25,13 +25,16 @@ export default function Header() {
   const searchParams = useSearchParams();
   const network = searchParams.get("network") !== "null" ? searchParams.get("network") : "kaia-kairos";
   const address = searchParams.get("address") !== "null" ? searchParams.get("address") : null;
+  const token = searchParams.get("token") !== "null" ? searchParams.get("token") : null;
   const [availableNetworks, setAvailableNetworks] = useState<string[]>([]);
 
   useEffect(() => {
     if (address === null || address === undefined || address === "null") {
       router.push(`?network=${network}`);
-    } else {
+    } else if (token === null || token === undefined || token === "null") {
       router.push(`?network=${network}&address=${address}`);
+    } else {
+      router.push(`?network=${network}&address=${address}&token=${token}`);
     }
     // if the user has not set the GMGN_NETWORKS in the local storage, set it.
     if (!localStorage.getItem("gmgn-available-networks")) {
@@ -66,7 +69,7 @@ export default function Header() {
 
   return (
     <div className="flex flex-row justify-between items-center">
-      <Link href={constructNavUrl(network, address)}>
+      <Link href={constructNavUrl("/", network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -96,7 +99,7 @@ export default function Header() {
           </SelectContent>
         </Select>
         <Button asChild size="icon" variant="outline">
-          <Link href={`/settings?network=${network}&address=${address}`}>
+          <Link href={constructNavUrl("/settings", network, address)}>
             <Settings className="w-6 h-6" />
           </Link>
         </Button>

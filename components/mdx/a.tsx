@@ -9,6 +9,7 @@ export default function A({
     <a
       href={href}
       className="font-medium text-blue-400 underline underline-offset-4"
+      target="_blank"
     >
       {children}
     </a>

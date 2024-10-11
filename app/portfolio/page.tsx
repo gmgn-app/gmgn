@@ -12,7 +12,7 @@ import {
   formatEther,
   formatUnits,
 } from "viem";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { selectViemChainFromNetwork } from "@/lib/utils";
@@ -154,71 +154,76 @@ export default function PortfolioPage() {
           <TabsTrigger value="crypto">Crypto</TabsTrigger>
           <TabsTrigger value="nfts">NFTs</TabsTrigger>
         </TabsList>
+        <TabsContent value="crypto">
+          {network === "kaia-kairos" && address ? (
+            <div className="flex flex-col gap-2 mt-4">
+              <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row gap-2 items-center">
+                  <Image
+                    src="/kaia.png"
+                    alt="kaia logo"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
+                  <h3 className="font-semibold">Kaia</h3>
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  {currentBalance ? (
+                    currentBalance
+                  ) : (
+                    <Skeleton className="w-16 h-4" />
+                  )}
+                  <span className="text-muted-foreground">KLAY</span>
+                </div>
+              </div>
+              <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row gap-2 items-center">
+                  <Image
+                    src="/usdc.svg"
+                    alt="usdc logo"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
+                  <h3 className="font-semibold">Test USDC</h3>
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  {stablecoinBalances ? (
+                    stablecoinBalances[0]
+                  ) : (
+                    <Skeleton className="w-16 h-4" />
+                  )}
+                  <span className="text-muted-foreground">tUSDC</span>
+                </div>
+              </div>
+              <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row gap-2 items-center">
+                  <Image
+                    src="/usdt.svg"
+                    alt="usdt logo"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
+                  <h3 className="font-semibold">Test USDT</h3>
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  {stablecoinBalances ? (
+                    stablecoinBalances[1]
+                  ) : (
+                    <Skeleton className="w-16 h-4" />
+                  )}
+                  <span className="text-muted-foreground">tUSDT</span>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </TabsContent>
+        <TabsContent value="nfts">
+          <div className="flex flex-col gap-2 mt-4">We are building this now 😁</div>
+        </TabsContent>
       </Tabs>
-      {network === "kaia-kairos" && address ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-row items-center justify-between">
-            <div className="flex flex-row gap-2 items-center">
-              <Image
-                src="/kaia.png"
-                alt="kaia logo"
-                width={20}
-                height={20}
-                className="rounded-full"
-              />
-              <h3 className="font-semibold">Kaia</h3>
-            </div>
-            <div className="flex flex-row gap-2 items-center">
-              {currentBalance ? (
-                currentBalance
-              ) : (
-                <Skeleton className="w-16 h-4" />
-              )}
-              <span className="text-muted-foreground">KLAY</span>
-            </div>
-          </div>
-          <div className="flex flex-row items-center justify-between">
-            <div className="flex flex-row gap-2 items-center">
-              <Image
-                src="/usdc.svg"
-                alt="usdc logo"
-                width={20}
-                height={20}
-                className="rounded-full"
-              />
-              <h3 className="font-semibold">Test USDC</h3>
-            </div>
-            <div className="flex flex-row gap-2 items-center">
-              {stablecoinBalances ? (
-                stablecoinBalances[0]
-              ) : (
-                <Skeleton className="w-16 h-4" />
-              )}
-              <span className="text-muted-foreground">tUSDC</span>
-            </div>
-          </div>
-          <div className="flex flex-row items-center justify-between">
-            <div className="flex flex-row gap-2 items-center">
-              <Image
-                src="/usdt.svg"
-                alt="usdt logo"
-                width={20}
-                height={20}
-                className="rounded-full"
-              />
-              <h3 className="font-semibold">Test USDT</h3>
-            </div>
-            <div className="flex flex-row gap-2 items-center">
-              {stablecoinBalances ? (
-                stablecoinBalances[1]
-              ) : (
-                <Skeleton className="w-16 h-4" />
-              )}
-              <span className="text-muted-foreground">tUSDT</span>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

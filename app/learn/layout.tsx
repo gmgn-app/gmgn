@@ -1,17 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import BackButton from "@/components/back-button";
-import { constructNavUrl } from "@/lib/utils";
 import Header from "@/components/header";
+import { constructNavUrl } from "@/lib/utils";
 
-export default function LearnPage() {
+export default function MdxLayout({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const network = searchParams.get("network");
-
+  
+  // Create any shared layout or styles here
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
       <Header />
@@ -19,6 +18,7 @@ export default function LearnPage() {
         Learn
       </h1>
       <BackButton route={constructNavUrl("/", network, address)} />
+      {children}
     </div>
   );
 }
