@@ -29,7 +29,7 @@ export default function ReceivePage() {
             Receive
           </TabsTrigger>
           <TabsTrigger asChild value="request">
-            <Link href={constructNavUrl("/request", network, address)}>
+            <Link href={constructNavUrl("/request", network, address, "0x0000000000000000000000000000000000000000")}>
               Request
             </Link>
             </TabsTrigger>

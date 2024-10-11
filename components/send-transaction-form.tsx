@@ -466,7 +466,7 @@ export default function SendTransactionForm() {
           abi: mockStablecoinAbi,
           functionName: "transfer",
           args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
-          dataSuffix: toHex(transactionMemo),
+          dataSuffix: toHex(`-${transactionMemo}`),
         });
         hash = await walletClient.writeContract(request);
         transaction = await publicClient.waitForTransactionReceipt({

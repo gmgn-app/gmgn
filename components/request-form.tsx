@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +54,9 @@ export default function RequestForm() {
   const router = useRouter();
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-
+  const network = searchParams.get("network") ? searchParams.get("network") : "kaia-kairos";
+  const paramAddress = searchParams.get("address");
+  const paramToken = searchParams.get("token");
   // Check if the user is on a desktop or mobile device.
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
@@ -62,12 +65,11 @@ export default function RequestForm() {
 
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState(
-    searchParams.get("address") ?? ""
+    paramAddress ?? ""
   );
   const [transactionMemo, setTransactionMemo] = useState("");
-  const [network, setNetwork] = useState<string>(
-    searchParams.get("network") ?? "kaia-kairos"
-  );
+
+  const [token, setToken] = useState<string | undefined>(paramToken && paramToken !== "null" ? paramToken : "0x0000000000000000000000000000000000000000");
   const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
     undefined
   );
@@ -79,6 +81,12 @@ export default function RequestForm() {
   );
   const [requestLink, setRequestLink] = useState("");
   const [shareLinkActive, setShareLinkActive] = useState(false);
+
+  function handleInputTokenChange(value: string) {
+    setToken(value);
+    router.push(`?network=${network}&address=${receivingAddress}&token=${value}`);
+  }
+
 
   function constructLink() {
     if (receivingAddress === "") {
@@ -146,10 +154,11 @@ export default function RequestForm() {
       if (transactionMemo) {
         setIsValidTransactionMemo(true);
       }
+      
       const link = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/pay?network=${network}&sendingAmount=${sendingAmount}&receivingAddress=${receivingAddress}&transactionMemo=${toHex(
-        transactionMemo
+      }/pay?network=${network}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
+        `-${transactionMemo}`
       )}`;
       setRequestLink(link);
       setShareLinkActive(true);
@@ -167,40 +176,69 @@ export default function RequestForm() {
     setTransactionMemo(uid);
   }
 
-  function handleInputNetworkChange(value: string) {
-    setNetwork(value);
-    router.push(`/request?network=${value}&address=${receivingAddress}`);
-  }
-
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="receivingAddress">Network</Label>
+          <Label htmlFor="sendingToken">Sending token</Label>
           <Select
-            value={network}
-            onValueChange={handleInputNetworkChange}
-            defaultValue="kaia-kairos"
+            value={token!}
+            onValueChange={handleInputTokenChange}
+            defaultValue="0x0000000000000000000000000000000000000000"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a network" />
+            <SelectTrigger className="w-full border-2 border-primary rounded-none">
+              <SelectValue placeholder="Select a token" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Select a network</SelectLabel>
-                <SelectItem value="kaia-kairos">Kaia Kairos</SelectItem>
-                <SelectItem value="arbitrum-sepolia">
-                  Aribtrum Sepolia
+                <SelectLabel>Select a token</SelectLabel>
+                <SelectItem value="0x0000000000000000000000000000000000000000">
+                  <div className="flex flex-row gap-2">
+                    <Image
+                      src="/kaia.png"
+                      alt="kaia logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    <p>
+                      {selectNativeAssetSymbol(
+                        network,
+                        "0x0000000000000000000000000000000000000000"
+                      )}
+                    </p>
+                  </div>
                 </SelectItem>
-                <SelectItem value="base-sepolia">Base Sepolia</SelectItem>
-                <SelectItem value="ethereum-sepolia">
-                  Ethereum Sepolia
+                <SelectItem value="0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746">
+                  <div className="flex flex-row gap-2">
+                    <Image
+                      src="/usdc.svg"
+                      alt="usdc logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    {selectNativeAssetSymbol(
+                      network,
+                      "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746"
+                    )}
+                  </div>
                 </SelectItem>
-                <SelectItem value="fraxtal-testnet">Fraxtal Testnet</SelectItem>
-                <SelectItem value="abstract-testnet">
-                  Abstract Testnet
+                <SelectItem value="0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d">
+                <div className="flex flex-row gap-2">
+                    <Image
+                      src="/usdt.svg"
+                      alt="usdt logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    {selectNativeAssetSymbol(
+                      network,
+                      "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d"
+                    )}
+                  </div>
                 </SelectItem>
-                <SelectItem value="bartio-testnet">bArtio Testnet</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

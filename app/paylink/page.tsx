@@ -142,6 +142,17 @@ export default function PayPage() {
       });
       return;
     }
+    // check if the query params contain the token
+    if (!queryObject.token) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You entered an invalid payment link.",
+        description: "Please enter a correct payment link to continue.",
+      });
+      return;
+    }
     // check if the query params contain the sendingAmount
     if (!queryObject.sendingAmount) {
       toast({

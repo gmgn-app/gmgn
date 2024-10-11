@@ -58,7 +58,7 @@ export default function PayForm() {
   if (!network || !address) {
     redirect("/");
   }
-
+  const token = searchParams.get("token") || "0x0000000000000000000000000000000000000000";
   const sendingAmount = searchParams.get("sendingAmount") || "";
   const receivingAddress = searchParams.get("receivingAddress") || "";
   const transactionMemo =
@@ -398,10 +398,10 @@ export default function PayForm() {
       </div>
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="receivingAddress">Network</Label>
+          <Label htmlFor="network">Network</Label>
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
-              id="receivingAddress"
+              id="network"
               className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
               placeholder="0x..."
               value={selectChainNameFromNetwork(network)}
@@ -410,6 +410,21 @@ export default function PayForm() {
           </div>
           <p className="text-sm text-muted-foreground">
             Network to send the transaction
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="token">Token</Label>
+          <div className="flex flex-row gap-2 items-center justify-center">
+            <Input
+              id="token"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              placeholder="0x..."
+              value={token}
+              readOnly
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Token to pay
           </p>
         </div>
         <div className="flex flex-col gap-2">

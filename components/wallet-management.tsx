@@ -407,7 +407,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/receive", network, walletAddress)}>
+            <Link href={constructNavUrl("/receive", network, walletAddress, "0x0000000000000000000000000000000000000000")}>
               <Download className="mr-2 h-4 w-4" />
               Receive
             </Link>

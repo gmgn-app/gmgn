@@ -25,14 +25,14 @@ export const CHAINS_INFO = [
         id: 1,
         name: "Mocked USDC",
         symbol: "mUSDC",
-        address: "0x6c3f90f043a72fa612cbac8115ee7e52bde6e490",
+        address: "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746",
         decimals: 6,
       },
       {
         id: 2,
         name: "Mocked USDT",
         symbol: "mUSDT",
-        address: "0x6c3f90f043a72fa612cbac8115ee7e52bde6e490",
+        address: "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d",
         decimals: 6,
       },
     ]
