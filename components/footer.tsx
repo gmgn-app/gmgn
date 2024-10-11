@@ -80,6 +80,7 @@ export default function Footer() {
             <a
               className="flex flex-row gap-2 items-center text-blue-500"
               href="https://github.com/gmgn-app"
+              target="_blank"
             >
               Explore our repositories <ExternalLink className="w-4 h-4" />
             </a>
