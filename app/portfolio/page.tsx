@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { selectViemChainFromNetwork } from "@/lib/utils";
+import { selectViemChainFromNetwork, formatBalance } from "@/lib/utils";
 import { mockStablecoinAbi } from "@/lib/abis";
 import Header from "@/components/header";
 
@@ -170,7 +170,7 @@ export default function PortfolioPage() {
                 </div>
                 <div className="flex flex-row gap-2 items-center">
                   {currentBalance ? (
-                    currentBalance
+                    formatBalance(currentBalance, 6)
                   ) : (
                     <Skeleton className="w-16 h-4" />
                   )}
@@ -190,7 +190,7 @@ export default function PortfolioPage() {
                 </div>
                 <div className="flex flex-row gap-2 items-center">
                   {stablecoinBalances ? (
-                    stablecoinBalances[0]
+                    formatBalance(stablecoinBalances[0], 6)
                   ) : (
                     <Skeleton className="w-16 h-4" />
                   )}
@@ -210,7 +210,7 @@ export default function PortfolioPage() {
                 </div>
                 <div className="flex flex-row gap-2 items-center">
                   {stablecoinBalances ? (
-                    stablecoinBalances[1]
+                    formatBalance(stablecoinBalances[1], 6)
                   ) : (
                     <Skeleton className="w-16 h-4" />
                   )}

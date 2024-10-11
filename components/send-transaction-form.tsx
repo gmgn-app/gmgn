@@ -466,6 +466,7 @@ export default function SendTransactionForm() {
           abi: mockStablecoinAbi,
           functionName: "transfer",
           args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+          dataSuffix: toHex(transactionMemo),
         });
         hash = await walletClient.writeContract(request);
         transaction = await publicClient.waitForTransactionReceipt({
@@ -887,7 +888,7 @@ export default function SendTransactionForm() {
             Autogenerate UID
           </Button>
         </div>
-        {network === "kaia" || network === "kaia-kairos" ? (
+        {(network === "kaia" || network === "kaia-kairos") && (token === "0x0000000000000000000000000000000000000000") ? (
           <div className="flex items-center space-x-2">
             <Switch
               id="delegate-fee"
