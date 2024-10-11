@@ -43,9 +43,9 @@ export default function Footer() {
                 <Link href="/our-story" className="text-gray-500 text-sm">
                   Our story
                 </Link>
-                <Link href="/our-goals" className="text-gray-500 text-sm">
+                {/* <Link href="/our-goals" className="text-gray-500 text-sm">
                   Our goals
-                </Link>
+                </Link> */}
                 {/* <Link href="/treasury" className="text-gray-500 text-sm">
                     Treasury
                   </Link>
@@ -60,9 +60,9 @@ export default function Footer() {
                 <Link href="/privacy" className="text-gray-500 text-sm">
                   Privacy policy
                 </Link>
-                <Link href="/community-rules" className="text-gray-500 text-sm">
+                {/* <Link href="/community-rules" className="text-gray-500 text-sm">
                   Community rules
-                </Link>
+                </Link> */}
               </div>
             
             </div>
