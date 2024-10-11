@@ -7,6 +7,7 @@ import BackButton from "@/components/back-button";
 import RequestForm from "@/components/request-form";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
+import { constructNavUrl } from "@/lib/utils";
 
 
 export default function RequestPage() {
@@ -20,11 +21,11 @@ export default function RequestPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Request
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <Tabs defaultValue="request" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger asChild value="receive">
-            <Link href={`/receive?network=${network}&address=${address}`}>
+            <Link href={constructNavUrl("/receive", network, address)}>
               Receive
             </Link>
           </TabsTrigger>

@@ -9,6 +9,7 @@ import { Address } from "viem";
 import BackButton from "@/components/back-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
+import { constructNavUrl } from "@/lib/utils";
 
 export default function ReceivePage() {
   const searchParams = useSearchParams();
@@ -21,14 +22,14 @@ export default function ReceivePage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Receive
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <Tabs defaultValue="receive" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="receive">
             Receive
           </TabsTrigger>
           <TabsTrigger asChild value="request">
-            <Link href={`/request?network=${network}&address=${address}`}>
+            <Link href={constructNavUrl("/request", network, address)}>
               Request
             </Link>
             </TabsTrigger>
@@ -59,7 +60,7 @@ export default function ReceivePage() {
         <p>
           You can receive tokens & NFTs on EVM compatible networks
         </p>
-        <Link className="text-blue-500" href="/learn">
+        <Link className="text-blue-500" href={constructNavUrl("/learn", network, address)}>
           Learn more
         </Link>
       </div>

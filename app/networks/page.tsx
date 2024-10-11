@@ -25,6 +25,7 @@ import {
 import { GMGN_NETWORKS } from "@/lib/chains";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import Header from "@/components/header";
 
 export default function NetworksPage() {
   const router = useRouter();
@@ -113,15 +114,7 @@ export default function NetworksPage() {
   
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={constructNavUrl("/", network, address)}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Networks
       </h1>

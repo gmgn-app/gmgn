@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { constructNavUrl } from "@/lib/utils";
+import Header from "@/components/header";
 
 
 export default function PayPage() {
@@ -182,15 +183,7 @@ export default function PayPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={constructNavUrl("/", network, address)}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Pay
       </h1>

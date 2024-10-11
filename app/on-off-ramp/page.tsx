@@ -1,10 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link"
-import Image from "next/image"
 import BackButton from "@/components/back-button"
-
+import Header from "@/components/header"
+import { constructNavUrl } from "@/lib/utils"
 
 export default function OnOffRampPage() {
   const searchParams = useSearchParams();
@@ -13,19 +12,11 @@ export default function OnOffRampPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         On/Off Ramp
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
     </div>
   )
 }

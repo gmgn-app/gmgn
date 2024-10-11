@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { WebAuthnStorage } from "@/lib/webauthnstorage";
 import { fromBytes } from "viem";
+import { constructNavUrl } from "@/lib/utils";
+import Header from "@/components/header";
 
 export default function DeletePage() {
   const { toast } = useToast();
@@ -59,19 +61,11 @@ export default function DeletePage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
-        <Image
-          src="/gmgn-logo.svg"
-          alt="gmgn logo"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-      </Link>
+      <Header />
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Delete wallet
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <h2 className="text-2xl font-semibold mt-6">
         This action is non-reversible, are you sure that you want to delete this
         wallet?
@@ -82,7 +76,7 @@ export default function DeletePage() {
           Yes! Delete the wallet now
         </Button>
         <Button asChild>
-          <Link href="/">
+          <Link href={constructNavUrl("/", network, address)}>
             <CircleArrowLeft className="w-4 h-4 mr-2" />
             No! Take me back
           </Link>
