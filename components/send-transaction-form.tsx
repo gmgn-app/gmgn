@@ -18,6 +18,7 @@ import {
   toHex,
   isAddress,
   formatUnits,
+  parseUnits,
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
 import { privateKeyToAccount } from "viem/accounts";
@@ -219,7 +220,7 @@ export default function SendTransactionForm() {
           address: token as Address,
           abi: mockStablecoinAbi,
           functionName: "balanceOf",
-          args: [address as Address],
+          args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
@@ -331,16 +332,14 @@ export default function SendTransactionForm() {
           gas = await publicClient.estimateContractGas({
             address: token as Address,
             abi: mockStablecoinAbi,
-            functionName: "balanceOf",
+            functionName: "transfer",
             account: address as Address,
           });
         }
-
         const gasPrice = await publicClient.getGasPrice();
         const gasCost = gas * gasPrice;
         setTransactionCost(formatEther(gasCost));
         let isValidTotal;
-
         if (token === "0x0000000000000000000000000000000000000000") {
           isValidTotal =
             parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
@@ -391,25 +390,41 @@ export default function SendTransactionForm() {
         chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
-      const hash = await walletClient.sendTransaction({
-        account,
-        to: receivingAddress as Address,
-        value: parseEther(sendingAmount),
-        data: toHex(transactionMemo),
-      });
       const publicClient = createPublicClient({
         chain: selectViemChainFromNetwork(network!),
         transport: http(),
       });
-      const transaction = await publicClient.waitForTransactionReceipt({
-        hash: hash,
-      });
+      let transaction = null;
+      let hash = null;
+
+      if (token === "0x0000000000000000000000000000000000000000") {
+        hash = await walletClient.sendTransaction({
+          account,
+          to: receivingAddress as Address,
+          value: parseEther(sendingAmount),
+          data: toHex(transactionMemo),
+        });
+        transaction = await publicClient.waitForTransactionReceipt({
+          hash: hash,
+        });
+      } else {
+        const { request } = await publicClient.simulateContract({
+          account: privateKeyToAccount(privateKey as Address),
+          address: token as Address,
+          abi: mockStablecoinAbi,
+          functionName: "transfer",
+          args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+        })
+        await walletClient.writeContract(request)
+      } 
+
+      
       if (transaction) {
         toast({
           className:
             "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
           title: "Transaction sent!",
-          description: "Hash: " + truncateHash(hash, 6),
+          description: "Hash: " + truncateHash(hash ?? undefined, 6),
           action: (
             <ToastAction altText="view">
               <a
