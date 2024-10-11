@@ -19,7 +19,7 @@ export default function SettingsForm() {
           You can add, remove or change default networks
         </p>
         <Button className="w-[200px] mt-6" asChild>
-          <Link href={`/networks?network=${network}&address=${address}`}>
+          <Link href={constructNavUrl("/networks", network, address)}>
             <CloudCog className="w-4 h-4 mr-2" />
             Proceed to change
           </Link>
@@ -31,7 +31,7 @@ export default function SettingsForm() {
           You can delete your wallet and create a new one
         </p>
         <Button className="w-[200px] mt-6" asChild variant="destructive">
-          <Link href="/delete">
+          <Link href={constructNavUrl("/delete", network, address)}>
             <Trash2 className="w-4 h-4 mr-2" />
             Proceed to delete
           </Link>
@@ -43,7 +43,7 @@ export default function SettingsForm() {
           You can export your private key
         </p>
         <Button className="w-[200px] mt-6" asChild>
-          <Link href="/export">
+          <Link href={constructNavUrl("/export", network, address)}>
             <ScanEye className="w-4 h-4 mr-2" />
             Proceed to export
           </Link>

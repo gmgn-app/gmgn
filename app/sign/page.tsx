@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
 import SignForm from "@/components/sign-form";
+import { constructNavUrl } from "@/lib/utils";
 
 export default function SignPage() {
   const searchParams = useSearchParams();
@@ -13,7 +14,7 @@ export default function SignPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={`/?network=${network}&address=${address}`}>
+      <Link href={constructNavUrl("/", network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -25,7 +26,7 @@ export default function SignPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Sign
       </h1>
-      <BackButton route={`/?network=${network}&address=${address}`} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <SignForm />
     </div>
   );

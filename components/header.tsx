@@ -23,11 +23,16 @@ import { GMGN_NETWORKS } from "@/lib/chains";
 export default function Header() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const network = searchParams.get("network");
-  const address = searchParams.get("address");
+  const network = searchParams.get("network") !== "null" ? searchParams.get("network") : "kaia-kairos";
+  const address = searchParams.get("address") !== "null" ? searchParams.get("address") : null;
   const [availableNetworks, setAvailableNetworks] = useState<string[]>([]);
 
   useEffect(() => {
+    if (address === null || address === undefined || address === "null") {
+      router.push(`?network=${network}`);
+    } else {
+      router.push(`?network=${network}&address=${address}`);
+    }
     // if the user has not set the GMGN_NETWORKS in the local storage, set it.
     if (!localStorage.getItem("gmgn-available-networks")) {
       localStorage.setItem(
@@ -47,6 +52,7 @@ export default function Header() {
       );
       setAvailableNetworks(GMGN_AVAILABLE_NETWORKS);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleInputNetworkChange(value: string) {

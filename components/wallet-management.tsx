@@ -263,7 +263,7 @@ export default function WalletManagement() {
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-row justify-between items-center">
-        <Link href={constructNavUrl(network, walletAddress)}>
+        <Link href={constructNavUrl("/", network, walletAddress)}>
           <Image
             src="/gmgn-logo.svg"
             alt="gmgn logo"
@@ -295,7 +295,7 @@ export default function WalletManagement() {
             </SelectContent>
           </Select>
           <Button asChild size="icon" variant="outline">
-            <Link href={`/settings?network=${network}&address=${walletAddress}`}>
+            <Link href={constructNavUrl("/settings", network, walletAddress)}>
               <Settings className="w-6 h-6" />
             </Link>
           </Button>
@@ -307,7 +307,7 @@ export default function WalletManagement() {
         <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              <Link href={`/profile?network=${network}&address=${walletAddress}`}>
+              <Link href={constructNavUrl("/profile", network, walletAddress)}>
                 <Image
                   src={walletIcon ? walletIcon : "/default-profile.svg"}
                   alt="avatar"
@@ -317,7 +317,7 @@ export default function WalletManagement() {
                 />
               </Link>
               <div className="flex flex-col text-sm">
-                <Link href={`/profile?network=${network}&address=${walletAddress}`} className="flex flex-row gap-2 items-center p-2">
+                <Link href={constructNavUrl("/profile", network, walletAddress)} className="flex flex-row gap-2 items-center p-2">
                   <p>{walletName ? walletName : "---"}</p>
                   <Pencil className="w-4 h-4" />
                 </Link>
@@ -338,7 +338,7 @@ export default function WalletManagement() {
           </div>
           <div className="flex flex-row gap-2 items-center justify-between">
             <Button asChild size="icon">
-              <Link href={`/portfolio?network=${network}&address=${walletAddress}`}>
+              <Link href={constructNavUrl("/portfolio", network, walletAddress)}>
                 <ChartPie className="h-4 w-4" />
               </Link>
             </Button>
@@ -394,7 +394,7 @@ export default function WalletManagement() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`/send?network=${network}&address=${walletAddress}`}>
+            <Link href={constructNavUrl("/send", network, walletAddress)}>
               <Send className="mr-2 h-4 w-4" />
               Send
             </Link>
@@ -407,7 +407,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`receive?network=${network}&address=${walletAddress}`}>
+            <Link href={constructNavUrl("/receive", network, walletAddress)}>
               <Download className="mr-2 h-4 w-4" />
               Receive
             </Link>
@@ -420,7 +420,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`sign?network=${network}&address=${walletAddress}`}>
+            <Link href={constructNavUrl("/sign", network, walletAddress)}>
               <Signature className="mr-2 h-4 w-4" />
               Sign
             </Link>
@@ -433,7 +433,7 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={`paylink?network=${network}&address=${walletAddress}`}>
+            <Link href={constructNavUrl("/paylink", network, walletAddress)}>
               <HandCoins className="mr-2 h-4 w-4" />
               Pay
             </Link>

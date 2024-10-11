@@ -49,10 +49,15 @@ export default function NetworksPage() {
     } else {
       router.push(`?network=kaia-kairos&address=${address}`);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleInputNetworkChange(value: string) {
-    router.push(`?network=${value}&address=${address}`);
+    if (address === null || address === undefined || address === "null") {
+      router.push(`?network=${value}`);
+    } else {
+      router.push(`?network=${value}&address=${address}`);
+    }
   }
 
   function handleSaveDefaultNetwork() {
@@ -108,7 +113,7 @@ export default function NetworksPage() {
   
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
-      <Link href={constructNavUrl(network, address)}>
+      <Link href={constructNavUrl("/", network, address)}>
         <Image
           src="/gmgn-logo.svg"
           alt="gmgn logo"
@@ -120,7 +125,7 @@ export default function NetworksPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Networks
       </h1>
-      <BackButton route={constructNavUrl(network, address)} />
+      <BackButton route={constructNavUrl("/", network, address)} />
       <div className="flex flex-col gap-2">
         <h2 className="text-md font-semibold">Default network</h2>
         <Select

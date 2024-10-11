@@ -180,13 +180,14 @@ export function selectJsonRpcProvider(network: string | undefined | null) {
 }
 
 export function constructNavUrl(
+  path: string,
   network: string | undefined | null,
   address: string | undefined | null
 ) {
   if (address === null || address === undefined || address === "null") {
-    return `/?network=${network}`;
+    return `${path}?network=${network}`;
   }
-  return `/?network=${network}&address=${address}`;
+  return `${path}?network=${network}&address=${address}`;
 }
 
 
