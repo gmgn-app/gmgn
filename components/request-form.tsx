@@ -344,7 +344,7 @@ export default function RequestForm() {
             <p className="flex flex-row gap-2 items-center text-sm">
               {`${
                 sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
-              } ${selectNativeAssetSymbol(network)}`}
+              } ${selectNativeAssetSymbol(network, token)}`}
               {isValidAmount === undefined ? null : isValidAmount === true ? (
                 <Popover>
                   <PopoverTrigger>
