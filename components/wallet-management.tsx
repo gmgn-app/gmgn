@@ -483,13 +483,13 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/connect", network, walletAddress)} className="text-blue-400">
+            <Link href={constructNavUrl("/connect", network, walletAddress)}>
               <Image
                 src="/walletconnect-logo.svg"
                 alt="walletconnect logo"
                 width={24}
                 height={24}
-                className="mr-2 text-blue-500"
+                className="mr-2"
               />
               Connect
             </Link>

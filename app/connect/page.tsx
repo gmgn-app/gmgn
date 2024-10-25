@@ -47,6 +47,8 @@ import {
   ThumbsUp,
   ClipboardPaste,
   Unplug,
+  RotateCcw,
+  CircleX,
 } from "lucide-react";
 import {
   selectNativeAssetSymbol,
@@ -54,9 +56,10 @@ import {
   selectViemChainFromNetwork,
   truncateHash,
   selectBlockExplorer,
-  constructNavUrl
+  constructNavUrl,
 } from "@/lib/utils";
 import { Scanner } from "@yudiel/react-qr-scanner";
+import { get } from "http";
 
 export default function ConnectPage() {
   // Get the search params from the URL.
@@ -95,7 +98,7 @@ export default function ConnectPage() {
     useState(false);
   const [activeSessionsDialogOpen, setActiveSessionsDialogOpen] =
     useState(false);
-  const [activeSessions, setActiveSessions] = useState<string[]>([]);
+  const [activeSessions, setActiveSessions] = useState<Object>({});
 
   const [isPasted, setIsPasted] = useState(false);
 
@@ -143,6 +146,13 @@ export default function ConnectPage() {
   }, [core, metadata]); // Dependencies that should be
 
 
+  // call the function to get active sessions at page load, after pairing, and after disconnecting
+  useEffect(() => {
+    getActiveSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wcWalletKit]);
+
+
   // Function to paste from clipboard
   const paste = async () => {
     setWcSessionString(await navigator.clipboard.readText());
@@ -155,7 +165,7 @@ export default function ConnectPage() {
 
   function getActiveSessions() {
     const activeSessions = wcWalletKit?.getActiveSessions();
-    console.log(activeSessions);
+    setActiveSessions(activeSessions);
   }
 
   async function onSessionProposal({
@@ -300,12 +310,6 @@ export default function ConnectPage() {
     }
   }, [wcWalletKit, handleSessionRequest]);
 
-  const fetchActiveSessions = useCallback(() => {
-    if (wcWalletKit) {
-      const sessions = Object.keys(wcWalletKit.getActiveSessions());
-      setActiveSessions(sessions);
-    }
-  }, [wcWalletKit]);
 
   async function handlePairing() {
     if (!wcWalletKit) {
@@ -461,18 +465,19 @@ export default function ConnectPage() {
       topic,
       reason: getSdkError("USER_DISCONNECTED"),
     });
-    fetchActiveSessions();
+    getActiveSessions();
   }
 
   async function handleDisconnectAllSessions() {
-    activeSessions.forEach(async (topic) => {
+    Object.keys(activeSessions).forEach(async (topic) => {
       await wcWalletKit.disconnectSession({
         topic,
         reason: getSdkError("USER_DISCONNECTED"),
       });
-    });
-    fetchActiveSessions();
+    })
+    getActiveSessions();
   }
+
 
   function WalletConnectEip155IdToName(eip155Id: string) {
     switch (eip155Id) {
@@ -505,7 +510,7 @@ export default function ConnectPage() {
     if (!topic) {
       return "------";
     }
-    return topic.slice(0, 10) + "..." + topic.slice(-10);
+    return topic.slice(0, 4) + "..." + topic.slice(-4);
   }
 
   return (
@@ -524,8 +529,8 @@ export default function ConnectPage() {
             <DialogTrigger asChild>
               <Button variant="secondary" size="icon">
                 <Image
-                  src="/walletconnect.svg"
-                  alt="WalletConnect"
+                  src="/walletconnect-logo.svg"
+                  alt="walletconnect logo"
                   width={24}
                   height={24}
                 />
@@ -808,73 +813,6 @@ export default function ConnectPage() {
             </DialogContent>
           </Dialog>
         </div>
-        <Dialog
-          open={activeSessionsDialogOpen}
-          onOpenChange={(open) => {
-            setActiveSessionsDialogOpen(open);
-            if (open) {
-              fetchActiveSessions();
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button
-              variant="secondary"
-              onClick={() => setActiveSessionsDialogOpen(true)}
-            >
-              Active sessions
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-center mb-2 pr-4">
-                Active sessions
-              </DialogTitle>
-              <DialogDescription className="text-center">
-                Manage your WalletConnect sessions
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-row gap-2 justify-between">
-                <p>Session</p>
-                <p>Action</p>
-              </div>
-              <div className="flex flex-col gap-2 justify-between">
-                {activeSessions.map((topic) => (
-                  <div
-                    key={topic}
-                    className="flex flex-row gap-2 justify-between"
-                  >
-                    {truncateTopic(topic)}
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => handleDisconnectSession(topic)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <DialogFooter>
-              <div className="flex flex-col">
-                {activeSessions.length > 0 ? (
-                  <Button
-                    className="w-[250px] self-end"
-                    onClick={handleDisconnectAllSessions}
-                  >
-                    Clear all sessions
-                  </Button>
-                ) : (
-                  <Button disabled className="w-[250px] self-end">
-                    Clear all sessions
-                  </Button>
-                )}
-              </div>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="wcSessionString">WalletConnect Session</Label>
@@ -929,11 +867,54 @@ export default function ConnectPage() {
           </Dialog>
         </div>
       </div>
-      <Button onClick={handlePairing}>
+      <Button className="w-[200px] self-end" onClick={handlePairing}>
         <Unplug className="w-4 h-4 mr-2" />
         Connect
       </Button>
-      <Button onClick={getActiveSessions}>Get active sessions</Button>
+      <div className="flex flex-row items-center justify-between mt-8">
+        <h2 className="text-xl">Active sessions</h2>
+        <div className="flex flex-row gap-2">
+          <Button onClick={getActiveSessions} size="icon" variant="secondary">
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+          {activeSessions ? (
+            <Button
+              onClick={handleDisconnectAllSessions}
+              size="icon"
+              variant="secondary"
+            >
+              <CircleX className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button disabled size="icon" variant="secondary">
+              <CircleX className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-row gap-2 justify-between font-semibold border-b-2 pb-2">
+          <p>Session</p>
+          <p>Action</p>
+        </div>
+        <div className="flex flex-col gap-2 justify-between">
+          {activeSessions ? Object.entries(activeSessions).map((session) => (
+            <div key={session[0]} className="flex flex-row gap-2 items-center justify-between">
+              <div className="flex flex-row gap-4 items-center">
+                <div>{truncateTopic(session[0])}</div>
+                <div className="font-mono bg-secondary p-1 text-sm">{session[1].expiry ? new Date(session[1].expiry * 1000).toLocaleString() : null}</div> 
+              </div>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => handleDisconnectSession(session[0])}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )) : <p>No active sessions</p>}
+        </div>
+      </div>
     </div>
   );
 }
