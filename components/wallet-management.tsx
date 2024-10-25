@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,12 +75,16 @@ export default function WalletManagement() {
 
   // Create the state variables for the wallet management
   const [balance, setBalance] = useState("");
-  const [walletAddress, setWalletAddress] = useState<Address | null>(paramAddress && paramAddress !== "null" ? paramAddress as Address : null);
+  const [walletAddress, setWalletAddress] = useState<Address | null>(
+    paramAddress && paramAddress !== "null" ? (paramAddress as Address) : null
+  );
   // Create the state variables for the wallet management
   const [createWalletButtonActive, setCreateWalletButtonActive] =
     useState(true);
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
-  const [network, setNetwork] = useState<string | null>(paramNetwork || "kaia-kairos");
+  const [network, setNetwork] = useState<string | null>(
+    paramNetwork || "kaia-kairos"
+  );
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
   const [availableNetworks, setAvailableNetworks] = useState([]);
@@ -90,9 +94,16 @@ export default function WalletManagement() {
     if (GMGN_DEFAULT_NETWORK) {
       setNetwork(GMGN_DEFAULT_NETWORK);
     }
-    if ((paramAddress === null || paramAddress === "null") && (paramNetwork === null || paramNetwork === "null") && GMGN_DEFAULT_NETWORK) {
+    if (
+      (paramAddress === null || paramAddress === "null") &&
+      (paramNetwork === null || paramNetwork === "null") &&
+      GMGN_DEFAULT_NETWORK
+    ) {
       router.push(`/?network=${GMGN_DEFAULT_NETWORK}`);
-    } else if ((paramAddress === null || paramAddress === "null") && paramNetwork) {
+    } else if (
+      (paramAddress === null || paramAddress === "null") &&
+      paramNetwork
+    ) {
       router.push(`/?network=${paramNetwork}`);
       setNetwork(paramNetwork);
     } else {
@@ -115,7 +126,7 @@ export default function WalletManagement() {
       router.push(`/?network=${network}`);
       setLoadingWalletStorage(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -149,7 +160,6 @@ export default function WalletManagement() {
     setBalance(formatEther(balance).toString());
   }
 
-  
   async function getWallet() {
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
@@ -185,13 +195,15 @@ export default function WalletManagement() {
       // call the function
       fetchBalance()
         // make sure to catch any error
-        .catch(() => toast({
-          className:
-            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-          variant: "destructive",
-          title: "Fetch balance failed!",
-          description: "Uh oh! Something went wrong. please try again.",
-        }));
+        .catch(() =>
+          toast({
+            className:
+              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+            variant: "destructive",
+            title: "Fetch balance failed!",
+            description: "Uh oh! Something went wrong. please try again.",
+          })
+        );
     } else {
       toast({
         className:
@@ -284,13 +296,11 @@ export default function WalletManagement() {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Select a network</SelectLabel>
-                {
-                  availableNetworks.sort().map((network) => (
-                    <SelectItem key={network} value={network}>
-                      {selectChainNameFromNetwork(network)}
-                    </SelectItem>
-                  ))
-                }
+                {availableNetworks.sort().map((network) => (
+                  <SelectItem key={network} value={network}>
+                    {selectChainNameFromNetwork(network)}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -317,7 +327,10 @@ export default function WalletManagement() {
                 />
               </Link>
               <div className="flex flex-col text-sm">
-                <Link href={constructNavUrl("/profile", network, walletAddress)} className="flex flex-row gap-2 items-center p-2">
+                <Link
+                  href={constructNavUrl("/profile", network, walletAddress)}
+                  className="flex flex-row gap-2 items-center p-2"
+                >
                   <p>{walletName ? walletName : "---"}</p>
                   <Pencil className="w-4 h-4" />
                 </Link>
@@ -326,9 +339,15 @@ export default function WalletManagement() {
                     copyText={walletAddress}
                     buttonTitle={truncateAddress(walletAddress as Address, 6)}
                   />
-                  {
-                    network === "kaia-kairos" && <Button variant="ghost" size="icon" asChild><Link href={`/faucet?network=${network}&address=${walletAddress}`}><Droplets className="w-4 h-4" /></Link></Button>
-                  }
+                  {network === "kaia-kairos" && (
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link
+                        href={`/faucet?network=${network}&address=${walletAddress}`}
+                      >
+                        <Droplets className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -338,13 +357,17 @@ export default function WalletManagement() {
           </div>
           <div className="flex flex-row gap-2 items-center justify-between">
             <Button asChild size="icon">
-              <Link href={constructNavUrl("/portfolio", network, walletAddress)}>
+              <Link
+                href={constructNavUrl("/portfolio", network, walletAddress)}
+              >
                 <ChartPie className="h-4 w-4" />
               </Link>
             </Button>
             <p className="text-3xl font-semibold">
               {balance ? formatBalance(balance, 8) : "-/-"}{" "}
-              <span className="text-lg">{selectNativeAssetSymbol(network)}</span>
+              <span className="text-lg">
+                {selectNativeAssetSymbol(network)}
+              </span>
             </p>
           </div>
         </div>
@@ -394,7 +417,14 @@ export default function WalletManagement() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/send", network, walletAddress, "0x0000000000000000000000000000000000000000")}>
+            <Link
+              href={constructNavUrl(
+                "/send",
+                network,
+                walletAddress,
+                "0x0000000000000000000000000000000000000000"
+              )}
+            >
               <Send className="mr-2 h-4 w-4" />
               Send
             </Link>
@@ -407,7 +437,14 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/receive", network, walletAddress, "0x0000000000000000000000000000000000000000")}>
+            <Link
+              href={constructNavUrl(
+                "/receive",
+                network,
+                walletAddress,
+                "0x0000000000000000000000000000000000000000"
+              )}
+            >
               <Download className="mr-2 h-4 w-4" />
               Receive
             </Link>
@@ -442,6 +479,31 @@ export default function WalletManagement() {
           <Button disabled>
             <HandCoins className="mr-2 h-4 w-4" />
             Pay
+          </Button>
+        )}
+        {!createWalletButtonActive && walletAddress ? (
+          <Button asChild>
+            <Link href={constructNavUrl("/connect", network, walletAddress)} className="text-blue-400">
+              <Image
+                src="/walletconnect-logo.svg"
+                alt="walletconnect logo"
+                width={24}
+                height={24}
+                className="mr-2 text-blue-500"
+              />
+              Connect
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled className=" text-blue-400">
+            <Image
+              src="/walletconnect-logo.svg"
+              alt="walletconnect logo"
+              width={24}
+              height={24}
+              className="mr-2"
+            />
+            Connect
           </Button>
         )}
       </div>

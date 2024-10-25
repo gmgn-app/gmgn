@@ -348,7 +348,6 @@ export default function ConnectPage() {
     setTimeout(() => {
       setQrScanSuccess(false);
       setIsQrScanOpen(false);
-      handlePairing();
     }, 500);
   }
 
