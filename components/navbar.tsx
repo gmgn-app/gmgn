@@ -21,7 +21,7 @@ export default function NavBar() {
   }
 
   return (
-    <div className="grid grid-cols-4 fixed bottom-0 w-full md:w-[768px] h-[80px] bg-white">
+    <div className="grid grid-cols-4 fixed bottom-0 left-0 md:left-auto w-full md:w-[768px] h-[80px] bg-white">
       <Button
         className={`flex flex-col justify-start ${isActivePath(
           "/"
@@ -40,7 +40,6 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full`}
         variant="ghost"
         asChild
-        disabled
       >
         <Link href={constructNavUrl("/trade", network, address)}>
           <Repeat className="w-4 h-4 mr-2" />
@@ -65,7 +64,6 @@ export default function NavBar() {
         )} rounded-none border-t-2 h-full`}
         variant="ghost"
         asChild
-        disabled
       >
         <Link href={constructNavUrl("/explore", network, address)}>
           <Telescope className="w-4 h-4 mr-2" />

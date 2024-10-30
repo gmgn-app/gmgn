@@ -316,7 +316,7 @@ export default function WalletManagement() {
       {createWalletButtonActive === false &&
       loadingWalletStorage === false &&
       walletAddress ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] text-[#163300] border-primary border-2 rounded-md p-4">
+        <div className="flex flex-col gap-2 bg-gradient-to-l from-yellow-200 via-lime-400 to-green-400 text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
               <Link href={constructNavUrl("/profile", network, walletAddress)}>
