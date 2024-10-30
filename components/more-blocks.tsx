@@ -20,7 +20,6 @@ export default function MoreBlocks() {
             <CreditCard className="w-4 h-4" />
             <h2>On/Off Ramp</h2>
           </div>
-
           <p className="text-muted-foreground text-sm">
             Fund your wallet from your bank account or cash out
           </p>
