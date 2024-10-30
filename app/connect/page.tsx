@@ -59,7 +59,7 @@ import {
   constructNavUrl,
 } from "@/lib/utils";
 import { Scanner } from "@yudiel/react-qr-scanner";
-import { get } from "http";
+import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils'
 
 export default function ConnectPage() {
   // Get the search params from the URL.
@@ -428,11 +428,11 @@ export default function ConnectPage() {
         data: sessionRequestParams.data,
       });
 
-      const response = { id: sessionRequestId, result: hash, jsonrpc: "2.0" };
       await wcWalletKit.respondSessionRequest({
         topic: sessionRequestTopic,
-        response,
+        response: formatJsonRpcResult(sessionRequestId, hash),
       });
+      
       const transaction = await publicClient.waitForTransactionReceipt({
         hash: hash,
       });
