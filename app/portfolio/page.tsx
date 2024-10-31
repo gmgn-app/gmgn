@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
 import {
@@ -15,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { selectViemChainFromNetwork, formatBalance } from "@/lib/utils";
+import { selectViemChainFromNetwork, formatBalance, selectAssetLogo } from "@/lib/utils";
 import { mockStablecoinAbi } from "@/lib/abis";
 import Header from "@/components/header";
 
@@ -160,7 +159,7 @@ export default function PortfolioPage() {
               <div className="flex flex-row items-center justify-between">
                 <div className="flex flex-row gap-2 items-center">
                   <Image
-                    src="/kaia.png"
+                    src={selectAssetLogo(network, "0x0000000000000000000000000000000000000000")}
                     alt="kaia logo"
                     width={20}
                     height={20}
@@ -180,7 +179,7 @@ export default function PortfolioPage() {
               <div className="flex flex-row items-center justify-between">
                 <div className="flex flex-row gap-2 items-center">
                   <Image
-                    src="/usdc.svg"
+                    src="/logos/usdc.svg"
                     alt="usdc logo"
                     width={20}
                     height={20}
@@ -200,7 +199,7 @@ export default function PortfolioPage() {
               <div className="flex flex-row items-center justify-between">
                 <div className="flex flex-row gap-2 items-center">
                   <Image
-                    src="/usdt.svg"
+                    src="/logos/usdt.svg"
                     alt="usdt logo"
                     width={20}
                     height={20}

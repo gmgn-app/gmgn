@@ -844,7 +844,7 @@ export default function SendTransactionForm() {
           {isDesktop ? (
             <Input
               id="sendingAmount"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
               type="number"
               placeholder="0"
               value={sendingAmount}

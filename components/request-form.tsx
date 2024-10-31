@@ -198,8 +198,8 @@ export default function RequestForm() {
                     <Image
                       src={selectAssetLogo(network, token)}
                       alt="native asset logo"
-                      width={24}
-                      height={24}
+                      width={20}
+                      height={20}
                       className="rounded-full"
                     />
                     <p>
