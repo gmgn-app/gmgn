@@ -179,6 +179,44 @@ export function selectNativeAssetSymbol(network: string | undefined | null, toke
   }
 }
 
+export function selectAssetLogo(network: string | undefined | null, token?: string | undefined | null) {
+  if (!token || token === "0x0000000000000000000000000000000000000000") {
+    switch (network) {
+      case "kaia":
+        return "/logos/kaia.svg";
+      case "kaia-kairos":
+        return "/logos/kaia.svg";
+      case "arbitrum-sepolia":
+        return "/logos/eth.svg";
+      case "base-sepolia":
+        return "/logos/eth.svg";
+      case "ethereum-sepolia":
+        return "/logos/eth.svg";
+      case "abstract-testnet":
+        return "/logos/eth.svg";
+      case "fraxtal-testnet":
+        return "/logos/eth.svg";
+      case "bartio-testnet":
+        return "/logos/bera.svg";
+      case "lukso-testnet":
+        return "/logos/lyxt.svg";
+      case "moonbase-alpha-testnet":
+        return "/logos/moonbeam.svg";
+      default:
+        return "/logos/kaia.svg";
+    }
+  } else {
+    switch (token) {
+      case "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
+        return "/logos/usdc.svg";
+      case "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
+        return "/logos/usdt.svg";
+      default:
+        return "/logos/unknown.svg";
+    }
+  }
+}
+
 export function selectJsonRpcProvider(network: string | undefined | null) {
   switch (network) {
     case "kaia":

@@ -47,6 +47,7 @@ import {
   formatBalance,
   truncateAddress,
   selectNativeAssetSymbol,
+  selectAssetLogo
 } from "@/lib/utils";
 import QRCode from "react-qr-code";
 
@@ -193,12 +194,12 @@ export default function RequestForm() {
               <SelectGroup>
                 <SelectLabel>Select a token</SelectLabel>
                 <SelectItem value="0x0000000000000000000000000000000000000000">
-                  <div className="flex flex-row gap-2">
+                  <div className="flex flex-row items-center gap-2">
                     <Image
-                      src="/kaia.png"
-                      alt="kaia logo"
-                      width={20}
-                      height={20}
+                      src={selectAssetLogo(network, token)}
+                      alt="native asset logo"
+                      width={24}
+                      height={24}
                       className="rounded-full"
                     />
                     <p>
@@ -247,7 +248,7 @@ export default function RequestForm() {
           <Label htmlFor="receivingAddress">Receiving address</Label>
           <Input
             id="receivingAddress"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
             placeholder="0x..."
             value={receivingAddress}
             onChange={(e) => setReceivingAddress(e.target.value)}
@@ -263,7 +264,7 @@ export default function RequestForm() {
             isDesktop ? (
               <Input
                 id="sendingAmount"
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
                 type="number"
                 placeholder="0"
                 value={sendingAmount}
@@ -273,7 +274,7 @@ export default function RequestForm() {
             ) : (
               <Input
                 id="sendingAmount"
-                className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+                className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
                 type="text"
                 inputMode="decimal"
                 pattern="[0-9]*"
@@ -292,7 +293,7 @@ export default function RequestForm() {
           <Label htmlFor="transactionMemo">Memo</Label>
           <Textarea
             id="transactionMemo"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
             placeholder="gm and gn"
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}

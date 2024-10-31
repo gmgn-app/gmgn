@@ -75,6 +75,7 @@ import {
   selectBlockExplorer,
   selectViemChainFromNetwork,
   selectNativeAssetSymbol,
+  selectAssetLogo,
   selectJsonRpcProvider,
 } from "@/lib/utils";
 import { normalize } from "viem/ens";
@@ -703,8 +704,8 @@ export default function SendTransactionForm() {
                 <SelectItem value="0x0000000000000000000000000000000000000000">
                   <div className="flex flex-row gap-2">
                     <Image
-                      src="/kaia.png"
-                      alt="kaia logo"
+                      src={selectAssetLogo(network, token)}
+                      alt="native asset logo"
                       width={20}
                       height={20}
                       className="rounded-full"

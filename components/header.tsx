@@ -66,9 +66,12 @@ export default function Header() {
   function handleInputNetworkChange(value: string) {
     if (address === null || address === undefined || address === "null") {
       router.push(`?network=${value}`);
-      return;
-    } else {
+    } else if (token === null || token === undefined || token === "null") {
       router.push(`?network=${value}&address=${address}`);
+    } else if (transactionMemo && receivingAddress && sendingAmount) {
+      router.push(`?network=${value}&address=${address}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${transactionMemo}`);
+    } else {
+      router.push(`?network=${value}&address=${address}&token=${token}`);
     }
   }
 

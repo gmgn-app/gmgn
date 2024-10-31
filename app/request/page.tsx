@@ -14,6 +14,7 @@ export default function RequestPage() {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const network = searchParams.get("network");
+  const token = searchParams.get("token");
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
@@ -25,7 +26,7 @@ export default function RequestPage() {
       <Tabs defaultValue="request" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger asChild value="receive">
-            <Link href={constructNavUrl("/receive", network, address)}>
+            <Link href={constructNavUrl("/receive", network, address, token)}>
               Receive
             </Link>
           </TabsTrigger>
