@@ -13,6 +13,7 @@ export default function SendPage() {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const network = searchParams.get("network");
+  const token = searchParams.get("token");
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
@@ -25,7 +26,7 @@ export default function SendPage() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="send">Send</TabsTrigger>
           <TabsTrigger asChild value="message">
-            <Link href={constructNavUrl("/message", network, address)}>
+            <Link href={constructNavUrl("/message", network, address, token)}>
               Message
             </Link>
           </TabsTrigger>

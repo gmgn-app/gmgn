@@ -507,7 +507,7 @@ export default function MessageForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="receivingAddress"
-              className="rounded-none w-full border-primary border-2 p-2.5"
+              className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
               placeholder="0x..."
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
@@ -593,13 +593,13 @@ export default function MessageForm() {
           <Label htmlFor="transactionMemo">Message</Label>
           <Textarea
             id="transactionMemo"
-            className="rounded-none w-full border-primary border-2 p-2.5"
+            className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
             placeholder="gm and gn"
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}
           />
           <p className="text-sm text-muted-foreground">
-            Optional memo for the transaction or autogenerate an UID
+            The message you want to send or an autogenerate UID
           </p>
           <Button
             onClick={autogenerateUid}

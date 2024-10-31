@@ -90,7 +90,7 @@ export default function SendTransactionForm() {
   const router = useRouter();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
-  const token = searchParams.get("token");
+  const token = searchParams.get("token") ? searchParams.get("token") : "0x0000000000000000000000000000000000000000";
 
   // Redirect to the home page if the network or address is not provided.
   if (!network || !address) {
