@@ -756,7 +756,7 @@ export default function SendTransactionForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="receivingAddress"
-              className="rounded-none w-full border-primary border-2 p-2.5"
+              className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
               placeholder="0x..."
               value={receivingAddress}
               onChange={(e) => setReceivingAddress(e.target.value)}
@@ -853,7 +853,7 @@ export default function SendTransactionForm() {
           ) : (
             <Input
               id="sendingAmount"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
               type="text"
               inputMode="decimal"
               pattern="[0-9]*"
@@ -871,7 +871,7 @@ export default function SendTransactionForm() {
           <Label htmlFor="transactionMemo">Memo</Label>
           <Textarea
             id="transactionMemo"
-            className="rounded-none w-full border-primary border-2 p-2.5"
+            className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
             placeholder="gm and gn"
             value={transactionMemo}
             onChange={(e) => setTransactionMemo(e.target.value)}

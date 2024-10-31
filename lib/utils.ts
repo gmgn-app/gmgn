@@ -145,9 +145,9 @@ export function selectNativeAssetSymbol(network: string | undefined | null, toke
   if (!token || token === "0x0000000000000000000000000000000000000000") {
     switch (network) {
       case "kaia":
-        return "KLAY";
+        return "KAIA";
       case "kaia-kairos":
-        return "KLAY";
+        return "KAIA";
       case "arbitrum-sepolia":
         return "ETH";
       case "base-sepolia":
@@ -165,7 +165,7 @@ export function selectNativeAssetSymbol(network: string | undefined | null, toke
       case "moonbase-alpha-testnet":
         return "DEV";
       default:
-        return "KLAY";
+        return "KAIA";
     }
   } else {
     switch (token) {
