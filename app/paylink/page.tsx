@@ -207,6 +207,7 @@ export default function PayPage() {
             placeholder="Enter payment link"
             type="text"
             required
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
             value={paymentLink}
             onChange={(e) => setPaymentLink(e.target.value)}
             />

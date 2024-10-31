@@ -819,8 +819,9 @@ export default function ConnectPage() {
         <div className="flex flex-row gap-2 items-center justify-center">
           <Input
             id="wcSessionString"
-            className="rounded-none w-full border-primary border-2 p-2.5"
+            className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
             value={wcSessionString}
+            placeholder="wc:abc...xyz"
             onChange={(e) => setWcSessionString(e.target.value)}
             required
           />

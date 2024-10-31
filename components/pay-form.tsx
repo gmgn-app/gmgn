@@ -525,7 +525,7 @@ export default function PayForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="network"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
               placeholder="0x..."
               value={selectChainNameFromNetwork(network)}
               readOnly
@@ -540,7 +540,7 @@ export default function PayForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="token"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
               placeholder="0x..."
               value={token}
               readOnly
@@ -553,7 +553,7 @@ export default function PayForm() {
           <div className="flex flex-row gap-2 items-center justify-center">
             <Input
               id="receivingAddress"
-              className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+              className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
               placeholder="0x..."
               value={receivingAddress}
               readOnly
@@ -567,7 +567,7 @@ export default function PayForm() {
           <Label htmlFor="sendingAmount">Amount</Label>
           <Input
             id="sendingAmount"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
             type="number"
             placeholder="0"
             value={sendingAmount}
@@ -581,7 +581,7 @@ export default function PayForm() {
           <Label htmlFor="transactionMemo">Memo</Label>
           <Textarea
             id="transactionMemo"
-            className="rounded-none w-full border-primary border-2 p-2.5 mt-2"
+            className="rounded-none w-full border-primary border-2 p-2.5 mt-2 text-lg"
             placeholder="gm and gn"
             value={transactionMemo}
             readOnly
