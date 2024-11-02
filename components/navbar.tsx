@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { House, Repeat, Sprout, Telescope } from "lucide-react";
+import { House, Repeat, Sprout, Blocks } from "lucide-react";
 import { constructNavUrl } from "@/lib/utils";
 
 export default function NavBar() {
@@ -60,14 +60,14 @@ export default function NavBar() {
       </Button>
       <Button
         className={`flex flex-col justify-start ${isActivePath(
-          "/explore"
+          "/apps"
         )} rounded-none border-t-2 h-full`}
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl("/explore", network, address)}>
-          <Telescope className="w-4 h-4 mr-2" />
-          Explore
+        <Link href={constructNavUrl("/apps", network, address)}>
+          <Blocks className="w-4 h-4 mr-2" />
+          Apps
         </Link>
       </Button>
     </div>
