@@ -17,7 +17,7 @@ import {
   Download,
   LoaderPinwheel,
   KeyRound,
-  Signature,
+  List,
   Settings,
   Pencil,
   HandCoins,
@@ -248,25 +248,6 @@ export default function WalletManagement() {
           />
         </Link>
         <div className="flex flex-row gap-2">
-          <Select
-            value={network!}
-            onValueChange={handleInputNetworkChange}
-            defaultValue="kaia-kairos"
-          >
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder="Select a network" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Select a network</SelectLabel>
-                {availableNetworks.sort().map((network) => (
-                  <SelectItem key={network} value={network}>
-                    {selectChainNameFromNetwork(network)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
           <Button asChild size="icon" variant="outline">
             <Link href={constructNavUrl("/settings", network, walletAddress)}>
               <Settings className="w-6 h-6" />
@@ -432,15 +413,15 @@ export default function WalletManagement() {
         )}
         {!createWalletButtonActive && walletAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/sign", network, walletAddress)}>
-              <Signature className="mr-2 h-4 w-4" />
-              Sign
+            <Link href={constructNavUrl("/transactions", network, walletAddress)}>
+              <List className="mr-2 h-4 w-4" />
+              Transactions
             </Link>
           </Button>
         ) : (
           <Button disabled>
-            <Signature className="mr-2 h-4 w-4" />
-            Sign
+            <List className="mr-2 h-4 w-4" />
+            Transactions
           </Button>
         )}
         {!createWalletButtonActive && walletAddress ? (
