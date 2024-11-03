@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { privateKeyToAccount } from "viem/accounts";
 import {
   Address,
-  fromBytes,
 } from "viem";
+import { mnemonicToAccount } from 'viem/accounts'
+import * as bip39 from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english';
+// import slip10 from 'micro-key-producer/slip10.js';
+// import bs58 from 'bs58'
+// import { getPublicKey, etc } from '@noble/ed25519';
+// import { sha512 } from "@noble/hashes/sha512";
+
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
@@ -21,7 +27,6 @@ import {
   Settings,
   Pencil,
   HandCoins,
-  Droplets,
   ChartPie,
   Rocket,
   Sparkles,
@@ -36,45 +41,37 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { atom, useAtom } from 'jotai';
 import { getOrThrow, createOrThrow, checkBrowserWebAuthnSupport } from "@/lib/sigpass";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   truncateAddress,
-  selectViemChainFromNetwork,
   manageAvailableNetworksInLocalStorage,
   constructNavUrl,
-  selectChainNameFromNetwork,
 } from "@/lib/utils";
 
-// import { getPublicKey, etc } from '@noble/ed25519';
-// import { sha512 } from "@noble/hashes/sha512";
+
 
 export default function WalletManagement() {
   // Get the search params from the URL.
-  const searchParams = useSearchParams();
-  const paramNetwork = searchParams.get("network");
-  const paramAddress = searchParams.get("address");
+  // const searchParams = useSearchParams();
+  // const paramNetwork = searchParams.get("network");
+  // const paramAddress = searchParams.get("address");
 
   const router = useRouter();
   // Get the toast function from the useToast hook.
   const { toast } = useToast();
 
   // Create the state variables for the wallet management
-  const [balance, setBalance] = useState("");
-  const [walletAddress, setWalletAddress] = useState<Address | null>(
-    paramAddress && paramAddress !== "null" ? (paramAddress as Address) : null
-  );
+  // const [walletAddress, setWalletAddress] = useState<Address | null>(
+  //   paramAddress && paramAddress !== "null" ? (paramAddress as Address) : null
+  // );
+  const addressAtom = atom<Address | null>(null);
+  const [address, setAddress] = useAtom(addressAtom);
+  const network = "kaia-kairos";
+  
 
   // State for create dialog
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -91,37 +88,11 @@ export default function WalletManagement() {
   // Wallet storage loading state
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
 
-  // Current network
-  const [network, setNetwork] = useState<string | null>(
-    paramNetwork || "kaia-kairos"
-  );
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
   const [availableNetworks, setAvailableNetworks] = useState([]);
 
   useEffect(() => {
-    const GMGN_DEFAULT_NETWORK = localStorage.getItem("gmgn-default-network");
-    if (GMGN_DEFAULT_NETWORK) {
-      setNetwork(GMGN_DEFAULT_NETWORK);
-    }
-    if (
-      (paramAddress === null || paramAddress === "null") &&
-      (paramNetwork === null || paramNetwork === "null") &&
-      GMGN_DEFAULT_NETWORK
-    ) {
-      router.push(`/?network=${GMGN_DEFAULT_NETWORK}`);
-    } else if (
-      (paramAddress === null || paramAddress === "null") &&
-      paramNetwork
-    ) {
-      router.push(`/?network=${paramNetwork}`);
-      setNetwork(paramNetwork);
-    } else {
-      router.push(`/?network=${network}&address=${walletAddress}`);
-    }
-
-    const GMGN_AVAILABLE_NETWORKS = manageAvailableNetworksInLocalStorage();
-    setAvailableNetworks(GMGN_AVAILABLE_NETWORKS);
 
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
@@ -133,7 +104,6 @@ export default function WalletManagement() {
         setLoadingWalletStorage(false);
       }
     } else {
-      router.push(`/?network=${network}`);
       setLoadingWalletStorage(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,12 +134,20 @@ export default function WalletManagement() {
       });
       return;
     }
-    const privateKey = fromBytes(bytes, "hex");
-    if (privateKey) {
+    const mnemonicPhrase = bip39.entropyToMnemonic(bytes, wordlist);
+    // const privateKey = fromBytes(bytes, "hex");
+    if (mnemonicPhrase) {
       setCreateWalletButtonActive(false);
-      const account = privateKeyToAccount(privateKey as Address);
-      setWalletAddress(account.address);
-      router.push(`?network=${network}&address=${account.address}`);
+      // const account = privateKeyToAccount(privateKey as Address);
+      // derive the evm account from mnemonic
+      const account = mnemonicToAccount(mnemonicPhrase,
+        {
+          accountIndex: 0,
+          addressIndex: 0,
+        }
+      );
+      setAddress(account.address);
+      // derive the solana account from mnemonic
       toast({
         className: "bg-green-600 text-white",
         title: "Wallet loaded!",
@@ -226,19 +204,11 @@ export default function WalletManagement() {
     setIsCreateDialogOpen(false);
   }
 
-  async function handleInputNetworkChange(value: string) {
-    setNetwork(value);
-    if (walletAddress) {
-      router.push(`?network=${value}&address=${walletAddress}`);
-    } else {
-      router.push(`?network=${value}`);
-    }
-  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-row justify-between items-center">
-        <Link href={constructNavUrl("/", network, walletAddress)}>
+        <Link href="/">
           <Image
             src="/gmgn-logo.svg"
             alt="gmgn logo"
@@ -249,7 +219,7 @@ export default function WalletManagement() {
         </Link>
         <div className="flex flex-row gap-2">
           <Button asChild size="icon" variant="outline">
-            <Link href={constructNavUrl("/settings", network, walletAddress)}>
+            <Link href={constructNavUrl("/settings", network, address)}>
               <Settings className="w-6 h-6" />
             </Link>
           </Button>
@@ -257,41 +227,34 @@ export default function WalletManagement() {
       </div>
       {createWalletButtonActive === false &&
       loadingWalletStorage === false &&
-      walletAddress ? (
+      address ? (
         <div className="flex flex-col gap-2 bg-gradient-to-l from-yellow-200 via-lime-400 to-green-400 text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              <Link href={constructNavUrl("/profile", network, walletAddress)}>
-                <Image
-                  src={walletIcon ? walletIcon : "/default-profile.svg"}
-                  alt="avatar"
-                  width={50}
-                  height={50}
-                  className="rounded-full border-primary border-2"
-                />
-              </Link>
-              <div className="flex flex-col text-sm">
-                <Link
-                  href={constructNavUrl("/profile", network, walletAddress)}
-                  className="flex flex-row gap-2 items-center p-2"
-                >
-                  <p>{walletName ? walletName : "---"}</p>
-                  <Pencil className="w-4 h-4" />
-                </Link>
-                <div className="flex flex-row gap-2">
-                  <WalletCopyButton
-                    copyText={walletAddress}
-                    buttonTitle={truncateAddress(walletAddress as Address, 6)}
+              <Link href={constructNavUrl("/profile", network, address)}>
+                <div className="flex flex-row gap-2 items-start">
+                  <Image
+                    src={walletIcon ? walletIcon : "/default-profile.svg"}
+                    alt="avatar"
+                    width={50}
+                    height={50}
+                    className="rounded-full border-primary border-2"
                   />
-                  {network === "kaia-kairos" && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link
-                        href={`/faucet?network=${network}&address=${walletAddress}`}
-                      >
-                        <Droplets className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  )}
+                  <div className="flex flex-row gap-2 items-center">
+                    <p>{walletName ? walletName : "---"}</p>
+                    <Pencil className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                  <div className="w-[70px] bg-primary text-secondary px-2 py-2">
+                    EVM
+                  </div>
+                  <WalletCopyButton
+                    copyText={address}
+                    buttonTitle={truncateAddress(address as Address, 6)}
+                  />
                 </div>
               </div>
             </div>
@@ -299,7 +262,7 @@ export default function WalletManagement() {
           <div className="flex flex-row gap-2 justify-end">
             <Button asChild>
               <Link
-                href={constructNavUrl("/portfolio", network, walletAddress)}
+                href={constructNavUrl("/portfolio", network, address)}
               >
                 <ChartPie className="h-4 w-4 mr-2" />
                 Portfolio
@@ -351,7 +314,7 @@ export default function WalletManagement() {
         </div>
       ) : createWalletButtonActive === false &&
         loadingWalletStorage === false &&
-        !walletAddress ? (
+        !address ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
           {
             loadWalletButtonLoading ? (
@@ -371,13 +334,13 @@ export default function WalletManagement() {
         <Skeleton className="h-[200px] rounded-md" />
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {!createWalletButtonActive && walletAddress ? (
+        {!createWalletButtonActive && address ? (
           <Button asChild>
             <Link
               href={constructNavUrl(
                 "/send",
                 network,
-                walletAddress,
+                address,
                 "0x0000000000000000000000000000000000000000"
               )}
             >
@@ -391,13 +354,13 @@ export default function WalletManagement() {
             Send
           </Button>
         )}
-        {!createWalletButtonActive && walletAddress ? (
+        {!createWalletButtonActive && address ? (
           <Button asChild>
             <Link
               href={constructNavUrl(
                 "/receive",
                 network,
-                walletAddress,
+                address,
                 "0x0000000000000000000000000000000000000000"
               )}
             >
@@ -411,9 +374,9 @@ export default function WalletManagement() {
             Receive
           </Button>
         )}
-        {!createWalletButtonActive && walletAddress ? (
+        {!createWalletButtonActive && address ? (
           <Button asChild>
-            <Link href={constructNavUrl("/transactions", network, walletAddress)}>
+            <Link href={constructNavUrl("/transactions", network, address)}>
               <List className="mr-2 h-4 w-4" />
               Transactions
             </Link>
@@ -424,9 +387,9 @@ export default function WalletManagement() {
             Transactions
           </Button>
         )}
-        {!createWalletButtonActive && walletAddress ? (
+        {!createWalletButtonActive && address ? (
           <Button asChild>
-            <Link href={constructNavUrl("/paylink", network, walletAddress)}>
+            <Link href={constructNavUrl("/paylink", network, address)}>
               <HandCoins className="mr-2 h-4 w-4" />
               Pay
             </Link>
@@ -437,9 +400,9 @@ export default function WalletManagement() {
             Pay
           </Button>
         )}
-        {!createWalletButtonActive && walletAddress ? (
+        {!createWalletButtonActive && address ? (
           <Button asChild>
-            <Link href={constructNavUrl("/connect", network, walletAddress)}>
+            <Link href={constructNavUrl("/connect", network, address)}>
               <Image
                 src="/walletconnect-logo.svg"
                 alt="walletconnect logo"
@@ -463,8 +426,8 @@ export default function WalletManagement() {
           </Button>
         )}
       </div>
-      {!createWalletButtonActive && walletAddress ? (
-        <Link href={constructNavUrl("/onboard", network, walletAddress)}>
+      {!createWalletButtonActive && address ? (
+        <Link href={constructNavUrl("/onboard", network, address)}>
           <div className="w-full h-[100px] rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
             <div className="flex flex-row items-center text-lg">
               <Rocket className="w-4 h-4 mr-2" />

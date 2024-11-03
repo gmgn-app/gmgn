@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Address } from "viem";
+import { Address as EvmAddress } from "viem";
 import {
   sepolia,
   arbitrumSepolia,
@@ -18,11 +18,11 @@ import { GMGN_NETWORKS } from "@/lib/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
+} 
 
 // Truncate the address for display.
 export function truncateAddress(
-  address: Address | undefined,
+  address: EvmAddress | string | undefined | null,
   numberOfChars: number
 ) {
   if (!address) return "--------------";

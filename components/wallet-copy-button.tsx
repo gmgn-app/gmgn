@@ -3,18 +3,20 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { Button } from "./ui/button";
+import { Address as EvmAddress } from "viem";
+
 
 export default function WalletCopyButton({
   copyText,
   buttonTitle,
 }: {
-  copyText: string;
+  copyText: EvmAddress | string | null;
   buttonTitle: string;
 }) {
   const [isCopied, setIsCopied] = useState(false);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(copyText);
+    await navigator.clipboard.writeText(copyText ? copyText : "");
     setIsCopied(true);
 
     setTimeout(() => {
