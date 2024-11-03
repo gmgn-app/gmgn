@@ -9,7 +9,7 @@ import Header from "@/components/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tokens } from "@/lib/tokens";
 import { parseEther, formatEther } from "viem";
-import { Info, Plus, Trash2, Loader2, CornerDownRight } from "lucide-react";
+import { Info, Plus, Trash2, Loader2, CornerDownRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -122,11 +122,33 @@ export default function MultisendAppPage() {
           // Multisend native token form
         }
         <TabsContent value="native" className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 mt-8">
+          {/* <div className="flex flex-col">
+            <h2 className="text-xl">Balance</h2>
+            <div className="flex flex-row items-center justify-between">
+              <p className="text-2xl font-semibold">
+                {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
+                <span className="text-lg">
+                  {selectNativeAssetSymbol(network, token)}
+                </span>
+              </p>
+              <Button onClick={fetchBalances} size="icon">
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {currentNativeBalance
+                ? formatBalance(currentNativeBalance, 4)
+                : "-/-"}{" "}
+              <span className="text-sm text-muted-foreground">
+                {selectNativeAssetSymbol(network)}
+              </span>
+            </p>
+          </div> */}
+          <div className="flex flex-col gap-4">
             <h2 className="border-b pb-2 text-lg font-semibold">Step 1</h2>
             <div className="flex flex-row gap-2 items-center">
               <CornerDownRight className="h-4 w-4" />
-              <p className="text-lg">Create an airdrop list</p>
+              <p>Create an airdrop list</p>
             </div>
             <Tabs defaultValue="manual" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
@@ -134,13 +156,11 @@ export default function MultisendAppPage() {
                 <TabsTrigger value="file-input">File</TabsTrigger>
               </TabsList>
               <TabsContent value="manual" className="flex flex-col gap-4">
-                <p>
-                  <span className="inline-block mr-2">
-                    <Info className="h-4 w-4" />
-                  </span>
-                  Input addresses and corresponding amounts manually. Best for
-                  airdropping to small amount of addreses
-                </p>
+                <div className="inline">
+                  <Info className="inline h-4 w-4 mr-2" />
+                  Enter addresses and corresponding amounts manually. Best for
+                  sending to small amount of addreses
+                </div>
                 {
                   // if airdropList is empty, show the message
                   airdropList.length === 0 ? (
@@ -240,7 +260,7 @@ export default function MultisendAppPage() {
             </h2>
             <div className="flex flex-row gap-2 items-center">
               <CornerDownRight className="h-4 w-4" />
-              <p>Check and confirm the total airdrop amount</p>
+              <p>Confirm the total multisend amount</p>
             </div>
             <p className="font-semibold text-2xl">
               {formatEther(totalAirdropAmount).toString()}
@@ -255,15 +275,18 @@ export default function MultisendAppPage() {
             </h2>
             <div className="flex flex-row gap-2 items-center">
               <CornerDownRight className="h-4 w-4" />
-              <p>Execute the airdrop</p>
+              <p>Review and proceed</p>
             </div>
             {submitButtonIsPending ? (
-              <Button className="w-[300px]" disabled>
+              <Button className="w-full md:w-[400px]" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please confirm in your wallet
               </Button>
             ) : (
-              <Button className="w-[300px]">Airdrop KAIA</Button>
+              <Button className="w-full md:w-[400px]">
+                Proceed
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
             )}
           </div>
         </TabsContent>

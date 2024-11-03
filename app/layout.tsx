@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import Script from "next/script";
 import Footer from "@/components/footer";
+import { Providers } from "@/app/providers";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -49,11 +50,13 @@ export default function RootLayout({
         src="https://analytics.pyhash.com/js/script.js"
       ></Script>
       <body className={inter.className}>
-        <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
-          {children}
-          <Toaster />
-          <Footer />
-        </main>
+        <Providers>
+          <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
+            {children}
+            <Toaster />
+            <Footer />
+          </main>
+        </Providers>
       </body>
     </html>
   );
