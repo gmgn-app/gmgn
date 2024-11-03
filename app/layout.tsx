@@ -53,9 +53,9 @@ export default function RootLayout({
         <Providers>
           <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
             {children}
-            <Toaster />
             <Footer />
           </main>
+          <Toaster />
         </Providers>
       </body>
     </html>

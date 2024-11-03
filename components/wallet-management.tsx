@@ -7,17 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  createPublicClient,
   Address,
-  formatEther,
-  http,
   fromBytes,
 } from "viem";
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
   Send,
-  RotateCcw,
   Download,
   LoaderPinwheel,
   KeyRound,
@@ -29,6 +25,7 @@ import {
   ChartPie,
   Rocket,
   Sparkles,
+  Loader2
 } from "lucide-react";
 import {
   Dialog,
@@ -49,13 +46,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { WebAuthnStorage } from "@/lib/webauthnstorage";
+import { getOrThrow, createOrThrow, checkBrowserWebAuthnSupport } from "@/lib/sigpass";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  selectNativeAssetSymbol,
   truncateAddress,
-  formatBalance,
   selectViemChainFromNetwork,
   manageAvailableNetworksInLocalStorage,
   constructNavUrl,
@@ -80,10 +75,23 @@ export default function WalletManagement() {
   const [walletAddress, setWalletAddress] = useState<Address | null>(
     paramAddress && paramAddress !== "null" ? (paramAddress as Address) : null
   );
+
+  // State for create dialog
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
   // Create the state variables for the wallet management
-  const [createWalletButtonActive, setCreateWalletButtonActive] =
-    useState(true);
+  const [createWalletButtonActive, setCreateWalletButtonActive] = useState(true);
+
+  // Create Wallet button loading state
+  const [createWalletButtonLoading, setCreateWalletButtonLoading] = useState(false);
+
+  // Load Wallet button loading state
+  const [loadWalletButtonLoading, setLoadWalletButtonLoading] = useState(false);
+
+  // Wallet storage loading state
   const [loadingWalletStorage, setLoadingWalletStorage] = useState(true);
+
+  // Current network
   const [network, setNetwork] = useState<string | null>(
     paramNetwork || "kaia-kairos"
   );
@@ -131,38 +139,9 @@ export default function WalletManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (walletAddress) {
-      const publicClient = createPublicClient({
-        chain: selectViemChainFromNetwork(network as string),
-        transport: http(),
-      });
-      const fetchBalance = async () => {
-        const balance = await publicClient.getBalance({
-          address: walletAddress as Address,
-        });
-        setBalance(formatEther(balance).toString());
-      };
-      // call the function
-      fetchBalance()
-        // make sure to catch any error
-        .catch(console.error);
-    }
-  }, [walletAddress, network]);
-
-  const publicClient = createPublicClient({
-    chain: selectViemChainFromNetwork(network as string),
-    transport: http(),
-  });
-
-  async function fetchBalance() {
-    const balance = await publicClient.getBalance({
-      address: walletAddress as Address,
-    });
-    setBalance(formatEther(balance).toString());
-  }
 
   async function getWallet() {
+    setLoadWalletButtonLoading(true);
     /**
      * Retrieve the handle to the private key from some unauthenticated storage
      */
@@ -175,7 +154,16 @@ export default function WalletManagement() {
     /**
      * Retrieve the private key from authenticated storage
      */
-    const bytes = await WebAuthnStorage.getOrThrow(handle);
+    const bytes = await getOrThrow(handle);
+    if (!bytes) {
+      setLoadWalletButtonLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Cancelled loading wallet!",
+        description: "Please try again if this was not intended.",
+      });
+      return;
+    }
     const privateKey = fromBytes(bytes, "hex");
     if (privateKey) {
       setCreateWalletButtonActive(false);
@@ -183,46 +171,27 @@ export default function WalletManagement() {
       setWalletAddress(account.address);
       router.push(`?network=${network}&address=${account.address}`);
       toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4 bg-green-600 text-white",
+        className: "bg-green-600 text-white",
         title: "Wallet loaded!",
         description: "You are ready to use your wallet.",
       });
-      const fetchBalance = async () => {
-        const balance = await publicClient.getBalance({
-          address: account.address,
-        });
-        setBalance(formatEther(balance).toString());
-      };
-      // call the function
-      fetchBalance()
-        // make sure to catch any error
-        .catch(() =>
-          toast({
-            className:
-              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-            variant: "destructive",
-            title: "Fetch balance failed!",
-            description: "Uh oh! Something went wrong. please try again.",
-          })
-        );
     } else {
       toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
         variant: "destructive",
         title: "Wallet load failed!",
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
+    setLoadWalletButtonLoading(false);
   }
 
   async function createWallet() {
+    setCreateWalletButtonLoading(true);
     const bytes = crypto.getRandomValues(new Uint8Array(32));
     /**
      * Store the private key into authenticated storage
      */
-    const handle = await WebAuthnStorage.createOrThrow("gmgn-wallet", bytes);
+    const handle = await createOrThrow("gmgn-wallet", bytes);
     /**
      * Store the handle to the private key into some unauthenticated storage
      */
@@ -253,6 +222,8 @@ export default function WalletManagement() {
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
+    setCreateWalletButtonLoading(false);
+    setIsCreateDialogOpen(false);
   }
 
   async function handleInputNetworkChange(value: string) {
@@ -261,16 +232,6 @@ export default function WalletManagement() {
       router.push(`?network=${value}&address=${walletAddress}`);
     } else {
       router.push(`?network=${value}`);
-    }
-    const publicClient = createPublicClient({
-      chain: selectViemChainFromNetwork(value as string),
-      transport: http(),
-    });
-    if (walletAddress) {
-      const balance = await publicClient.getBalance({
-        address: walletAddress as Address,
-      });
-      setBalance(formatEther(balance).toString());
     }
   }
 
@@ -353,30 +314,22 @@ export default function WalletManagement() {
                 </div>
               </div>
             </div>
-            <Button onClick={fetchBalance} size="icon">
-              <RotateCcw className="w-4 h-4" />
-            </Button>
           </div>
-          <div className="flex flex-row gap-2 items-center justify-between">
-            <Button asChild size="icon">
+          <div className="flex flex-row gap-2 justify-end">
+            <Button asChild>
               <Link
                 href={constructNavUrl("/portfolio", network, walletAddress)}
               >
-                <ChartPie className="h-4 w-4" />
+                <ChartPie className="h-4 w-4 mr-2" />
+                Portfolio
               </Link>
             </Button>
-            <p className="text-3xl font-semibold">
-              {balance ? formatBalance(balance, 8) : "-/-"}{" "}
-              <span className="text-lg">
-                {selectNativeAssetSymbol(network)}
-              </span>
-            </p>
           </div>
         </div>
       ) : createWalletButtonActive === true &&
         loadingWalletStorage === false ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
-          <Dialog>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <KeyRound className="mr-2 h-4 w-4" />
@@ -399,7 +352,18 @@ export default function WalletManagement() {
                 />
               </div>
               <DialogFooter>
-                <Button onClick={createWallet}>Create</Button>
+                {
+                  createWalletButtonLoading ? (
+                    <Button className="w-[150px]" disabled>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Please wait
+                    </Button>
+                  ) : (
+                    <Button className="w-[150px]" onClick={createWallet}>
+                      Create
+                    </Button>
+                  )
+                }
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -408,10 +372,19 @@ export default function WalletManagement() {
         loadingWalletStorage === false &&
         !walletAddress ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
-          <Button disabled={createWalletButtonActive} onClick={getWallet}>
-            <LoaderPinwheel className="mr-2 h-4 w-4" />
-            Load wallet from Passkey
-          </Button>
+          {
+            loadWalletButtonLoading ? (
+              <Button className="w-[230px]" disabled>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button className="w-[230px]" onClick={getWallet}>
+                <LoaderPinwheel className="mr-2 h-4 w-4" />
+                Load wallet from Passkey
+              </Button>
+            )
+          }
         </div>
       ) : (
         <Skeleton className="h-[200px] rounded-md" />
