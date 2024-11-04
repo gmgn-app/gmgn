@@ -141,6 +141,33 @@ export function selectViemObjectFromChainId(chainId: string) {
   }
 }
 
+export function selectBlockExplorerFromChainId(chainId: string | undefined | null) {
+  switch (chainId) {
+    case "eip155:8217":
+      return "https://kaiascan.io";
+    case "eip155:1001":
+      return "https://kairos.kaiascan.io";
+    case "eip155:421614":
+      return "https://sepolia.arbiscan.io";
+    case "eip155:84532":
+      return "https://sepolia.basescan.org";
+    case "eip155:11155111":
+      return "https://sepolia.etherscan.io";
+    case "eip155:11124":
+      return "https://explorer.testnet.abs.xyz";
+    case "eip155:2522":
+      return "https://holesky.fraxscan.com";
+    case "eip155:80084":
+      return "https://bartio.beratrail.io";
+    case "eip155:4201":
+      return "https://explorer.execution.testnet.lukso.network";
+    case "eip155:1287":
+      return "https://moonbase.moonscan.io";
+    default:
+      return "https://kairos.kaiascan.io";
+  }
+}
+
 export function selectBlockExplorer(network: string | undefined | null) {
   switch (network) {
     case "kaia":
