@@ -223,7 +223,7 @@ export default function WalletManagement() {
         </Link>
         <div className="flex flex-row gap-2">
           <Button asChild size="icon" variant="outline">
-            <Link href="/">
+            <Link href="/settings">
               <Settings className="w-6 h-6" />
             </Link>
           </Button>
