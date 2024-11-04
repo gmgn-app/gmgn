@@ -1,14 +1,14 @@
-export const GMGN_NETWORKS = [
-  "kaia-kairos",
-  "kaia",
-  "arbitrum-sepolia",
-  "base-sepolia",
-  "ethereum-sepolia",
-  "abstract-testnet",
-  "fraxtal-testnet",
-  "bartio-testnet",
-  "lukso-testnet",
-  "moonbase-alpha-testnet",
+export const AVAILABLE_NETWORKS = [
+  "eip155:11155111",
+  "eip155:1001",
+  "eip155:8217",
+  "eip155:421614",
+  "eip155:84532",
+  "eip155:11124",
+  "eip155:2522",
+  "eip155:80084",
+  "eip155:4201",
+  "eip155:1287",
 ];
 
 

@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { constructNavUrl, selectChainNameFromNetwork } from "@/lib/utils";
-import { GMGN_NETWORKS } from "@/lib/chains";
+import { AVAILABLE_NETWORKS } from "@/lib/chains";
 
 
 export default function Header() {
@@ -45,9 +45,9 @@ export default function Header() {
     if (!localStorage.getItem("gmgn-available-networks")) {
       localStorage.setItem(
         "gmgn-available-networks",
-        JSON.stringify(GMGN_NETWORKS)
+        JSON.stringify(AVAILABLE_NETWORKS)
       );
-      setAvailableNetworks(GMGN_NETWORKS);
+      setAvailableNetworks(AVAILABLE_NETWORKS);
     }
 
     // get the GMGN_NETWORKS from the local storage

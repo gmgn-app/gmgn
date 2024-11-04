@@ -14,7 +14,7 @@ import {
   moonbaseAlpha
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
-import { GMGN_NETWORKS } from "@/lib/chains";
+import { AVAILABLE_NETWORKS } from "@/lib/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,7 +30,7 @@ export function truncateAddress(
   return `${convertedAddress.slice(
     0,
     numberOfChars
-  )}...${convertedAddress.slice(-4)}`;
+  )}...${convertedAddress.slice(-numberOfChars)}`;
 }
 
 // Truncate the hash for display
@@ -249,9 +249,9 @@ export function manageAvailableNetworksInLocalStorage() {
   if (!localStorage.getItem("gmgn-available-networks")) {
     localStorage.setItem(
       "gmgn-available-networks",
-      JSON.stringify(GMGN_NETWORKS)
+      JSON.stringify(AVAILABLE_NETWORKS)
     );
-    return GMGN_NETWORKS;
+    return AVAILABLE_NETWORKS;
   }
 
   // get the GMGN_NETWORKS from the local storage

@@ -7,8 +7,8 @@ import {
 
 export default function Faqs() {
   return (
-    <div className="flex flex-col gap-4 w-full text-left">
-      <h2 className="border-b pb-2 text-xl font-semibold">FAQs</h2>
+    <div className="flex flex-col gap-2 w-full text-left">
+      <h2 className="text-xl font-semibold">FAQs</h2>
       <Accordion type="multiple">
         <AccordionItem value="item-1">
           <AccordionTrigger>Is GMGN wallet safe?</AccordionTrigger>
