@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Address,
+  Address as EvmAddress,
 } from "viem";
 import { mnemonicToAccount } from 'viem/accounts'
 import * as bip39 from '@scure/bip39';
@@ -52,7 +52,7 @@ import {
   constructNavUrl,
 } from "@/lib/utils";
 
-
+const evmAddressAtom = atom<EvmAddress | null>(null);
 
 export default function WalletManagement() {
   // Get the search params from the URL.
@@ -60,16 +60,11 @@ export default function WalletManagement() {
   // const paramNetwork = searchParams.get("network");
   // const paramAddress = searchParams.get("address");
 
-  const router = useRouter();
   // Get the toast function from the useToast hook.
   const { toast } = useToast();
 
-  // Create the state variables for the wallet management
-  // const [walletAddress, setWalletAddress] = useState<Address | null>(
-  //   paramAddress && paramAddress !== "null" ? (paramAddress as Address) : null
-  // );
-  const addressAtom = atom<Address | null>(null);
-  const [address, setAddress] = useAtom(addressAtom);
+  // Create the atom state for address
+  const [evmAddress, setAddress] = useAtom(evmAddressAtom);
   const network = "kaia-kairos";
   
 
@@ -90,10 +85,8 @@ export default function WalletManagement() {
 
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
-  const [availableNetworks, setAvailableNetworks] = useState([]);
 
   useEffect(() => {
-
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
     if (GMGN_WALLET) {
       const wallet = JSON.parse(GMGN_WALLET);
@@ -219,7 +212,7 @@ export default function WalletManagement() {
         </Link>
         <div className="flex flex-row gap-2">
           <Button asChild size="icon" variant="outline">
-            <Link href={constructNavUrl("/settings", network, address)}>
+            <Link href={constructNavUrl("/settings", network, evmAddress)}>
               <Settings className="w-6 h-6" />
             </Link>
           </Button>
@@ -227,11 +220,11 @@ export default function WalletManagement() {
       </div>
       {createWalletButtonActive === false &&
       loadingWalletStorage === false &&
-      address ? (
+      evmAddress ? (
         <div className="flex flex-col gap-2 bg-gradient-to-l from-yellow-200 via-lime-400 to-green-400 text-[#163300] border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
-              <Link href={constructNavUrl("/profile", network, address)}>
+              <Link href={constructNavUrl("/profile", network, evmAddress)}>
                 <div className="flex flex-row gap-2 items-start">
                   <Image
                     src={walletIcon ? walletIcon : "/default-profile.svg"}
@@ -248,12 +241,12 @@ export default function WalletManagement() {
               </Link>
               <div className="flex flex-col gap-2">
                 <div className="flex flex-row gap-0 items-center border-2 border-primary">
-                  <div className="w-[70px] bg-primary text-secondary px-2 py-2">
+                  <div className="w-[70px] bg-primary text-secondary p-2">
                     EVM
                   </div>
                   <WalletCopyButton
-                    copyText={address}
-                    buttonTitle={truncateAddress(address as Address, 6)}
+                    copyText={evmAddress}
+                    buttonTitle={truncateAddress(evmAddress as EvmAddress, 6)}
                   />
                 </div>
               </div>
@@ -262,7 +255,7 @@ export default function WalletManagement() {
           <div className="flex flex-row gap-2 justify-end">
             <Button asChild>
               <Link
-                href={constructNavUrl("/portfolio", network, address)}
+                href={constructNavUrl("/portfolio", network, evmAddress)}
               >
                 <ChartPie className="h-4 w-4 mr-2" />
                 Portfolio
@@ -314,7 +307,7 @@ export default function WalletManagement() {
         </div>
       ) : createWalletButtonActive === false &&
         loadingWalletStorage === false &&
-        !address ? (
+        !evmAddress ? (
         <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[200px] items-center justify-center rounded-md p-4">
           {
             loadWalletButtonLoading ? (
@@ -334,13 +327,13 @@ export default function WalletManagement() {
         <Skeleton className="h-[200px] rounded-md" />
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {!createWalletButtonActive && address ? (
+        {!createWalletButtonActive && evmAddress ? (
           <Button asChild>
             <Link
               href={constructNavUrl(
                 "/send",
                 network,
-                address,
+                evmAddress,
                 "0x0000000000000000000000000000000000000000"
               )}
             >
@@ -354,13 +347,13 @@ export default function WalletManagement() {
             Send
           </Button>
         )}
-        {!createWalletButtonActive && address ? (
+        {!createWalletButtonActive && evmAddress ? (
           <Button asChild>
             <Link
               href={constructNavUrl(
                 "/receive",
                 network,
-                address,
+                evmAddress,
                 "0x0000000000000000000000000000000000000000"
               )}
             >
@@ -374,9 +367,9 @@ export default function WalletManagement() {
             Receive
           </Button>
         )}
-        {!createWalletButtonActive && address ? (
+        {!createWalletButtonActive && evmAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/transactions", network, address)}>
+            <Link href={constructNavUrl("/transactions", network, evmAddress)}>
               <List className="mr-2 h-4 w-4" />
               Transactions
             </Link>
@@ -387,9 +380,9 @@ export default function WalletManagement() {
             Transactions
           </Button>
         )}
-        {!createWalletButtonActive && address ? (
+        {!createWalletButtonActive && evmAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/paylink", network, address)}>
+            <Link href={constructNavUrl("/paylink", network, evmAddress)}>
               <HandCoins className="mr-2 h-4 w-4" />
               Pay
             </Link>
@@ -400,9 +393,9 @@ export default function WalletManagement() {
             Pay
           </Button>
         )}
-        {!createWalletButtonActive && address ? (
+        {!createWalletButtonActive && evmAddress ? (
           <Button asChild>
-            <Link href={constructNavUrl("/connect", network, address)}>
+            <Link href={constructNavUrl("/connect", network, evmAddress)}>
               <Image
                 src="/walletconnect-logo.svg"
                 alt="walletconnect logo"
@@ -426,8 +419,8 @@ export default function WalletManagement() {
           </Button>
         )}
       </div>
-      {!createWalletButtonActive && address ? (
-        <Link href={constructNavUrl("/onboard", network, address)}>
+      {!createWalletButtonActive && evmAddress ? (
+        <Link href={constructNavUrl("/onboard", network, evmAddress)}>
           <div className="w-full h-[100px] rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
             <div className="flex flex-row items-center text-lg">
               <Rocket className="w-4 h-4 mr-2" />
