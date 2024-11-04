@@ -114,6 +114,33 @@ export function selectViemChainFromNetwork(network: string | undefined | null) {
   }
 }
 
+export function selectViemObjectFromChainId(chainId: string) {
+  switch (chainId) {
+    case "eip155:1001":
+      return kairos;
+    case "eip155:8217":
+      return kaia;
+    case "eip155:421614":
+      return arbitrumSepolia;
+    case "eip155:84532":
+      return baseSepolia;
+    case "eip155:11155111":
+      return sepolia;
+    case "eip155:11124":
+      return abstractTestnet;
+    case "eip155:2522":
+      return fraxtalTestnet;
+    case "eip155:80084":
+      return berachainTestnetbArtio;
+    case "eip155:4201":
+      return luksoTestnet;
+    case "eip155:1287":
+      return moonbaseAlpha;
+    default:
+      return kairos;
+  }
+}
+
 export function selectBlockExplorer(network: string | undefined | null) {
   switch (network) {
     case "kaia":
@@ -214,6 +241,105 @@ export function selectAssetLogo(network: string | undefined | null, token?: stri
       default:
         return "/logos/unknown.svg";
     }
+  }
+}
+
+export function selectNativeAssetLogoFromChainId(chainId: string | undefined | null) {
+  const chainType = chainId?.split(":")[0];
+  const chainIdNumber = chainId?.split(":")[1];
+  if (chainType === "eip155") {
+    switch (chainIdNumber) {
+      case "1001":
+        return "/logos/kaia.svg";
+      case "8217":
+        return "/logos/kaia.svg";
+      case "421614":
+        return "/logos/eth.svg";
+      case "84532":
+        return "/logos/eth.svg";
+      case "11155111":
+        return "/logos/eth.svg";
+      case "11124":
+        return "/logos/eth.svg";
+      case "2522":
+        return "/logos/eth.svg";
+      case "80084":
+        return "/logos/bera.svg";
+      case "4201":
+        return "/logos/lyxt.svg";
+      case "1287":
+        return "/logos/moonbeam.svg";
+      default:
+        return "/logos/kaia.svg";
+    }
+  } else {
+    return "/logos/kaia.svg";
+  }
+}
+
+export function selectChainNameFromChainId(chainId: string | undefined | null) {
+  const chainType = chainId?.split(":")[0];
+  const chainIdNumber = chainId?.split(":")[1];
+  if (chainType === "eip155") {
+    switch (chainIdNumber) {
+      case "1001":
+        return "Kaia Kairos";
+      case "8217":
+        return "Kaia";
+      case "421614":
+        return "Arbitrum Sepolia";
+      case "84532":
+        return "Base Sepolia";
+      case "11155111":
+        return "Ethereum Sepolia";
+      case "11124":
+        return "Abstract Testnet";
+      case "2522":
+        return "Fraxtal Testnet";
+      case "80084":
+        return "bArtio Testnet";
+      case "4201":
+        return "Lukso Testnet";
+      case "1287":
+        return "Moonbase Alpha";
+      default:
+        return "Kaia Kairos";
+    }
+  } else {
+    return "Kaia Kairos";
+  }
+}
+
+export function selectNativeAssetInfoFromChainId(chainId: string | undefined | null) {
+  const chainType = chainId?.split(":")[0];
+  const chainIdNumber = chainId?.split(":")[1];
+  if (chainType === "eip155") {
+    switch (chainIdNumber) {
+      case "1001":
+        return "Kaia Kairos:Kaia:KAIA";
+      case "8217":
+        return "Kaia:Kaia:KAIA";
+      case "421614":
+        return "Arbitrum Sepolia:Ether:ETH";
+      case "84532":
+        return "Base Sepolia:Ether:ETH";
+      case "11155111":
+        return "Ethereum Sepolia:Ether:ETH";
+      case "11124":
+        return "Abstract Testnet:Ether:ETH";
+      case "2522":
+        return "Fraxtal Testnet:Frax Ether:frxETH";
+      case "80084":
+        return "bArtio Testnet:Bera Token:BERA";
+      case "4201":
+        return "Lukso Testnet:Lyxt Token:LYXT";
+      case "1287":
+        return "Moonbase Alpha:Dev Token:DEV";
+      default:
+        return "Kaia Kairos:Kaia:KAIA";
+    }
+  } else {
+    return "Kaia Kairos:Kaia:KAIA";
   }
 }
 

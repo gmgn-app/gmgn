@@ -56,9 +56,9 @@ import {
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
 
 // create the atom states
-const evmAddressAtom = atom<EvmAddress | null>(null);
-const polkadotAddressAtom = atom<string | null>(null);
-const availableNetworksAtom = atomWithStorage<string[] | null>("AVAILABLE_NETWORKS", AVAILABLE_NETWORKS); 
+export const evmAddressAtom = atom<EvmAddress | null>(null);
+export const polkadotAddressAtom = atom<string | null>(null);
+export const availableNetworksAtom = atomWithStorage<string[] | null>("AVAILABLE_NETWORKS", AVAILABLE_NETWORKS); 
 
 export default function WalletManagement() {
   // Get the search params from the URL.
@@ -436,7 +436,7 @@ export default function WalletManagement() {
               </Link>
             </Button>
           ) : (
-            <Button disabled className=" text-blue-400">
+            <Button disabled className="text-blue-400">
               <Image
                 src="/walletconnect-logo.svg"
                 alt="walletconnect logo"
