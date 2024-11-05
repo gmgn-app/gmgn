@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import BackButton from "@/components/back-button";
 import { useRouter } from "next/navigation";
 import {
@@ -22,7 +20,7 @@ import {
   selectChainNameFromNetwork,
   constructNavUrl,
 } from "@/lib/utils";
-import { GMGN_NETWORKS } from "@/lib/chains";
+import { AVAILABLE_NETWORKS } from "@/lib/chains";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/header";
@@ -32,7 +30,7 @@ export default function NetworksPage() {
   const searchParams = useSearchParams();
   const address = searchParams.get("address");
   const network = searchParams.get("network");
-  const [availableNetworks, setAvailableNetworks] = useState(GMGN_NETWORKS);
+  const [availableNetworks, setAvailableNetworks] = useState(AVAILABLE_NETWORKS);
 
   // Toast notifications.
   const { toast } = useToast();
@@ -99,10 +97,10 @@ export default function NetworksPage() {
   }
 
   function handleResetAvailableNetworks() {
-    setAvailableNetworks(GMGN_NETWORKS);
+    setAvailableNetworks(AVAILABLE_NETWORKS);
     localStorage.setItem(
       "gmgn-available-networks",
-      JSON.stringify(GMGN_NETWORKS)
+      JSON.stringify(AVAILABLE_NETWORKS)
     );
     toast({
       className:
@@ -148,7 +146,7 @@ export default function NetworksPage() {
       <div className="flex flex-col gap-4">
         <h2 className="text-md font-semibold">Available networks</h2>
         <div className="flex flex-col gap-2">
-          {GMGN_NETWORKS.map((network) => (
+          {AVAILABLE_NETWORKS.map((network) => (
             <div
               key={network}
               className="flex flex-row items-center justify-between"

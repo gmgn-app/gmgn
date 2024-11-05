@@ -9,6 +9,7 @@ export const AVAILABLE_NETWORKS = [
   "eip155:80084", // berachain testnet bartio
   "eip155:4201", // lukso testnet
   "eip155:1287", // moonbase alpha testnet
+  "polkadot:94220"
 ];
 
 

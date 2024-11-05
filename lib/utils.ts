@@ -332,8 +332,15 @@ export function selectChainNameFromChainId(chainId: string | undefined | null) {
       default:
         return "Kaia Kairos";
     }
-  } else {
-    return "Kaia Kairos";
+  }
+
+  if (chainType === "polkadot") {
+    switch (chainIdNumber) {
+      case "94220":
+        return "Polkadot Passeo";
+      default:
+        return "Polkadot";
+    }
   }
 }
 
