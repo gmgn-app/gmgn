@@ -772,7 +772,7 @@ export default function MessageForm() {
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="sendingToken">Sending token</Label>
+        <Label htmlFor="sendingToken">Sending network</Label>
         <Select
           value={token!}
           onValueChange={handleInputTokenChange}
