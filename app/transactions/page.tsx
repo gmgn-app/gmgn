@@ -33,6 +33,21 @@ export default function TransactionsPage() {
         return "n/a"
     }
   }
+
+  // Function to change the explorer URL based on the chainId
+  function selectBlockExplorerFormatFromChainId(chainId: string) {
+    const chainType = chainId.split(":")[0]
+    const chainIdNumber = chainId.split(":")[1]
+
+    switch (chainType) {
+      case "eip155":
+        return `address/${evmAddress}`
+      case "polkadot":
+        return `account/${polkadotAddress}`
+      default:
+        return "n/a"
+    }
+  }
   
   /*
   * Render component
@@ -49,7 +64,7 @@ export default function TransactionsPage() {
           availableNetworks ? (
             availableNetworks.sort().map((network) => {
               return (
-                <a key={network} href={`${selectBlockExplorerFromChainId(network as string)}/address/${evmAddress}`} target="_blank">
+                <a key={network} href={`${selectBlockExplorerFromChainId(network)}/${selectBlockExplorerFormatFromChainId(network)}`} target="_blank">
                   <div className="flex flex-col gap-2 w-full border-2 border-primary p-2">
                     <div className="flex flex-row justify-between items-center">
                       <div className="flex flex-row gap-2 items-center">
