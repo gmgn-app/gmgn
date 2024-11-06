@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,12 +45,9 @@ import { useToast } from "@/hooks/use-toast";
 import { atom, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils'
 import { getOrThrow, createOrThrow, checkBrowserWebAuthnSupport } from "@/lib/sigpass";
-import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   truncateAddress,
-  manageAvailableNetworksInLocalStorage,
-  constructNavUrl,
 } from "@/lib/utils";
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
 

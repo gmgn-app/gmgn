@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import QRCode from "react-qr-code";
 import { truncateAddress } from "@/lib/utils";
@@ -9,6 +9,7 @@ import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
 import BackButton from "@/components/back-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge"
 import Header from "@/components/header";
 import {
   Select,
@@ -22,7 +23,7 @@ import {
 import { useAtom, useAtomValue } from 'jotai';
 import { atomWithStorage } from 'jotai/utils'
 import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
-import { selectChainNameFromChainId } from "@/lib/utils";
+import { selectChainNameFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
 
 // Atom to store the last selected network
 const lastSelectedNetworkAtom = atomWithStorage('lastSelectedNetwork', "eip155:11155111")
@@ -72,6 +73,19 @@ export default function ReceivePage() {
     }
   }
 
+  function selectChainTypeFromChainId(chainId: string) {
+    const chainType = chainId.split(":")[0]
+
+    switch (chainType) {
+      case "eip155":
+        return "EVM"
+      case "polkadot":
+        return "Polkadot"
+      default:
+        return "n/a"
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
       <Header />
@@ -99,7 +113,7 @@ export default function ReceivePage() {
           onValueChange={handleInputNetworkChange}
           defaultValue="eip155:11155111"
         >
-          <SelectTrigger className="w-full md:w-[400px]">
+          <SelectTrigger className="w-full md:w-[400px] h-[56px]">
             <SelectValue placeholder="Select a network" />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +121,17 @@ export default function ReceivePage() {
               <SelectLabel>Select a network</SelectLabel>
               {availableNetworks!.sort().map((network) => (
                 <SelectItem key={network} value={network}>
-                  {selectChainNameFromChainId(network)}
+                  <div className="flex flex-row gap-2 items-center">
+                    <Image
+                      src={selectNativeAssetLogoFromChainId(network) || "/default-logo.png"}
+                      alt={network}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <div className="text-lg">{selectChainNameFromChainId(network)}</div>
+                    <Badge variant="secondary">{selectChainTypeFromChainId(network)}</Badge>
+                  </div>
                 </SelectItem>
               ))}
             </SelectGroup>

@@ -163,6 +163,8 @@ export function selectBlockExplorerFromChainId(chainId: string | undefined | nul
       return "https://explorer.execution.testnet.lukso.network";
     case "eip155:1287":
       return "https://moonbase.moonscan.io";
+    case "polkadot:94220":
+      return "https://paseo.subscan.io";
     default:
       return "https://kairos.kaiascan.io";
   }
@@ -299,8 +301,14 @@ export function selectNativeAssetLogoFromChainId(chainId: string | undefined | n
       default:
         return "/logos/kaia.svg";
     }
-  } else {
-    return "/logos/kaia.svg";
+  } 
+  if (chainType === "polkadot") {
+    switch (chainIdNumber) {
+      case "94220":
+        return "/logos/paseo.svg";
+      default:
+        return "/logos/polkadot.svg";
+    }
   }
 }
 
@@ -337,7 +345,7 @@ export function selectChainNameFromChainId(chainId: string | undefined | null) {
   if (chainType === "polkadot") {
     switch (chainIdNumber) {
       case "94220":
-        return "Polkadot Passeo";
+        return "Polkadot Paseo";
       default:
         return "Polkadot";
     }
@@ -372,8 +380,103 @@ export function selectNativeAssetInfoFromChainId(chainId: string | undefined | n
       default:
         return "Kaia Kairos:Kaia:KAIA";
     }
-  } else {
-    return "Kaia Kairos:Kaia:KAIA";
+  }
+  if (chainType === "polkadot") {
+    switch (chainIdNumber) {
+      case "94220":
+        return "Polkadot Paseo:Paseo:PAS";
+      default:
+        return "Polkadot:Polkadot:DOT";
+    }
+  }
+
+  return "Kaia Kairos:Kaia:KAIA";
+}
+
+
+
+export function selectAssetInfoFromAssetId(assetId: string | undefined | null) {
+  // const chainType = assetId?.split(":")[0];
+  // const chainIdNumber = assetId?.split(":")[1];
+  // const assetType = assetId?.split(":")[2];
+  // const assetAddress = assetId?.split(":")[3];
+
+  // if (chainType === "eip155") {
+  //   switch (chainIdNumber) {
+  //     case "1001":
+  //       switch (assetType) {
+  //         case "erc20":
+  //           switch (assetAddress) {
+  //             case "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
+  //               return "Kaia Kairos:USDC:tUSDC:/logos/usdc.svg";
+  //             case "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
+  //               return "Kaia Kairos:USDT:tUSDT:/logos/usdt.svg";
+  //             default:
+  //               return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
+  //           }
+  //         default:
+  //           return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
+  //       }
+  //     case "8217":
+  //       return "Kaia:Kaia:KAIA:/logos/kaia.svg";
+  //     case "421614":
+  //       return "Arbitrum Sepolia:Ether:ETH:/logos/eth.svg";
+  //     case "84532":
+  //       return "Base Sepolia:Ether:ETH:/logos/eth.svg";
+  //     case "11155111":
+  //       return "Ethereum Sepolia:Ether:ETH:/logos/eth.svg";
+  //     case "11124":
+  //       return "Abstract Testnet:Ether:ETH:/logos/eth.svg";
+  //     case "2522":
+  //       return "Fraxtal Testnet:Frax Ether:frxETH:/logos/eth.svg";
+  //     case "80084":
+  //       return "bArtio Testnet:Bera Token:BERA:/logos/bera.svg";
+  //     case "4201":
+  //       return "Lukso Testnet:Lyxt Token:LYXT:/logos/lyxt.svg";
+  //     case "1287":
+  //       return "Moonbase Alpha:Dev Token:DEV:/logos/moonbeam.svg";
+  //     default:
+  //       return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
+  //   }
+
+  // }
+  // if (chainType === "polkadot") {
+  //   switch (chainIdNumber) {
+  //     case "94220":
+  //       return "Polkadot Paseo:Paseo:PAS:/logos/paseo.svg";
+  //     default:
+  //       return "Polkadot:Polkadot:DOT:/logos/dot.svg";
+  //   }
+  // }
+  switch (assetId) {
+    case "eip155:1001/erc20:0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
+      return "Kaia Kairos:Test USDC:tUSDC:/logos/usdc.svg";
+    case "eip155:1001/erc20:0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
+      return "Kaia Kairos:Test USDT:tUSDT:/logos/usdt.svg";
+    case "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
+    case "eip155:8217/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Kaia:Kaia:KAIA:/logos/kaia.svg";
+    case "eip155:421614/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Arbitrum Sepolia:Ether:ETH:/logos/eth.svg";
+    case "eip155:84532/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Base Sepolia:Ether:ETH:/logos/eth.svg";
+    case "eip155:11155111/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Ethereum Sepolia:Ether:ETH:/logos/eth.svg";
+    case "eip155:11124/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Abstract Testnet:Ether:ETH:/logos/eth.svg";
+    case "eip155:2522/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Fraxtal Testnet:Frax Ether:frxETH:/logos/eth.svg";
+    case "eip155:80084/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "bArtio Testnet:Bera Token:BERA:/logos/bera.svg";
+    case "eip155:4201/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Lukso Testnet:Lyxt Token:LYXT:/logos/lyxt.svg";
+    case "eip155:1287/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Moonbase Alpha:Dev Token:DEV:/logos/moonbeam.svg";
+    case "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Polkadot Paseo:Paseo:PAS:/logos/paseo.svg";
+    default:
+      return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
   }
 }
 

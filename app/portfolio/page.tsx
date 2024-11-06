@@ -25,8 +25,9 @@ type NativeBalanceObject = {
 }
 
 export default function PortfolioPage() {
-  const availableNetworks = useAtomValue(availableNetworksAtom)
-  const evmAddress = useAtomValue(evmAddressAtom)
+  const availableNetworks = useAtomValue(availableNetworksAtom);
+  const evmAddress = useAtomValue(evmAddressAtom);
+  const polkadotAddress = useAtomValue(polkadotAddressAtom);
   const [nativeBalances, setNativeBalances] = useState<NativeBalanceObject[]>([]);
 
   // loop through the available networks and fetch the balance of the native token
@@ -81,7 +82,7 @@ export default function PortfolioPage() {
                     <div key={network} className="flex flex-row items-start justify-between">
                       <div className="flex flex-row gap-2 items-center">
                         <Image
-                          src={selectNativeAssetLogoFromChainId(network)}
+                          src={selectNativeAssetLogoFromChainId(network) || "/default-logo.png"}
                           alt="logo"
                           width={40}
                           height={40}
