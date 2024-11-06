@@ -22,11 +22,13 @@ import {
   parseUnits,
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
-
 import { mnemonicToAccount } from 'viem/accounts'
 import { Keyring } from '@polkadot/api';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+
+// Import
+import { ApiPromise, WsProvider } from '@polkadot/api';
 
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -209,11 +211,20 @@ export default function SendTransactionForm() {
   // Toast notifications.
   const { toast } = useToast();
 
+  // function
+  function parseDot(value: string): string {
+    // given a string like this 1,000,000,000,000
+    // return 1000000000000
+    // remove 10 zeros
+    // then add in thousands separator
+    return value.replace(/,/g, "").slice(0, -10);
+  }
+
   // Fetch the current balance upon page load
   useEffect(() => {
     if (
       address &&
-      network &&
+      network.split(":")[0] === "eip155" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
       const publicClient = createPublicClient({
@@ -234,7 +245,7 @@ export default function SendTransactionForm() {
     }
     if (
       address &&
-      network &&
+      network.split(":")[0] === "eip155" &&
       tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
       const publicClient = createPublicClient({
@@ -253,6 +264,29 @@ export default function SendTransactionForm() {
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+
+    if (
+      address &&
+      network.split(":")[0] === "polkadot" &&
+      tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    ) {
+      // Construct the polkadot
+      const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
+
+      const fetchBalance = async () => {
+        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
+        const accountInfo = await polkadotApi.query.system.account(polkadotAddress);
+        if (accountInfo) {
+          const humanAccountInfo = accountInfo.toHuman();
+          setCurrentBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
+          setCurrentNativeBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
+        }
       };
       // call the function
       fetchBalance()
@@ -271,7 +305,7 @@ export default function SendTransactionForm() {
   async function fetchBalances() {
     if (
       address &&
-      network &&
+      network.split(":")[0] === "eip155" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
       const fetchBalance = async () => {
@@ -288,7 +322,7 @@ export default function SendTransactionForm() {
     }
     if (
       address &&
-      network &&
+      network.split(":")[0] === "eip155" &&
       tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
       const fetchBalance = async () => {
@@ -303,6 +337,29 @@ export default function SendTransactionForm() {
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
+      };
+      // call the function
+      fetchBalance()
+        // make sure to catch any error
+        .catch(console.error);
+    }
+
+    if (
+      address &&
+      network.split(":")[0] === "polkadot" &&
+      tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    ) {
+      // Construct the polkadot
+      const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
+
+      const fetchBalance = async () => {
+        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
+        const accountInfo = await polkadotApi.query.system.account(polkadotAddress);
+        if (accountInfo) {
+          const humanAccountInfo = accountInfo.toHuman();
+          setCurrentBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
+          setCurrentNativeBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
+        }
       };
       // call the function
       fetchBalance()
@@ -360,11 +417,22 @@ export default function SendTransactionForm() {
       return;
     }
     if (receivingAddress) {
-      const isValidAddress = isAddress(receivingAddress, { strict: false });
-      if (isValidAddress) {
-        setIsValidAddress(true);
-      } else {
-        setIsValidAddress(false);
+      if (network.split(":")[0] === "eip155") {
+        const isValidAddress = isAddress(receivingAddress, { strict: false });
+        if (isValidAddress) {
+          setIsValidAddress(true);
+        } else {
+          setIsValidAddress(false);
+        }
+      }
+
+      if (network.split(":")[0] === "polkadot") {
+        const isValidAddress = true
+        if (isValidAddress) {
+          setIsValidAddress(true);
+        } else {
+          setIsValidAddress(false);
+        }
       }
     }
     if (sendingAmount === "") {
@@ -377,7 +445,13 @@ export default function SendTransactionForm() {
       });
       return;
     }
-    if (sendingAmount) {
+
+    // Check if the network is EVM
+    // Handle EVM prepare transaction
+    if (
+      network.split(":")[0] === "eip155" &&
+      sendingAmount
+    ) {
       const isValidAmount =
         parseEther(currentBalance) >= parseEther(sendingAmount);
       if (isValidAmount) {
@@ -389,15 +463,21 @@ export default function SendTransactionForm() {
           transport: http(),
         });
 
-        let gas;
-        if (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+        let gas: bigint = BigInt(0);
+        if (
+          tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        ) {
           gas = await publicClient.estimateGas({
             account: address as Address,
             to: receivingAddress as Address,
             value: parseEther(sendingAmount),
             data: toHex(transactionMemo),
           });
-        } else {
+        }
+        
+        if (
+          tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        ) {
           gas = await publicClient.estimateContractGas({
             address: tokenAddress as Address,
             abi: mockStablecoinAbi,
@@ -410,7 +490,7 @@ export default function SendTransactionForm() {
         const gasCost = gas * gasPrice;
         setTransactionCost(formatEther(gasCost));
         let isValidTotal;
-        if (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+        if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
           isValidTotal =
             parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
         } else {
@@ -418,6 +498,34 @@ export default function SendTransactionForm() {
             parseEther(currentBalance) >= parseEther(sendingAmount) &&
             parseEther(currentNativeBalance) >= gasCost;
         }
+        if (isValidTotal) {
+          setIsValidTotal(true);
+          setReadyToTransfer(true);
+        } else {
+          setIsValidTotal(false);
+          setReadyToTransfer(false);
+          return;
+        }
+        setContinueButtonLoading(false);
+      } else {
+        setIsValidAmount(false);
+        return;
+      }
+    }
+
+    // Check if the network is Polkadot
+    // Handle Polkadot prepare transaction
+    if (
+      network.split(":")[0] === "polkadot" &&
+      sendingAmount
+    ) {
+      const isValidAmount = true;
+      if (isValidAmount) {
+        setIsValidAmount(true);
+        setInputReadOnly(true);
+        setContinueButtonLoading(true);
+        setTransactionCost("0");
+        const isValidTotal = true;
         if (isValidTotal) {
           setIsValidTotal(true);
           setReadyToTransfer(true);
@@ -454,67 +562,103 @@ export default function SendTransactionForm() {
     const bytes = await getOrThrow(handle);
     const mnemonicPhrase = bip39.entropyToMnemonic(bytes, wordlist);
     if (mnemonicPhrase) {
-      const account = mnemonicToAccount(mnemonicPhrase,
-        {
-          accountIndex: 0,
-          addressIndex: 0,
-        }
-      );
-      const walletClient = createWalletClient({
-        account: account,
-        chain: selectViemObjectFromChainId(network!),
-        transport: http(),
-      });
-      const publicClient = createPublicClient({
-        chain: selectViemObjectFromChainId(network!),
-        transport: http(),
-      });
-      let transaction = null;
-      let hash = null;
 
-      if (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-        hash = await walletClient.sendTransaction({
-          account,
-          to: receivingAddress as Address,
-          value: parseEther(sendingAmount),
-          data: toHex(transactionMemo),
-        });
-        transaction = await publicClient.waitForTransactionReceipt({
-          hash: hash,
-        });
-      } else {
-        const { request } = await publicClient.simulateContract({
+      // Handle EVM submit transaction
+      // Check if the network is EVM
+      if (
+        network.split(":")[0] === "eip155"
+      ) {
+        const account = mnemonicToAccount(mnemonicPhrase,
+          {
+            accountIndex: 0,
+            addressIndex: 0,
+          }
+        );
+        const walletClient = createWalletClient({
           account: account,
-          address: tokenAddress as Address,
-          abi: mockStablecoinAbi,
-          functionName: "transfer",
-          args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
-          dataSuffix: toHex(`-${transactionMemo}`),
+          chain: selectViemObjectFromChainId(network!),
+          transport: http(),
         });
-        hash = await walletClient.writeContract(request);
-        transaction = await publicClient.waitForTransactionReceipt({
-          hash: hash,
+        const publicClient = createPublicClient({
+          chain: selectViemObjectFromChainId(network!),
+          transport: http(),
         });
+        let transaction = null;
+        let hash = null;
+        if (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+          hash = await walletClient.sendTransaction({
+            account,
+            to: receivingAddress as Address,
+            value: parseEther(sendingAmount),
+            data: toHex(transactionMemo),
+          });
+          transaction = await publicClient.waitForTransactionReceipt({
+            hash: hash,
+          });
+        } else {
+          const { request } = await publicClient.simulateContract({
+            account: account,
+            address: tokenAddress as Address,
+            abi: mockStablecoinAbi,
+            functionName: "transfer",
+            args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
+            dataSuffix: toHex(`-${transactionMemo}`),
+          });
+          hash = await walletClient.writeContract(request);
+          transaction = await publicClient.waitForTransactionReceipt({
+            hash: hash,
+          });
+        }
+        if (transaction) {
+          toast({
+            className:
+              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+            title: "Transaction sent!",
+            description: "Hash: " + truncateHash(hash ?? undefined, 6),
+            action: (
+              <ToastAction altText="view">
+                <a
+                  target="_blank"
+                  href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+                >
+                  View
+                </a>
+              </ToastAction>
+            ),
+          });
+          fetchBalances();
+        }
       }
-
-      if (transaction) {
-        toast({
-          className:
-            "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-          title: "Transaction sent!",
-          description: "Hash: " + truncateHash(hash ?? undefined, 6),
-          action: (
-            <ToastAction altText="view">
-              <a
-                target="_blank"
-                href={`${selectBlockExplorer(network!)}/tx/${hash}`}
-              >
-                View
-              </a>
-            </ToastAction>
-          ),
-        });
-        fetchBalances();
+      
+      if (
+        network.split(":")[0] === "polkadot"
+      ) {
+        const keyring = new Keyring();
+        const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
+        const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
+        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
+        const transfer = polkadotApi.tx.balances.transferAllowDeath(receivingAddress, sendingAmount + "0000000000");
+        // Sign and send the transaction using our account
+        const hash = await transfer.signAndSend(polkadotKeyPair);
+        if (hash) {
+          toast({
+            className:
+              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+            title: "Transaction sent!",
+            description: "Hash: " + truncateHash(hash.toString() ?? undefined, 6),
+            action: (
+              <ToastAction altText="view">
+                <a
+                  target="_blank"
+                  href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+                >
+                  View
+                </a>
+              </ToastAction>
+            ),
+          });
+          fetchBalances();
+        }
       }
     } else {
       toast({
@@ -675,6 +819,7 @@ export default function SendTransactionForm() {
     setSendingAmount("");
     setTransactionMemo("");
     setTransactionCost("");
+    setContinueButtonLoading(false);
     setReadyToTransfer(false);
     setInputReadOnly(false);
     setIsValidAddress(undefined);
@@ -953,7 +1098,7 @@ export default function SendTransactionForm() {
               <Fuel className="w-4 h-4" />
               {`${
                 transactionCost ? transactionCost : "-----"
-              } ${selectNativeAssetSymbol(network)}`}
+              } ${selectAssetInfoFromAssetId(token).split(":")[2]}`}
               {isValidTotal === undefined ? null : isValidTotal === true ? (
                 <Popover>
                   <PopoverTrigger>
