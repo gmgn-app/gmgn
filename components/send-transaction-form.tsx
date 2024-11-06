@@ -80,30 +80,24 @@ import {
   formatBalance,
   truncateHash,
   truncateAddress,
-  selectBlockExplorer,
   selectViemObjectFromChainId,
-  selectNativeAssetSymbol,
-  selectAssetLogo,
   selectJsonRpcProvider,
+  selectAssetInfoFromAssetId,
+  selectBlockExplorerFromChainId
 } from "@/lib/utils";
 import { normalize } from "viem/ens";
 import { mainnet } from "viem/chains";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { mockStablecoinAbi } from "@/lib/abis";
-import { useRouter } from "next/navigation";
 import { useAtom, useAtomValue } from 'jotai';
-import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
-import { selectAssetInfoFromAssetId } from "@/lib/utils";
 import { atomWithStorage } from 'jotai/utils'
 
 
 
 export default function SendTransactionForm() {
-  // Get the search params from the URL.
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const availableNetworks = useAtomValue(availableNetworksAtom)
+
   const evmAddress = useAtomValue(evmAddressAtom)
   const polkadotAddress = useAtomValue(polkadotAddressAtom)
   // const evmAddress = "0x44079d2d27BC71d4D0c2a7C473d43085B390D36f";
@@ -622,7 +616,7 @@ export default function SendTransactionForm() {
               <ToastAction altText="view">
                 <a
                   target="_blank"
-                  href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+                  href={`${selectBlockExplorerFromChainId(network!)}/tx/${hash}`}
                 >
                   View
                 </a>
@@ -653,7 +647,7 @@ export default function SendTransactionForm() {
               <ToastAction altText="view">
                 <a
                   target="_blank"
-                  href={`${selectBlockExplorer(network!)}/tx/${hash}`}
+                  href={`${selectBlockExplorerFromChainId(network!)}/extrinsic/${hash}`}
                 >
                   View
                 </a>
@@ -792,7 +786,7 @@ export default function SendTransactionForm() {
           <ToastAction altText="view">
             <a
               target="_blank"
-              href={`${selectBlockExplorer(network!)}/tx/${
+              href={`${selectBlockExplorerFromChainId(network!)}/tx/${
                 result.receipt.transactionHash
               }`}
             >

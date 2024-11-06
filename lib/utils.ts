@@ -170,6 +170,21 @@ export function selectBlockExplorerFromChainId(chainId: string | undefined | nul
   }
 }
 
+// Function to change the explorer URL based on the chainId
+function selectBlockExplorerAccountFormatFromChainId(chainId: string, evmAddress: EvmAddress, polkadotAddress: string) {
+  const chainType = chainId.split(":")[0]
+  const chainIdNumber = chainId.split(":")[1]
+
+  switch (chainType) {
+    case "eip155":
+      return `address/${evmAddress}`
+    case "polkadot":
+      return `account/${polkadotAddress}`
+    default:
+      return "n/a"
+  }
+}
+
 export function selectBlockExplorer(network: string | undefined | null) {
   switch (network) {
     case "kaia":
