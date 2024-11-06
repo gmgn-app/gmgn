@@ -103,11 +103,11 @@ export default function SendTransactionForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const availableNetworks = useAtomValue(availableNetworksAtom)
-  // const evmAddress = useAtomValue(evmAddressAtom)
-  // const polkadotAddress = useAtomValue(polkadotAddressAtom)
-  const evmAddress = "0x44079d2d27BC71d4D0c2a7C473d43085B390D36f";
-  const polkadotAddress = "5H1ctU6bPpkBioPxbiPqkCFFg8EN35QwZAQGevpzR5BSRa1S";
-  const [address, setAddress] = useState<string>(evmAddress);
+  const evmAddress = useAtomValue(evmAddressAtom)
+  const polkadotAddress = useAtomValue(polkadotAddressAtom)
+  // const evmAddress = "0x44079d2d27BC71d4D0c2a7C473d43085B390D36f";
+  // const polkadotAddress = "5H1ctU6bPpkBioPxbiPqkCFFg8EN35QwZAQGevpzR5BSRa1S";
+  const [address, setAddress] = useState<string>(evmAddress!);
   const [token, setToken] = useState<string>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
   const network = token.split("/")[0];
   const tokenAddress = token.split("/")[1].split(":")[1];
