@@ -18,8 +18,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { useToast } from "@/hooks/use-toast";
-import { redirect, useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToastAction } from "@/components/ui/toast";
@@ -60,18 +59,25 @@ import {
 } from "@/lib/utils";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils'
+import { useAtomValue } from 'jotai'
+import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+
 
 export default function ConnectPage() {
-  // Get the search params from the URL.
-  const searchParams = useSearchParams();
-  const network = searchParams.get("network");
-  const address = searchParams.get("address");
 
-  if (!network || !address) {
-    redirect(constructNavUrl("/", network, address));
+  const evmAddress = useAtomValue(evmAddressAtom)
+  const polkadotAddress = useAtomValue(polkadotAddressAtom)
+  // const evmAddress = "0x44079d2d27BC71d4D0c2a7C473d43085B390D36f";
+  // const polkadotAddress = "5H1ctU6bPpkBioPxbiPqkCFFg8EN35QwZAQGevpzR5BSRa1S";
+  const [address, setAddress] = useState<string>(evmAddress!);
+  const [token, setToken] = useState<string>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
+  const network = token.split("/")[0];
+  const tokenAddress = token.split("/")[1].split(":")[1];
+
+  if (!evmAddress || !polkadotAddress) {
+    redirect("/");
   }
 
-  const router = useRouter();
   // Get the toast function from the useToast hook.
   const { toast } = useToast();
 
