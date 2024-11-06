@@ -1,16 +1,13 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { House, Repeat, Sprout, Blocks } from "lucide-react";
-import { constructNavUrl } from "@/lib/utils";
+
 
 export default function NavBar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const address = searchParams.get("address");
-  const network = searchParams.get("network");
 
   function isActivePath(path: string) {
     if (path === pathname) {
@@ -29,7 +26,7 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl("/", network, address)}>
+        <Link href="/">
           <House className="w-4 h-4 mr-2" />
           Home
         </Link>
@@ -41,7 +38,7 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl("/trade", network, address)}>
+        <Link href="/trade">
           <Repeat className="w-4 h-4 mr-2" />
           Trade
         </Link>
@@ -53,21 +50,21 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl("/earn", network, address)}>
+        <Link href="/earn">
           <Sprout className="w-4 h-4 mr-2" />
           Earn
         </Link>
       </Button>
       <Button
         className={`flex flex-col justify-start ${isActivePath(
-          "/apps"
+          "/dapps"
         )} rounded-none border-t-2 h-full`}
         variant="ghost"
         asChild
       >
-        <Link href={constructNavUrl("/apps", network, address)}>
+        <Link href="/dapps">
           <Blocks className="w-4 h-4 mr-2" />
-          Apps
+          DApps
         </Link>
       </Button>
     </div>
