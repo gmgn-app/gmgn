@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
@@ -370,6 +371,8 @@ export default function SendTransactionForm() {
 
   function handleInputTokenChange(value: string) {
     setToken(value);
+    setCurrentBalance("");
+    setCurrentNativeBalance("");
   }
 
   // Function to handle QR scan
@@ -869,24 +872,24 @@ export default function SendTransactionForm() {
       <div className="flex flex-col mt-4 mb-2">
         <h2 className="text-lg">Balance</h2>
         <div className="flex flex-row items-center justify-between">
-          <p className="text-2xl font-semibold">
-            {currentBalance ? formatBalance(currentBalance, 4) : "-/-"}{" "}
-            <span className="text-lg">
+          <div className="flex flex-row gap-1 items-end text-2xl font-semibold">
+            {currentBalance ? formatBalance(currentBalance, 4) : <Skeleton className="w-8 h-6" />}
+            <p className="text-lg">
               {selectAssetInfoFromAssetId(token).split(":")[2]}
-            </span>
-          </p>
+            </p>
+          </div>
           <Button onClick={fetchBalances} size="icon">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <div className="flex flex-row gap-1 items-end text-sm text-muted-foreground">
           {currentNativeBalance
             ? formatBalance(currentNativeBalance, 4)
-            : "-/-"}{" "}
-          <span className="text-sm text-muted-foreground">
+            : <Skeleton className="w-4 h-4" />}
+          <p className="text-sm text-muted-foreground">
             {selectAssetInfoFromAssetId(token).split(":")[2]}
-          </span>
-        </p>
+          </p>
+        </div>
       </div>
       <div className="flex flex-col gap-8 mt-4 mb-6">
         <div className="flex flex-col gap-2">
