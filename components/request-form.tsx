@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import {
   QrCode,
   CirclePlus,
@@ -47,17 +48,22 @@ import {
   formatBalance,
   truncateAddress,
   selectNativeAssetSymbol,
-  selectAssetLogo
+  selectAssetInfoFromAssetId
 } from "@/lib/utils";
 import QRCode from "react-qr-code";
+import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
+import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+import { useAtom, useAtomValue } from 'jotai';
+import { atomWithStorage } from 'jotai/utils'
 
 export default function RequestForm() {
   const router = useRouter();
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-  const network = searchParams.get("network") ? searchParams.get("network") : "kaia-kairos";
-  const paramAddress = searchParams.get("address");
-  const paramToken = searchParams.get("token");
+
+  // Get the addresses from the wallet management atoms
+  const evmAddress = useAtomValue(evmAddressAtom)
+  const polkadotAddress = useAtomValue(polkadotAddressAtom)
   // Check if the user is on a desktop or mobile device.
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
@@ -66,11 +72,11 @@ export default function RequestForm() {
 
   const [sendingAmount, setSendingAmount] = useState("");
   const [receivingAddress, setReceivingAddress] = useState(
-    paramAddress ?? ""
+    evmAddress ?? ""
   );
   const [transactionMemo, setTransactionMemo] = useState("");
 
-  const [token, setToken] = useState<string | undefined>(paramToken && paramToken !== "null" ? paramToken : "0x0000000000000000000000000000000000000000");
+  const [token, setToken] = useState<string | undefined>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
   const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
     undefined
   );
@@ -85,7 +91,6 @@ export default function RequestForm() {
 
   function handleInputTokenChange(value: string) {
     setToken(value);
-    router.push(`?network=${network}&address=${receivingAddress}&token=${value}`);
   }
 
 
@@ -158,7 +163,7 @@ export default function RequestForm() {
       
       const link = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/pay?network=${network}&token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${token === "0x0000000000000000000000000000000000000000" ? parseEther(sendingAmount).toString() : parseUnits(sendingAmount, 6).toString()}&transactionMemo=${toHex(
+      }/pay?token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
         transactionMemo
       )}`;
       setRequestLink(link);
@@ -185,61 +190,31 @@ export default function RequestForm() {
           <Select
             value={token!}
             onValueChange={handleInputTokenChange}
-            defaultValue="0x0000000000000000000000000000000000000000"
+            defaultValue="eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
           >
-            <SelectTrigger className="w-full border-2 border-primary rounded-none">
+            <SelectTrigger className="w-full border-2 border-primary h-[56px]">
               <SelectValue placeholder="Select a token" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Select a token</SelectLabel>
-                <SelectItem value="0x0000000000000000000000000000000000000000">
-                  <div className="flex flex-row items-center gap-2">
-                    <Image
-                      src={selectAssetLogo(network, token)}
-                      alt="native asset logo"
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
-                    <p>
-                      {selectNativeAssetSymbol(
-                        network,
-                        "0x0000000000000000000000000000000000000000"
-                      )}
-                    </p>
-                  </div>
-                </SelectItem>
-                <SelectItem value="0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746">
-                  <div className="flex flex-row gap-2">
-                    <Image
-                      src="/usdc.svg"
-                      alt="usdc logo"
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
-                    {selectNativeAssetSymbol(
-                      network,
-                      "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746"
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d">
-                <div className="flex flex-row gap-2">
-                    <Image
-                      src="/usdt.svg"
-                      alt="usdt logo"
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
-                    {selectNativeAssetSymbol(
-                      network,
-                      "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d"
-                    )}
-                  </div>
-                </SelectItem>
+                {
+                  ALL_SUPPORTED_ASSETS.map((asset) => (
+                    <SelectItem key={asset} value={asset}>
+                      <div className="flex flex-row gap-2 items-center">
+                        <Image
+                          src={selectAssetInfoFromAssetId(asset!).split(":")[3] || "/default-logo.png"}
+                          alt={asset}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                        <div className="text-lg">{selectAssetInfoFromAssetId(asset!).split(":")[2]}</div>
+                        <Badge variant="secondary">{selectAssetInfoFromAssetId(asset!).split(":")[0]}</Badge>
+                      </div>
+                    </SelectItem>
+                  ))
+                }
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -345,7 +320,7 @@ export default function RequestForm() {
             <p className="flex flex-row gap-2 items-center text-sm">
               {`${
                 sendingAmount ? formatBalance(sendingAmount, 18) : "-----"
-              } ${selectNativeAssetSymbol(network, token)}`}
+              } ${selectAssetInfoFromAssetId(token).split(":")[2]}`}
               {isValidAmount === undefined ? null : isValidAmount === true ? (
                 <Popover>
                   <PopoverTrigger>
@@ -427,7 +402,7 @@ export default function RequestForm() {
                       value={
                         requestLink
                           ? requestLink
-                          : `https://gmgn.app/pay?network=${network}`
+                          : `https://gmgn.app/pay?token=${token}`
                       }
                       viewBox={`0 0 256 256`}
                     />

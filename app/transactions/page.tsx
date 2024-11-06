@@ -5,9 +5,8 @@ import Header from "@/components/header";
 import Image from "next/image";
 import { useAtomValue } from 'jotai'
 import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
-import { selectBlockExplorerFromChainId, truncateAddress } from "@/lib/utils";
+import { selectBlockExplorerFromChainId, truncateAddress, selectChainNameFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
 import { ExternalLink } from 'lucide-react';
-import { selectChainNameFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
 
 
 export default function TransactionsPage() {
