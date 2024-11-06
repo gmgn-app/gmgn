@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useSearchParams } from "next/navigation";
-import Image from "next/image"
 import BackButton from "@/components/back-button"
 import MessageForm from "@/components/message-form"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
