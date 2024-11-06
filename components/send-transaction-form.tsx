@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useSearchParams } from "next/navigation";
 import {
   createPublicClient,
   http,
@@ -92,7 +91,7 @@ import { mockStablecoinAbi } from "@/lib/abis";
 import { useAtom, useAtomValue } from 'jotai';
 import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
-import { atomWithStorage } from 'jotai/utils'
+// import { atomWithStorage } from 'jotai/utils'
 
 
 
@@ -1023,7 +1022,7 @@ export default function SendTransactionForm() {
             Autogenerate UID
           </Button>
         </div>
-        {(network === "kaia" || network === "kaia-kairos") && (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") ? (
+        {(network === "eip155:1001" || network === "eip155:8217") && (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") ? (
           <div className="flex items-center space-x-2">
             <Switch
               id="delegate-fee"
