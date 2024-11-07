@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +51,11 @@ import {
   selectChainNameFromNetwork,
 } from "@/lib/utils";
 import { mockStablecoinAbi } from "@/lib/abis";
+import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
+import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+import { useAtom, useAtomValue } from 'jotai';
+import { atomWithStorage } from 'jotai/utils'
+
 
 
 export default function PayForm() {
@@ -58,17 +63,18 @@ export default function PayForm() {
   const searchParams = useSearchParams();
   const network = searchParams.get("network");
   const address = searchParams.get("address");
+  const evmAddress = useAtomValue(evmAddressAtom);
+  const polkadotAddress = useAtomValue(polkadotAddressAtom);
 
-  if (!network || !address) {
+  const token = searchParams.get("token");
+
+  if (!token) {
     redirect("/");
   }
-  const token =
-    searchParams.get("token") || "0x0000000000000000000000000000000000000000";
+
   const sendingAmount = searchParams.get("sendingAmount") && token === "0x0000000000000000000000000000000000000000" ? formatEther(BigInt(searchParams.get("sendingAmount") || "0")) : formatUnits(BigInt(searchParams.get("sendingAmount") || "0"), 6);
   const receivingAddress = searchParams.get("receivingAddress") || "";
-  const transactionMemo =
-    fromHex(searchParams.get("transactionMemo") as `0x${string}`, "string") ||
-    "";
+  const transactionMemo = fromHex(searchParams.get("transactionMemo") as `0x${string}`, "string") || "";
 
   const [currentBalance, setCurrentBalance] = useState("");
   const [currentNativeBalance, setCurrentNativeBalance] = useState("");
