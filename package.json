@@ -19,6 +19,7 @@
     "@noble/hashes": "^1.5.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@polkadot/api": "^14.2.2",
+    "@polkadot/keyring": "^13.2.2",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -43,6 +44,7 @@
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "dedot": "^0.6.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
     "drizzle-orm": "^0.33.0",
@@ -69,6 +71,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@dedot/chaintypes": "^0.35.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

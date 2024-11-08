@@ -8,7 +8,7 @@ import {
   Address as EvmAddress,
 } from "viem";
 import { mnemonicToAccount } from 'viem/accounts'
-import { Keyring } from '@polkadot/api';
+import { Keyring } from '@polkadot/keyring';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 // import slip10 from 'micro-key-producer/slip10.js';
