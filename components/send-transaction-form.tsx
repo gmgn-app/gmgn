@@ -22,13 +22,16 @@ import {
   parseUnits,
 } from "viem";
 import { Wallet, TxType } from "@kaiachain/ethers-ext";
-import { mnemonicToAccount } from 'viem/accounts'
-import { Keyring } from '@polkadot/api';
+import { mnemonicToAccount } from 'viem/accounts';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/keyring';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
 // Import
-import { ApiPromise, WsProvider } from '@polkadot/api';
+// import { ApiPromise, WsProvider } from '@polkadot/api';
+import { DedotClient, WsProvider } from 'dedot';
+import type { PolkadotApi } from '@dedot/chaintypes';
 
 import { getOrThrow } from "@/lib/passkey-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -217,7 +220,7 @@ export default function SendTransactionForm() {
   // Fetch the current balance upon page load
   useEffect(() => {
     if (
-      address &&
+      evmAddress &&
       network.split(":")[0] === "eip155" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -238,7 +241,7 @@ export default function SendTransactionForm() {
         .catch(console.error);
     }
     if (
-      address &&
+      evmAddress &&
       network.split(":")[0] === "eip155" &&
       tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -266,7 +269,7 @@ export default function SendTransactionForm() {
     }
 
     if (
-      address &&
+      polkadotAddress &&
       network.split(":")[0] === "polkadot" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -274,13 +277,12 @@ export default function SendTransactionForm() {
       const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
 
       const fetchBalance = async () => {
-        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
-        const accountInfo = await polkadotApi.query.system.account(polkadotAddress);
-        if (accountInfo) {
-          const humanAccountInfo = accountInfo.toHuman();
-          setCurrentBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
-          setCurrentNativeBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
-        }
+        // initialize the dedot polkadot client
+        const polkadotClient = await DedotClient.new<PolkadotApi>(wsProvider);
+        const balance = await polkadotClient.query.system.account(polkadotAddress);
+        const freeBalance: bigint = balance.data.free;
+        setCurrentBalance(formatUnits(freeBalance, 10));
+        setCurrentNativeBalance(formatUnits(freeBalance, 10));
       };
       // call the function
       fetchBalance()
@@ -298,7 +300,7 @@ export default function SendTransactionForm() {
   // Function to fetch balance
   async function fetchBalances() {
     if (
-      address &&
+      evmAddress &&
       network.split(":")[0] === "eip155" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -315,7 +317,7 @@ export default function SendTransactionForm() {
         .catch(console.error);
     }
     if (
-      address &&
+      evmAddress &&
       network.split(":")[0] === "eip155" &&
       tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -339,7 +341,7 @@ export default function SendTransactionForm() {
     }
 
     if (
-      address &&
+      polkadotAddress &&
       network.split(":")[0] === "polkadot" &&
       tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     ) {
@@ -347,13 +349,12 @@ export default function SendTransactionForm() {
       const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
 
       const fetchBalance = async () => {
-        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
-        const accountInfo = await polkadotApi.query.system.account(polkadotAddress);
-        if (accountInfo) {
-          const humanAccountInfo = accountInfo.toHuman();
-          setCurrentBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
-          setCurrentNativeBalance(parseDot((humanAccountInfo as { data: { free: string } }).data.free));
-        }
+        // initialize the dedot polkadot client
+        const polkadotClient = await DedotClient.new<PolkadotApi>(wsProvider);
+        const balance = await polkadotClient.query.system.account(polkadotAddress);
+        const freeBalance: bigint = balance.data.free;
+        setCurrentBalance(formatUnits(freeBalance, 10));
+        setCurrentNativeBalance(formatUnits(freeBalance, 10));
       };
       // call the function
       fetchBalance()
@@ -629,32 +630,38 @@ export default function SendTransactionForm() {
       if (
         network.split(":")[0] === "polkadot"
       ) {
+        await cryptoWaitReady();
         const keyring = new Keyring();
         const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
         const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
-        const polkadotApi = await ApiPromise.create({ provider: wsProvider });
-        const transfer = polkadotApi.tx.balances.transferAllowDeath(receivingAddress, sendingAmount + "0000000000");
-        // Sign and send the transaction using our account
-        const hash = await transfer.signAndSend(polkadotKeyPair);
-        if (hash) {
-          toast({
-            className:
-              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-            title: "Transaction sent!",
-            description: "Hash: " + truncateHash(hash.toString() ?? undefined, 6),
-            action: (
-              <ToastAction altText="view">
-                <a
-                  target="_blank"
-                  href={`${selectBlockExplorerFromChainId(network!)}/extrinsic/${hash}`}
-                >
-                  View
-                </a>
-              </ToastAction>
-            ),
-          });
-          fetchBalances();
-        }
+        const polkadotClient = await DedotClient.new<PolkadotApi>(wsProvider);
+        // const transfer = polkadotApi.tx.balances.transferAllowDeath(receivingAddress, sendingAmount + "0000000000");
+        const unsub = await polkadotClient.tx.balances
+        .transferKeepAlive(receivingAddress, parseUnits(sendingAmount, 10))
+        .signAndSend(polkadotKeyPair, async ({ status }) => {
+          console.log('Transaction status', status.type);
+          if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
+            // console.log(`Transaction completed at block hash ${status.value.blockHash}`);
+            toast({
+              className:
+                "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+              title: "Transaction sent!",
+              description: "Hash: " + truncateHash(status.value.blockHash.toString() ?? undefined, 6),
+              action: (
+                <ToastAction altText="view">
+                  <a
+                    target="_blank"
+                    href={`${selectBlockExplorerFromChainId(network!)}/extrinsic/${status.value.blockHash}`}
+                  >
+                    View
+                  </a>
+                </ToastAction>
+              ),
+            });
+            fetchBalances();
+            await unsub();
+          }
+        });
       }
     } else {
       toast({
