@@ -11,7 +11,8 @@ import {
   berachainTestnetbArtio,
   luksoTestnet,
   kaia,
-  moonbaseAlpha
+  moonbaseAlpha,
+  morphHolesky
 } from "viem/chains";
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
@@ -136,6 +137,8 @@ export function selectViemObjectFromChainId(chainId: string) {
       return luksoTestnet;
     case "eip155:1287":
       return moonbaseAlpha;
+    case "eip155:2710":
+      return morphHolesky;
     default:
       return kairos;
   }
@@ -163,6 +166,8 @@ export function selectBlockExplorerFromChainId(chainId: string | undefined | nul
       return "https://explorer.execution.testnet.lukso.network";
     case "eip155:1287":
       return "https://moonbase.moonscan.io";
+    case "eip155:2710":
+      return "https://explorer-holesky.morphl2.io";
     case "polkadot:94220":
       return "https://paseo.subscan.io";
     default:
@@ -313,6 +318,8 @@ export function selectNativeAssetLogoFromChainId(chainId: string | undefined | n
         return "/logos/lyxt.svg";
       case "1287":
         return "/logos/moonbeam.svg";
+      case "2710":
+        return "/logos/eth.svg";
       default:
         return "/logos/kaia.svg";
     }
@@ -352,6 +359,8 @@ export function selectChainNameFromChainId(chainId: string | undefined | null) {
         return "Lukso Testnet";
       case "1287":
         return "Moonbase Alpha";
+      case "2710":
+        return "Morph Testnet";
       default:
         return "Kaia Kairos";
     }
@@ -392,6 +401,8 @@ export function selectNativeAssetInfoFromChainId(chainId: string | undefined | n
         return "Lukso Testnet:Lyxt Token:LYXT";
       case "1287":
         return "Moonbase Alpha:Dev Token:DEV";
+      case "2710":
+        return "Morph Testnet:Ether:ETH";
       default:
         return "Kaia Kairos:Kaia:KAIA";
     }
@@ -488,6 +499,8 @@ export function selectAssetInfoFromAssetId(assetId: string | undefined | null) {
       return "Lukso Testnet:Lyxt Token:LYXT:/logos/lyxt.svg";
     case "eip155:1287/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
       return "Moonbase Alpha:Dev Token:DEV:/logos/moonbeam.svg";
+    case "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Morph Testnet:Ether:ETH:/logos/eth.svg";
     case "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
       return "Polkadot Paseo:Paseo:PAS:/logos/paseo.svg";
     default:

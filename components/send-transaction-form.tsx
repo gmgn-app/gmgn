@@ -208,14 +208,6 @@ export default function SendTransactionForm() {
   // Toast notifications.
   const { toast } = useToast();
 
-  // function
-  function parseDot(value: string): string {
-    // given a string like this 1,000,000,000,000
-    // return 1000000000000
-    // remove 10 zeros
-    // then add in thousands separator
-    return value.replace(/,/g, "").slice(0, -10);
-  }
 
   // Fetch the current balance upon page load
   useEffect(() => {
@@ -582,7 +574,7 @@ export default function SendTransactionForm() {
         });
         let transaction = null;
         let hash = null;
-        if (token === "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+        if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
           hash = await walletClient.sendTransaction({
             account,
             to: receivingAddress as Address,
@@ -635,11 +627,9 @@ export default function SendTransactionForm() {
         const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
         const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
         const polkadotClient = await DedotClient.new<PolkadotApi>(wsProvider);
-        // const transfer = polkadotApi.tx.balances.transferAllowDeath(receivingAddress, sendingAmount + "0000000000");
         const unsub = await polkadotClient.tx.balances
         .transferKeepAlive(receivingAddress, parseUnits(sendingAmount, 10))
         .signAndSend(polkadotKeyPair, async ({ status }) => {
-          console.log('Transaction status', status.type);
           if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
             // console.log(`Transaction completed at block hash ${status.value.blockHash}`);
             toast({
@@ -658,8 +648,8 @@ export default function SendTransactionForm() {
                 </ToastAction>
               ),
             });
-            fetchBalances();
             await unsub();
+            fetchBalances();
           }
         });
       }
