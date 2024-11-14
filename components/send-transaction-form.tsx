@@ -315,13 +315,13 @@ export default function SendTransactionForm() {
     ) {
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
-          address: address as Address,
+          address: evmAddress as Address,
         });
         const tokenBalance = await publicClient.readContract({
           address: tokenAddress as Address,
           abi: mockStablecoinAbi,
           functionName: "balanceOf",
-          args: [address as Address],
+          args: [evmAddress as Address],
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
@@ -457,7 +457,7 @@ export default function SendTransactionForm() {
           tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         ) {
           gas = await publicClient.estimateGas({
-            account: address as Address,
+            account: evmAddress as Address,
             to: receivingAddress as Address,
             value: parseEther(sendingAmount),
             data: toHex(transactionMemo),
@@ -471,7 +471,7 @@ export default function SendTransactionForm() {
             address: tokenAddress as Address,
             abi: mockStablecoinAbi,
             functionName: "transfer",
-            account: address as Address,
+            account: evmAddress as Address,
             args: [receivingAddress as Address, parseUnits(sendingAmount, 6)],
           });
         }
@@ -751,7 +751,7 @@ export default function SendTransactionForm() {
     let tx = {
       type: TxType.FeeDelegatedValueTransferMemo,
       to: receivingAddress,
-      from: address as Address,
+      from: evmAddress as Address,
       value: parseEther(sendingAmount),
       input: toHex(transactionMemo),
     };
