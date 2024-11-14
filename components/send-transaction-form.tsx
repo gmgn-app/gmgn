@@ -222,7 +222,7 @@ export default function SendTransactionForm() {
       });
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
-          address: address as Address,
+          address: evmAddress as Address,
         });
         setCurrentBalance(formatEther(balance).toString());
         setCurrentNativeBalance(formatEther(balance).toString());
@@ -243,13 +243,13 @@ export default function SendTransactionForm() {
       });
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
-          address: address as Address,
+          address: evmAddress as Address,
         });
         const tokenBalance = await publicClient.readContract({
           address: tokenAddress as Address,
           abi: mockStablecoinAbi,
           functionName: "balanceOf",
-          args: [address as Address],
+          args: [evmAddress as Address],
         });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
@@ -281,7 +281,7 @@ export default function SendTransactionForm() {
         // make sure to catch any error
         .catch(console.error);
     }
-  }, [address, network, token, tokenAddress]);
+  }, [evmAddress, polkadotAddress, network, token, tokenAddress]);
 
   // public client for balance refresh
   const publicClient = createPublicClient({
@@ -298,7 +298,7 @@ export default function SendTransactionForm() {
     ) {
       const fetchBalance = async () => {
         const balance = await publicClient.getBalance({
-          address: address as Address,
+          address: evmAddress as Address,
         });
         setCurrentBalance(formatEther(balance).toString());
         setCurrentNativeBalance(formatEther(balance).toString());
