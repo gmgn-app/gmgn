@@ -15,19 +15,19 @@ export default function Footer() {
               <Button className="w-fit">
                 <a
                   className="flex flex-row gap-2 items-center"
-                  href="https://t.me/gmgnhq"
+                  href="https://x.com/gmgnHQ"
                   target="_blank"
                 >
-                  Go to group chat <ExternalLink className="w-4 h-4" />
+                  Go to X feed <ExternalLink className="w-4 h-4" />
                 </a>
               </Button>
               <a
                 className="flex flex-row gap-2 items-center underline underline-offset-2"
                 target="_blank"
-                href="https://x.com/gmgnHQ"
+                href="https://t.me/gmgnhq"
               >
                 <Rss className="w-4 h-4" />
-                Feed
+                Support group
               </a>
             </div>
           </div>

@@ -28,8 +28,6 @@ import { Keyring } from '@polkadot/keyring';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
-// Import
-// import { ApiPromise, WsProvider } from '@polkadot/api';
 import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
@@ -823,6 +821,8 @@ export default function SendTransactionForm() {
     setEnsLookUpLoading(false);
   }
 
+
+  // render the component
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-2">
