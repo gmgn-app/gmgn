@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, use } from "react";
 import { redirect } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
@@ -57,6 +57,7 @@ import { Input } from "@/components/ui/input";
 import { useAtom, useAtomValue } from 'jotai';
 import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
+import { MULTISEND_CONTRACTS } from "@/lib/contracts";
 
 
 type AirdropItem = {
@@ -84,6 +85,20 @@ export default function MultisendAppPage() {
   const [token, setToken] = useState<string>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
   const network = token.split("/")[0];
   const tokenAddress = token.split("/")[1].split(":")[1];
+  
+  // check each element in the ALL_SUPPORTED_ASSETS array with MULTISEND_CONTRACTS array
+  // return the element that has the same eip155:chainId 
+  // for example, if the asset is "eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+  // and the MULTISEND_CONTRACTS array has "eip155:1001/contract:0x61684fc62b6a0f1273f69d9fca0e264001a61db6"
+  // then the function will return all elements that match the "eip155:1001"
+  const MULTISEND_SUPPORTED_ASSETS = useMemo(() => {
+    return ALL_SUPPORTED_ASSETS.filter((asset) => {
+      return MULTISEND_CONTRACTS.some((contract) => {
+        return contract.split("/")[0] === asset.split("/")[0];
+      });
+    });
+  }, []);
+    
 
   // Redirect to the home page if the network or address is not provided.
   if (!evmAddress || !polkadotAddress) {
@@ -331,230 +346,206 @@ export default function MultisendAppPage() {
       </h1>
       <BackButton route="/dapps" />
       <NavBar />
-      <Tabs defaultValue="native" className="w-full">
-        {
-          // Multisend different types
-        }
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="native">Native</TabsTrigger>
-          <TabsTrigger value="erc20">ERC20</TabsTrigger>
-          <TabsTrigger value="nft">NFTs</TabsTrigger>
-        </TabsList>
-        {
-          // Multisend native token form
-        }
-        <TabsContent value="native" className="flex flex-col gap-4">
-          <div className="flex flex-col mt-4 gap-2">
-            <Label htmlFor="sendingToken">Sending token</Label>
-            <Select
-              value={token!}
-              onValueChange={handleInputTokenChange}
-              defaultValue="eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-            >
-              <SelectTrigger className="w-full border-2 border-primary h-[56px]">
-                <SelectValue placeholder="Select a token" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Select a token</SelectLabel>
-                  {
-                    ALL_SUPPORTED_ASSETS.map((asset) => (
-                      <SelectItem key={asset} value={asset}>
-                        <div className="flex flex-row gap-2 items-center">
-                          <Image
-                            src={selectAssetInfoFromAssetId(asset!).split(":")[3] || "/default-logo.png"}
-                            alt={asset}
-                            width={24}
-                            height={24}
-                            className="rounded-full"
-                          />
-                          <div className="text-lg">{selectAssetInfoFromAssetId(asset!).split(":")[2]}</div>
-                          <Badge variant="secondary">{selectAssetInfoFromAssetId(asset!).split(":")[0]}</Badge>
-                        </div>
-                      </SelectItem>
-                    ))
-                  }
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col mt-4 mb-2">
-            <h2 className="text-lg">Balance</h2>
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row gap-1 items-end text-2xl font-semibold">
-                {currentBalance ? formatBalance(currentBalance, 4) : <Skeleton className="w-8 h-6" />}
-                <p className="text-lg">
-                  {selectAssetInfoFromAssetId(token).split(":")[2]}
-                </p>
-              </div>
-              <Button onClick={fetchBalances} size="icon">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex flex-row gap-1 items-end text-sm text-muted-foreground">
-              {currentNativeBalance
-                ? formatBalance(currentNativeBalance, 4)
-                : <Skeleton className="w-4 h-4" />}
-              <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col mt-4 gap-2">
+          <Label htmlFor="sendingToken">Sending token</Label>
+          <Select
+            value={token!}
+            onValueChange={handleInputTokenChange}
+          >
+            <SelectTrigger className="w-full border-2 border-primary h-[56px]">
+              <SelectValue placeholder="Select a token" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select a token</SelectLabel>
+                {
+                  MULTISEND_SUPPORTED_ASSETS.map((asset) => (
+                    <SelectItem key={asset} value={asset}>
+                      <div className="flex flex-row gap-2 items-center">
+                        <Image
+                          src={selectAssetInfoFromAssetId(asset!).split(":")[3] || "/default-logo.png"}
+                          alt={asset}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                        <div className="text-lg">{selectAssetInfoFromAssetId(asset!).split(":")[2]}</div>
+                        <Badge variant="secondary">{selectAssetInfoFromAssetId(asset!).split(":")[0]}</Badge>
+                      </div>
+                    </SelectItem>
+                  ))
+                }
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col mt-4 mb-2">
+          <h2 className="text-lg">Balance</h2>
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row gap-1 items-end text-2xl font-semibold">
+              {currentBalance ? formatBalance(currentBalance, 4) : <Skeleton className="w-8 h-6" />}
+              <p className="text-lg">
                 {selectAssetInfoFromAssetId(token).split(":")[2]}
               </p>
             </div>
+            <Button onClick={fetchBalances} size="icon">
+              <RotateCcw className="w-4 h-4" />
+            </Button>
           </div>
-          <div className="flex flex-col gap-4">
-            <h2 className="border-b pb-2 text-lg font-semibold">Step 1</h2>
-            <div className="flex flex-row gap-2 items-center">
-              <CornerDownRight className="h-4 w-4" />
-              <p>Create an airdrop list</p>
-            </div>
-            <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="manual">Manual</TabsTrigger>
-                <TabsTrigger value="file-input">File</TabsTrigger>
-              </TabsList>
-              <TabsContent value="manual" className="flex flex-col gap-4">
-                <div className="inline">
-                  <Info className="inline h-4 w-4 mr-2" />
-                  Enter addresses and corresponding amounts manually. Best for
-                  sending to small amount of addreses
-                </div>
-                {
-                  // if airdropList is empty, show the message
-                  airdropList.length === 0 ? (
-                    <p className="text-md text-muted-foreground">
-                      No addresses added. Click the + button below to add.
-                    </p>
-                  ) : (
-                    // if airdropList is not empty, show the list
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <h2>Addresses</h2>
-                        <h2>Amounts</h2>
-                      </div>
-                      {airdropList.map((item, index) => (
-                        <div key={index} className="flex flex-row gap-4">
-                          <Input
-                            placeholder="Enter an address"
-                            value={item.address}
-                            onChange={handleAddressChange(index)}
-                          />
-                          <Input
-                            placeholder="Enter an amount"
-                            value={item.amount}
-                            onChange={handleAmountChange(index)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )
-                }
-                <div className="flex flex-row gap-2">
-                  <Button
-                    onClick={handleAddAirdropList}
-                    variant="outline"
-                    size="icon"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    onClick={handleResetAirdropList}
-                    variant="outline"
-                    size="icon"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TabsContent>
-              <TabsContent className="flex flex-col gap-4" value="file-input">
-                <p>
-                  <span className="inline-block mr-2">
-                    <Info className="h-4 w-4" />
-                  </span>
-                  Upload a .csv file containing addresses and amounts.
-                </p>
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleImportFile}
-                  className="w-full"
-                />
-                {
-                  // if airdropList is empty, show the message
-                  airdropList.length === 0 ? (
-                    <p className="text-md text-muted-foreground">
-                      No addresses uploaded.
-                    </p>
-                  ) : (
-                    // if airdropList is not empty, show the list
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <h2>Addresses</h2>
-                        <h2>Amounts</h2>
-                      </div>
-                      {airdropList.map((item, index) => (
-                        <div key={index} className="flex flex-row gap-4">
-                          <Input
-                            placeholder="Enter an address"
-                            value={item.address}
-                            readOnly
-                          />
-                          <Input
-                            placeholder="Enter an amount"
-                            value={item.amount}
-                            readOnly
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )
-                }
-              </TabsContent>
-            </Tabs>
-          </div>
-          <div className="flex flex-col gap-4">
-            <h2 className="border-b pb-2 text-lg font-semibold">
-              Step 2
-            </h2>
-            <div className="flex flex-row gap-2 items-center">
-              <CornerDownRight className="h-4 w-4" />
-              <p>Confirm the total multisend amount</p>
-            </div>
-            <p className="font-semibold text-2xl">
-              {formatEther(totalAirdropAmount).toString()}
-              <span className="inline-block align-baseline text-sm ml-2">
-                KAIA
-              </span>
+          <div className="flex flex-row gap-1 items-end text-sm text-muted-foreground">
+            {currentNativeBalance
+              ? formatBalance(currentNativeBalance, 4)
+              : <Skeleton className="w-4 h-4" />}
+            <p className="text-sm text-muted-foreground">
+              {selectAssetInfoFromAssetId(token).split(":")[2]}
             </p>
           </div>
-          <div className="flex flex-col gap-4">
-            <h2 className="border-b pb-2 text-lg font-semibold">
-              Step 3
-            </h2>
-            <div className="flex flex-row gap-2 items-center">
-              <CornerDownRight className="h-4 w-4" />
-              <p>Review and proceed</p>
-            </div>
-            {submitButtonIsPending ? (
-              <Button className="w-full md:w-[400px]" disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please confirm in your wallet
-              </Button>
-            ) : (
-              <Button className="w-full md:w-[400px]">
-                Proceed
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            )}
+        </div>
+        <div className="flex flex-col gap-4">
+          <h2 className="border-b pb-2 text-lg font-semibold">Step 1</h2>
+          <div className="flex flex-row gap-2 items-center">
+            <CornerDownRight className="h-4 w-4" />
+            <p>Create an airdrop list</p>
           </div>
-        </TabsContent>
-        {
-          // Multisend ERC20 token form
-        }
-        <TabsContent value="erc20">ERC20</TabsContent>
-        {
-          // Multisend ERC20 token form
-        }
-        <TabsContent value="nft">NFTs</TabsContent>
-      </Tabs>
+          <Tabs defaultValue="manual" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="manual">Manual</TabsTrigger>
+              <TabsTrigger value="file-input">File</TabsTrigger>
+            </TabsList>
+            <TabsContent value="manual" className="flex flex-col gap-4">
+              <div className="inline">
+                <Info className="inline h-4 w-4 mr-2" />
+                Enter addresses and corresponding amounts manually. Best for
+                sending to small amount of addreses
+              </div>
+              {
+                // if airdropList is empty, show the message
+                airdropList.length === 0 ? (
+                  <p className="text-md text-muted-foreground">
+                    No addresses added. Click the + button below to add.
+                  </p>
+                ) : (
+                  // if airdropList is not empty, show the list
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <h2>Addresses</h2>
+                      <h2>Amounts</h2>
+                    </div>
+                    {airdropList.map((item, index) => (
+                      <div key={index} className="flex flex-row gap-4">
+                        <Input
+                          placeholder="Enter an address"
+                          value={item.address}
+                          onChange={handleAddressChange(index)}
+                        />
+                        <Input
+                          placeholder="Enter an amount"
+                          value={item.amount}
+                          onChange={handleAmountChange(index)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+              <div className="flex flex-row gap-2">
+                <Button
+                  onClick={handleAddAirdropList}
+                  variant="outline"
+                  size="icon"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={handleResetAirdropList}
+                  variant="outline"
+                  size="icon"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent className="flex flex-col gap-4" value="file-input">
+              <p>
+                <span className="inline-block mr-2">
+                  <Info className="h-4 w-4" />
+                </span>
+                Upload a .csv file containing addresses and amounts.
+              </p>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={handleImportFile}
+                className="w-full"
+              />
+              {
+                // if airdropList is empty, show the message
+                airdropList.length === 0 ? (
+                  <p className="text-md text-muted-foreground">
+                    No addresses uploaded.
+                  </p>
+                ) : (
+                  // if airdropList is not empty, show the list
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <h2>Addresses</h2>
+                      <h2>Amounts</h2>
+                    </div>
+                    {airdropList.map((item, index) => (
+                      <div key={index} className="flex flex-row gap-4">
+                        <Input
+                          placeholder="Enter an address"
+                          value={item.address}
+                          readOnly
+                        />
+                        <Input
+                          placeholder="Enter an amount"
+                          value={item.amount}
+                          readOnly
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
+            </TabsContent>
+          </Tabs>
+        </div>
+        <div className="flex flex-col gap-4">
+          <h2 className="border-b pb-2 text-lg font-semibold">
+            Step 2
+          </h2>
+          <div className="flex flex-row gap-2 items-center">
+            <CornerDownRight className="h-4 w-4" />
+            <p>Confirm the total multisend amount</p>
+          </div>
+          <p className="font-semibold text-2xl">
+            {formatEther(totalAirdropAmount).toString()}
+            <span className="inline-block align-baseline text-sm ml-2">
+              KAIA
+            </span>
+          </p>
+        </div>
+        <div className="flex flex-col gap-4">
+          <h2 className="border-b pb-2 text-lg font-semibold">
+            Step 3
+          </h2>
+          <div className="flex flex-row gap-2 items-center">
+            <CornerDownRight className="h-4 w-4" />
+            <p>Review and proceed</p>
+          </div>
+          {submitButtonIsPending ? (
+            <Button className="w-full md:w-[400px]" disabled>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please confirm in your wallet
+            </Button>
+          ) : (
+            <Button className="w-full md:w-[400px]">
+              Proceed
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          )}
+        </div>
     </div>
   );
 }
