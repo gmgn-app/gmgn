@@ -173,6 +173,16 @@ export default function WalletManagement() {
     /**
      * Store the handle to the private key into some unauthenticated storage
      */
+    if (!handle) {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Wallet creation failed!",
+        description: "Uh oh! Something went wrong. please try again.",
+      });
+      return;
+    }
     const cache = await caches.open("gmgn-storage");
     const request = new Request("gmgn-wallet");
     const response = new Response(handle);
@@ -185,13 +195,6 @@ export default function WalletManagement() {
     localStorage.setItem("gmgn-wallet", JSON.stringify(GMGN_WALLET_STORAGE));
     setCreateWalletButtonActive(false);
     if (handle) {
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4 bg-blue-600 text-white",
-        title: "Wallet created!",
-        description: "Please click Load wallet from Passkey to begin.",
-      });
-    } else {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
