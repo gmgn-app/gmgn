@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import {
   Address as EvmAddress,
 } from "viem";
+// evm
 import { mnemonicToAccount } from 'viem/accounts'
+// polkadot
 import { Keyring } from '@polkadot/keyring';
+// sui
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 // import slip10 from 'micro-key-producer/slip10.js';
@@ -54,6 +58,7 @@ import { AVAILABLE_NETWORKS } from "@/lib/chains";
 // create the atom states
 export const evmAddressAtom = atom<EvmAddress | null>(null);
 export const polkadotAddressAtom = atom<string | null>(null);
+export const suiAddressAtom = atom<string | null>(null);
 export const availableNetworksAtom = atomWithStorage<string[] | null>("AVAILABLE_NETWORKS", AVAILABLE_NETWORKS); 
 
 export default function WalletManagement() {
@@ -68,6 +73,7 @@ export default function WalletManagement() {
   // Create the atom state for address and network
   const [evmAddress, setEvmAddress] = useAtom(evmAddressAtom);
   const [polkadotAddress, setPolkadotAddress] = useAtom(polkadotAddressAtom);
+  const [suiAddress, setSuiAddress] = useAtom(suiAddressAtom);
   const [availableNetworks, setAvailableNetworks] = useAtom(availableNetworksAtom);
   
   // State for create dialog
@@ -148,6 +154,10 @@ export default function WalletManagement() {
       const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
       setPolkadotAddress(polkadotKeyPair.address);
       // derive the solana account from mnemonic
+      // placeholder
+      // derive the sui account from mnemonic
+      const suiKeyPair = Ed25519Keypair.deriveKeypair(mnemonicPhrase);
+      setSuiAddress(suiKeyPair.getPublicKey().toSuiAddress());
       toast({
         className: "bg-green-600 text-white",
         title: "Wallet loaded!",
@@ -345,7 +355,7 @@ export default function WalletManagement() {
           />
         </div>
         <div className="flex flex-row gap-0 items-center border-2 border-primary">
-        <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
             <Image
               src="/logos/polkadot.svg"
               alt="polkadot logo"
@@ -359,6 +369,23 @@ export default function WalletManagement() {
           <WalletCopyButton
             copyText={polkadotAddress}
             buttonTitle={truncateAddress(polkadotAddress, 10)}
+          />
+        </div>
+        <div className="flex flex-row gap-0 items-center border-2 border-primary">
+          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+            <Image
+              src="/logos/sui.svg"
+              alt="sui logo"
+              width={24}
+              height={24}
+            />
+            <p>
+              Sui
+            </p>
+          </div>
+          <WalletCopyButton
+            copyText={suiAddress}
+            buttonTitle={truncateAddress(suiAddress, 10)}
           />
         </div>
       </div>

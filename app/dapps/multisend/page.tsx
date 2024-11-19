@@ -379,7 +379,7 @@ export default function MultisendAppPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-col mt-4 mb-2">
+        <div className="flex flex-col mb-2">
           <h2 className="text-lg">Balance</h2>
           <div className="flex flex-row items-center justify-between">
             <div className="flex flex-row gap-1 items-end text-2xl font-semibold">

@@ -14,6 +14,7 @@
     "@marsidev/react-turnstile": "^1.0.2",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
+    "@mysten/sui": "^1.14.4",
     "@next/mdx": "^14.2.14",
     "@noble/ed25519": "^2.1.0",
     "@noble/hashes": "^1.5.0",
