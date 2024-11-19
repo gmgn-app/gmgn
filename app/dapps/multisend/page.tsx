@@ -9,6 +9,7 @@ import NavBar from "@/components/navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
 import { Badge } from "@/components/ui/badge";
+import { getOrThrow } from "@/lib/passkey-auth";
 import {
   createPublicClient,
   http,
@@ -54,10 +55,13 @@ import { Info, Plus, Trash2, Loader2, CornerDownRight, ArrowRight, RotateCcw } f
 import { mockStablecoinAbi } from "@/lib/abis";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useAtom, useAtomValue } from 'jotai';
 import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
 import { MULTISEND_CONTRACTS } from "@/lib/contracts";
+import { gasliteAbi } from "@/lib/abis";
 
 
 type AirdropItem = {
@@ -109,11 +113,17 @@ export default function MultisendAppPage() {
   const [currentBalance, setCurrentBalance] = useState("");
   const [currentNativeBalance, setCurrentNativeBalance] = useState("");
 
+  // state for current MULTISEND_CONTRACT
+  const [multisendContractAddress, setMultisendContractAddress] = useState<string>("eip155:1001/contract:0x61684fc62b6a0f1273f69d9fca0e264001a61db6");
+
   // State for the airdrop list.
   const [airdropList, setAirdropList] = useState<AirdropItem[]>([]);
 
-  // State for the pending status.
-  const [submitButtonIsPending, setSubmitButtonIsPending] = useState(false);
+  // state for sending status
+  const [sendButtonLoading, setSendButtonLoading] = useState(false);
+
+  // Toast notifications.
+  const { toast } = useToast();
 
   // Fetch the current balance upon page load
   useEffect(() => {
@@ -287,6 +297,7 @@ export default function MultisendAppPage() {
 
   function handleInputTokenChange(value: string) {
     setToken(value);
+    setMultisendContractAddress(MULTISEND_CONTRACTS.find((contract) => contract.split("/")[0] === value.split("/")[0])!);
     setCurrentBalance("");
     setCurrentNativeBalance("");
   }
@@ -336,6 +347,169 @@ export default function MultisendAppPage() {
       newAirdropList[index].amount = e.target.value;
       setAirdropList(newAirdropList);
     };
+  }
+
+  // function to send the multisend transaction
+  async function submitMultisendTransaction() {
+    // Set the send button to loading state
+    setSendButtonLoading(true);
+
+    /**
+     * Retrieve the handle to the private key from some unauthenticated storage
+     */
+    const cache = await caches.open("gmgn-storage");
+    const request = new Request("/gmgn-wallet");
+    const response = await cache.match(request);
+    const handle = response
+      ? new Uint8Array(await response.arrayBuffer())
+      : new Uint8Array();
+    /**
+     * Retrieve the private key from authenticated storage
+     */
+    const bytes = await getOrThrow(handle);
+    const mnemonicPhrase = bip39.entropyToMnemonic(bytes, wordlist);
+    if (mnemonicPhrase) {
+
+      // Handle EVM submit transaction
+      // Check if the network is EVM
+      if (
+        network.split(":")[0] === "eip155"
+      ) {
+        const account = mnemonicToAccount(mnemonicPhrase,
+          {
+            accountIndex: 0,
+            addressIndex: 0,
+          }
+        );
+        const walletClient = createWalletClient({
+          account: account,
+          chain: selectViemObjectFromChainId(network!),
+          transport: http(),
+        });
+        const publicClient = createPublicClient({
+          chain: selectViemObjectFromChainId(network!),
+          transport: http(),
+        });
+        let transaction = null;
+        let hash = null;
+        if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+          // sanitize airdropList from any empty objects
+          const airdropListFiltered = airdropList.filter(
+            (item) => item.amount !== "" && item.address !== ""
+          );
+
+          // create addresses list
+          const addresses: Address[] = airdropListFiltered.map(
+            (item) => item.address.replace(/\s/g, "") as Address
+          );
+
+          // create airdropAmounts list
+          const airdropAmounts: bigint[] = airdropListFiltered.map((item) =>
+            parseEther(item.amount)
+          );
+          const { request } = await publicClient.simulateContract({
+            account: account,
+            address: multisendContractAddress.split("/")[1].split(":")[1] as Address,
+            abi: gasliteAbi,
+            functionName: "airdropETH",
+            args: [addresses, airdropAmounts],
+            value: totalAirdropAmount,
+          });
+          hash = await walletClient.writeContract(request);
+          transaction = await publicClient.waitForTransactionReceipt({
+            hash: hash,
+          });
+        } else {
+          // sanitize airdropList from any empty objects
+          const airdropListFiltered = airdropList.filter(
+            (item) => item.amount !== "" && item.address !== ""
+          );
+
+          // create addresses list
+          const addresses: Address[] = airdropListFiltered.map(
+            (item) => item.address.replace(/\s/g, "") as Address
+          );
+
+          // create airdropAmounts list
+          const airdropAmounts: bigint[] = airdropListFiltered.map((item) =>
+            parseEther(item.amount)
+          );
+          const { request } = await publicClient.simulateContract({
+            account: account,
+            address: tokenAddress as Address,
+            abi: gasliteAbi,
+            functionName: "airdropERC20",
+            args: [addresses, airdropAmounts],
+          });
+          hash = await walletClient.writeContract(request);
+          transaction = await publicClient.waitForTransactionReceipt({
+            hash: hash,
+          });
+        }
+        if (transaction) {
+          toast({
+            className:
+              "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+            title: "Transaction sent!",
+            description: "Hash: " + truncateHash(hash ?? undefined, 6),
+            action: (
+              <ToastAction altText="view">
+                <a
+                  target="_blank"
+                  href={`${selectBlockExplorerFromChainId(network!)}/tx/${hash}`}
+                >
+                  View
+                </a>
+              </ToastAction>
+            ),
+          });
+          fetchBalances();
+        }
+      }
+      
+      if (
+        network.split(":")[0] === "polkadot"
+      ) {
+        await cryptoWaitReady();
+        const keyring = new Keyring();
+        const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
+        const wsProvider = new WsProvider('wss://paseo.rpc.amforc.com:443');
+        const polkadotClient = await DedotClient.new<PolkadotApi>(wsProvider);
+        // const unsub = await polkadotClient.tx.balances
+        // .transferKeepAlive(receivingAddress, parseUnits(sendingAmount, 10))
+        // .signAndSend(polkadotKeyPair, async ({ status }) => {
+        //   if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
+        //     // console.log(`Transaction completed at block hash ${status.value.blockHash}`);
+        //     toast({
+        //       className:
+        //         "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        //       title: "Transaction sent!",
+        //       description: "Hash: " + truncateHash(status.value.blockHash.toString() ?? undefined, 6),
+        //       action: (
+        //         <ToastAction altText="view">
+        //           <a
+        //             target="_blank"
+        //             href={`${selectBlockExplorerFromChainId(network!)}/extrinsic/${status.value.blockHash}`}
+        //           >
+        //             View
+        //           </a>
+        //         </ToastAction>
+        //       ),
+        //     });
+        //     await unsub();
+        //     fetchBalances();
+        //   }
+        // });
+      }
+    } else {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Wallet load failed!",
+        description: "Uh oh! Something went wrong. please try again.",
+      });
+    }
   }
 
   return (
@@ -437,11 +611,13 @@ export default function MultisendAppPage() {
                           placeholder="Enter an address"
                           value={item.address}
                           onChange={handleAddressChange(index)}
+                          className="text-lg"
                         />
                         <Input
                           placeholder="Enter an amount"
                           value={item.amount}
                           onChange={handleAmountChange(index)}
+                          className="text-lg"
                         />
                       </div>
                     ))}
@@ -534,13 +710,13 @@ export default function MultisendAppPage() {
             <CornerDownRight className="h-4 w-4" />
             <p>Review and proceed</p>
           </div>
-          {submitButtonIsPending ? (
+          {sendButtonLoading ? (
             <Button className="w-full md:w-[400px]" disabled>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Please confirm in your wallet
+              Please wait
             </Button>
           ) : (
-            <Button className="w-full md:w-[400px]">
+            <Button className="w-full md:w-[400px]" onClick={submitMultisendTransaction}>
               Proceed
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
