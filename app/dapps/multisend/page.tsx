@@ -61,7 +61,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
 import { MULTISEND_CONTRACTS } from "@/lib/contracts";
-import { gasliteAbi } from "@/lib/abis";
+import { gasliteAbi, erc20Abi } from "@/lib/abis";
 
 
 type AirdropItem = {
@@ -112,7 +112,7 @@ export default function MultisendAppPage() {
   // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
   const [currentNativeBalance, setCurrentNativeBalance] = useState("");
-
+  const [currentTokenDecimals, setCurrentTokenDecimals] = useState<number>(18);
   // state for current MULTISEND_CONTRACT
   const [multisendContractAddress, setMultisendContractAddress] = useState<string>("eip155:1001/contract:0x61684fc62b6a0f1273f69d9fca0e264001a61db6");
 
@@ -167,8 +167,14 @@ export default function MultisendAppPage() {
           functionName: "balanceOf",
           args: [evmAddress as Address],
         });
+        const tokenDecimals = await publicClient.readContract({
+          address: tokenAddress as Address,
+          abi: mockStablecoinAbi,
+          functionName: "decimals",
+        });
         setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
+        setCurrentTokenDecimals(tokenDecimals as number);
       };
       // call the function
       fetchBalance()
@@ -274,10 +280,16 @@ export default function MultisendAppPage() {
 
   // Total airdrop amount.
   const totalAirdropAmount = useMemo(() => {
-    return airdropList.reduce((acc, item) => {
-      return acc + BigInt(parseEther(item.amount));
-    }, BigInt(0));
-  }, [airdropList]);
+    if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+      return airdropList.reduce((acc, item) => {
+        return acc + BigInt(parseEther(item.amount));
+      }, BigInt(0));
+    } else {
+      return airdropList.reduce((acc, item) => {
+        return acc + BigInt(parseUnits(item.amount, currentTokenDecimals));
+      }, BigInt(0));
+    }
+  }, [airdropList, tokenAddress, currentTokenDecimals]);
 
   // state for file input
   const [file, setFile] = useState<File | undefined>(undefined);
@@ -432,19 +444,40 @@ export default function MultisendAppPage() {
 
           // create airdropAmounts list
           const airdropAmounts: bigint[] = airdropListFiltered.map((item) =>
-            parseEther(item.amount)
+            parseUnits(item.amount, currentTokenDecimals as number)
           );
-          const { request } = await publicClient.simulateContract({
+          const { request: approvalRequest } = await publicClient.simulateContract({
             account: account,
             address: tokenAddress as Address,
-            abi: gasliteAbi,
-            functionName: "airdropERC20",
-            args: [addresses, airdropAmounts],
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [
+              multisendContractAddress.split("/")[1].split(":")[1] as Address,
+              totalAirdropAmount,
+            ],
           });
-          hash = await walletClient.writeContract(request);
-          transaction = await publicClient.waitForTransactionReceipt({
-            hash: hash,
+          let approvalHash = await walletClient.writeContract(approvalRequest);
+          let approvalTransaction = await publicClient.waitForTransactionReceipt({
+            hash: approvalHash,
           });
+          if (approvalTransaction) {
+            const { request } = await publicClient.simulateContract({
+              account: account,
+              address: multisendContractAddress.split("/")[1].split(":")[1] as Address,
+              abi: gasliteAbi,
+              functionName: "airdropERC20",
+              args: [
+                tokenAddress as Address,
+                addresses,
+                airdropAmounts,
+                totalAirdropAmount,
+              ],
+            });
+            hash = await walletClient.writeContract(request);
+            transaction = await publicClient.waitForTransactionReceipt({
+              hash: hash,
+            });
+          }
         }
         if (transaction) {
           toast({
@@ -510,6 +543,7 @@ export default function MultisendAppPage() {
         description: "Uh oh! Something went wrong. please try again.",
       });
     }
+    setSendButtonLoading(false);
   }
 
   return (
@@ -696,9 +730,9 @@ export default function MultisendAppPage() {
             <p>Confirm the total multisend amount</p>
           </div>
           <p className="font-semibold text-2xl">
-            {formatEther(totalAirdropAmount).toString()}
+            {tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" ? formatEther(totalAirdropAmount).toString() : formatUnits(totalAirdropAmount, currentTokenDecimals).toString()}{" "}
             <span className="inline-block align-baseline text-sm ml-2">
-              KAIA
+              {selectAssetInfoFromAssetId(token).split(":")[2]}
             </span>
           </p>
         </div>
