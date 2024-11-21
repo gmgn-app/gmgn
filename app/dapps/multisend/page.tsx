@@ -638,19 +638,18 @@ export default function MultisendAppPage() {
                   </p>
                 ) : (
                   // if airdropList is not empty, show the list
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <h2>Addresses</h2>
-                      <h2>Amounts</h2>
-                    </div>
+                  <div className="flex flex-col gap-4">
                     {airdropList.map((item, index) => (
-                      <div key={index} className="flex flex-row gap-4">
+                      <div key={index} className="flex flex-col gap-2 border shadow-sm p-4">
+                        <h2 className="text-sm bg-muted border-2 rounded-sm w-fit p-2">{index + 1}</h2>
+                        <h2>Address</h2>
                         <Input
                           placeholder="Enter an address"
                           value={item.address}
                           onChange={handleAddressChange(index)}
                           className="text-lg"
                         />
+                        <h2>Amount</h2>
                         {isDesktop ? (
                           <Input
                             placeholder="Enter an amount"
