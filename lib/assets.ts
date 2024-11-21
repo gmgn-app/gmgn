@@ -11,6 +11,7 @@ export const AVAILABLE_ASSETS = [
   "eip155:1287/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // moonbase alpha testnet
   "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // morph testnet
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
+  // "sui:2/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // sui testnet
 ];
 
 export const ALL_SUPPORTED_ASSETS = [
@@ -28,4 +29,5 @@ export const ALL_SUPPORTED_ASSETS = [
   "eip155:1287/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // moonbase alpha testnet
   "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // morph testnet
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
+  // "sui:2/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // sui testnet
 ]

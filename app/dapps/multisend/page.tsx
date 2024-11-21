@@ -62,6 +62,7 @@ import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-managem
 import { ALL_SUPPORTED_ASSETS } from "@/lib/assets";
 import { MULTISEND_CONTRACTS } from "@/lib/contracts";
 import { gasliteAbi, erc20Abi } from "@/lib/abis";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 
 type AirdropItem = {
@@ -108,6 +109,9 @@ export default function MultisendAppPage() {
   if (!evmAddress || !polkadotAddress) {
     redirect("/");
   }
+
+  // Check if the user is on a desktop or mobile device.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   // State for current balance
   const [currentBalance, setCurrentBalance] = useState("");
@@ -647,12 +651,25 @@ export default function MultisendAppPage() {
                           onChange={handleAddressChange(index)}
                           className="text-lg"
                         />
-                        <Input
-                          placeholder="Enter an amount"
-                          value={item.amount}
-                          onChange={handleAmountChange(index)}
-                          className="text-lg"
-                        />
+                        {isDesktop ? (
+                          <Input
+                            placeholder="Enter an amount"
+                            type="number"
+                            value={item.amount}
+                            onChange={handleAmountChange(index)}
+                            className="text-lg"
+                          />
+                          ) : (
+                            <Input
+                              placeholder="Enter an amount"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*"
+                              value={item.amount}
+                              onChange={handleAmountChange(index)}
+                              className="text-lg"
+                            />
+                          )}
                       </div>
                     ))}
                   </div>
