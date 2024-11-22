@@ -51,7 +51,7 @@ import {
   selectAssetInfoFromAssetId,
   selectBlockExplorerFromChainId
 } from "@/lib/utils";
-import { Info, Plus, Trash2, Loader2, CornerDownRight, ArrowRight, RotateCcw } from "lucide-react";
+import { Info, Plus, Trash2, Loader2, CornerDownRight, ArrowRight, RotateCcw, Check, ClipboardPaste } from "lucide-react";
 import { mockStablecoinAbi } from "@/lib/abis";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -643,12 +643,14 @@ export default function MultisendAppPage() {
                       <div key={index} className="flex flex-col gap-2 border shadow-sm p-4">
                         <h2 className="text-sm bg-muted border-2 rounded-sm w-fit p-2">{index + 1}</h2>
                         <h2>Address</h2>
-                        <Input
-                          placeholder="Enter an address"
-                          value={item.address}
-                          onChange={handleAddressChange(index)}
-                          className="text-lg"
-                        />
+                        <div>
+                          <Input
+                            placeholder="Enter an address"
+                            value={item.address}
+                            onChange={handleAddressChange(index)}
+                            className="text-lg"
+                          />
+                        </div>
                         <h2>Amount</h2>
                         {isDesktop ? (
                           <Input

@@ -13,8 +13,15 @@ import { mnemonicToAccount } from 'viem/accounts'
 import { Keyring } from '@polkadot/keyring';
 // sui
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
+// solana
+import { derivePath } from 'ed25519-hd-key';
+import { createKeyPairFromPrivateKeyBytes, getAddressFromPublicKey } from '@solana/web3.js';
+import { install } from '@solana/webcrypto-ed25519-polyfill';
+install();
+// bip39
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+
 // import slip10 from 'micro-key-producer/slip10.js';
 // import bs58 from 'bs58'
 // import { getPublicKey, etc } from '@noble/ed25519';
@@ -55,10 +62,12 @@ import {
 } from "@/lib/utils";
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
 
+
 // create the atom states
 export const evmAddressAtom = atom<EvmAddress | null>(null);
 export const polkadotAddressAtom = atom<string | null>(null);
 export const suiAddressAtom = atom<string | null>(null);
+export const solanaAddressAtom = atom<string | null>(null);
 export const availableNetworksAtom = atomWithStorage<string[] | null>("AVAILABLE_NETWORKS", AVAILABLE_NETWORKS); 
 
 export default function WalletManagement() {
@@ -72,6 +81,7 @@ export default function WalletManagement() {
 
   // Create the atom state for address and network
   const [evmAddress, setEvmAddress] = useAtom(evmAddressAtom);
+  const [solanaAddress, setSolanaAddress] = useAtom(solanaAddressAtom);
   const [polkadotAddress, setPolkadotAddress] = useAtom(polkadotAddressAtom);
   const [suiAddress, setSuiAddress] = useAtom(suiAddressAtom);
   const [availableNetworks, setAvailableNetworks] = useAtom(availableNetworksAtom);
@@ -149,12 +159,21 @@ export default function WalletManagement() {
         }
       );
       setEvmAddress(evmAccount.address);
+
       //derive the polkadot account from mnemonic
       const keyring = new Keyring();
       const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
       setPolkadotAddress(polkadotKeyPair.address);
+
       // derive the solana account from mnemonic
-      // placeholder
+      const solanaSeed = await bip39.mnemonicToSeed(mnemonicPhrase);
+      const solanaSeedBuffer = Buffer.from(solanaSeed).toString('hex');
+      const path44Change = `m/44'/501'/0'/0'`;
+      const derivedSeed = derivePath(path44Change, solanaSeedBuffer).key;
+      const solanaKeyPair = await createKeyPairFromPrivateKeyBytes(derivedSeed);
+      const solanaAddress = await getAddressFromPublicKey(solanaKeyPair.publicKey);
+      console.log(solanaAddress);
+      setSolanaAddress(solanaAddress);
       // derive the sui account from mnemonic
       const suiKeyPair = Ed25519Keypair.deriveKeypair(mnemonicPhrase);
       setSuiAddress(suiKeyPair.getPublicKey().toSuiAddress());
@@ -352,6 +371,23 @@ export default function WalletManagement() {
           <WalletCopyButton
             copyText={evmAddress}
             buttonTitle={truncateAddress(evmAddress as EvmAddress, 10)}
+          />
+        </div>
+        <div className="flex flex-row gap-0 items-center border-2 border-primary">
+          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+            <Image
+              src="/logos/sol.svg"
+              alt="solana logo"
+              width={24}
+              height={24}
+            />
+            <p>
+              Solana
+            </p>
+          </div>
+          <WalletCopyButton
+            copyText={solanaAddress}
+            buttonTitle={truncateAddress(solanaAddress, 10)}
           />
         </div>
         <div className="flex flex-row gap-0 items-center border-2 border-primary">
