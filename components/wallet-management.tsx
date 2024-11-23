@@ -166,14 +166,14 @@ export default function WalletManagement() {
       setPolkadotAddress(polkadotKeyPair.address);
 
       // derive the solana account from mnemonic
-      const solanaSeed = await bip39.mnemonicToSeed(mnemonicPhrase);
-      const solanaSeedBuffer = Buffer.from(solanaSeed).toString('hex');
-      const path44Change = `m/44'/501'/0'/0'`;
-      const derivedSeed = derivePath(path44Change, solanaSeedBuffer).key;
-      const solanaKeyPair = await createKeyPairFromPrivateKeyBytes(derivedSeed);
-      const solanaAddress = await getAddressFromPublicKey(solanaKeyPair.publicKey);
-      console.log(solanaAddress);
+      const solanaSeed = await bip39.mnemonicToSeed(mnemonicPhrase); // turn mnemonic into seed
+      const solanaSeedBuffer = Buffer.from(solanaSeed).toString('hex'); // turn seed into buffer
+      const path44Change = `m/44'/501'/0'/0'`; // solana derivation path
+      const derivedSeed = derivePath(path44Change, solanaSeedBuffer).key; // derive the seed from path
+      const solanaKeyPair = await createKeyPairFromPrivateKeyBytes(derivedSeed); // create keypair from seed
+      const solanaAddress = await getAddressFromPublicKey(solanaKeyPair.publicKey); // get the address from the public key
       setSolanaAddress(solanaAddress);
+
       // derive the sui account from mnemonic
       const suiKeyPair = Ed25519Keypair.deriveKeypair(mnemonicPhrase);
       setSuiAddress(suiKeyPair.getPublicKey().toSuiAddress());
@@ -204,8 +204,6 @@ export default function WalletManagement() {
      */
     if (!handle) {
       toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
         variant: "destructive",
         title: "Wallet creation failed!",
         description: "Uh oh! Something went wrong. please try again.",
@@ -225,8 +223,6 @@ export default function WalletManagement() {
     setCreateWalletButtonActive(false);
     if (handle) {
       toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
         variant: "destructive",
         title: "Wallet creation failed!",
         description: "Uh oh! Something went wrong. please try again.",
