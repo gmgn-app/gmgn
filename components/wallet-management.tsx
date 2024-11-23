@@ -223,6 +223,12 @@ export default function WalletManagement() {
     setCreateWalletButtonActive(false);
     if (handle) {
       toast({
+        className: "bg-blue-600 text-white",
+        title: "Wallet created!",
+        description: "Please click Load wallet from Passkey to begin.",
+      });
+    } else {
+      toast({
         variant: "destructive",
         title: "Wallet creation failed!",
         description: "Uh oh! Something went wrong. please try again.",
