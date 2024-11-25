@@ -10,6 +10,7 @@ export const AVAILABLE_NETWORKS = [
   "eip155:4201", // lukso testnet
   "eip155:1287", // moonbase alpha testnet
   "eip155:2710", // morph testnet
+  "eip155:534351", // scroll sepolia
   "polkadot:94220" // polkadot passeo testnet
 ];
 
