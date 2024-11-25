@@ -51,7 +51,18 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import { useToast } from "@/hooks/use-toast";
 import { atom, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils'
@@ -358,74 +369,112 @@ export default function WalletManagement() {
       )}
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">Addresses</h2>
-        <div className="flex flex-row gap-0 items-center border-2 border-primary">
-          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-            <Image
-              src="/logos/evm.svg"
-              alt="evm logo"
-              width={24}
-              height={24}
-            />
-            <p>
-              EVM
-            </p>
-          </div>
-          <WalletCopyButton
-            copyText={evmAddress}
-            buttonTitle={truncateAddress(evmAddress as EvmAddress, 10)}
-          />
-        </div>
-        <div className="flex flex-row gap-0 items-center border-2 border-primary">
-          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-            <Image
-              src="/logos/sol.svg"
-              alt="solana logo"
-              width={24}
-              height={24}
-            />
-            <p>
-              Solana
-            </p>
-          </div>
-          <WalletCopyButton
-            copyText={solanaAddress}
-            buttonTitle={truncateAddress(solanaAddress, 10)}
-          />
-        </div>
-        <div className="flex flex-row gap-0 items-center border-2 border-primary">
-          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-            <Image
-              src="/logos/polkadot.svg"
-              alt="polkadot logo"
-              width={24}
-              height={24}
-            />
-            <p>
-              Polkadot
-            </p>
-          </div>
-          <WalletCopyButton
-            copyText={polkadotAddress}
-            buttonTitle={truncateAddress(polkadotAddress, 10)}
-          />
-        </div>
-        <div className="flex flex-row gap-0 items-center border-2 border-primary">
-          <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-            <Image
-              src="/logos/sui.svg"
-              alt="sui logo"
-              width={24}
-              height={24}
-            />
-            <p>
-              Sui
-            </p>
-          </div>
-          <WalletCopyButton
-            copyText={suiAddress}
-            buttonTitle={truncateAddress(suiAddress, 10)}
-          />
-        </div>
+        <Drawer>
+          <DrawerTrigger asChild>
+            {
+              !createWalletButtonActive && evmAddress ? (
+                <Button className="py-4">
+                  <Image
+                    src="/addresses-img.svg"
+                    alt="addresses button image"
+                    width={200}
+                    height={50}
+                  />
+                </Button>
+              ) : (
+                <Button className="py-4" disabled>
+                  <Image
+                    src="/addresses-img.svg"
+                    alt="addresses button image"
+                    width={200}
+                    height={50}
+                  />
+                </Button>
+              )
+            }
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Addresses</DrawerTitle>
+              <DrawerDescription>Select the address you need</DrawerDescription>
+            </DrawerHeader>
+            <div className="flex flex-col gap-2 px-4 h-[500px]">
+              <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                  <Image
+                    src="/logos/evm.svg"
+                    alt="evm logo"
+                    width={24}
+                    height={24}
+                  />
+                  <p>
+                    EVM
+                  </p>
+                </div>
+                <WalletCopyButton
+                  copyText={evmAddress}
+                  buttonTitle={truncateAddress(evmAddress as EvmAddress, 10)}
+                />
+              </div>
+              <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                  <Image
+                    src="/logos/sol.svg"
+                    alt="solana logo"
+                    width={24}
+                    height={24}
+                  />
+                  <p>
+                    Solana
+                  </p>
+                </div>
+                <WalletCopyButton
+                  copyText={solanaAddress}
+                  buttonTitle={truncateAddress(solanaAddress, 10)}
+                />
+              </div>
+              <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                  <Image
+                    src="/logos/polkadot.svg"
+                    alt="polkadot logo"
+                    width={24}
+                    height={24}
+                  />
+                  <p>
+                    Polkadot
+                  </p>
+                </div>
+                <WalletCopyButton
+                  copyText={polkadotAddress}
+                  buttonTitle={truncateAddress(polkadotAddress, 10)}
+                />
+              </div>
+              <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                  <Image
+                    src="/logos/sui.svg"
+                    alt="sui logo"
+                    width={24}
+                    height={24}
+                  />
+                  <p>
+                    Sui
+                  </p>
+                </div>
+                <WalletCopyButton
+                  copyText={suiAddress}
+                  buttonTitle={truncateAddress(suiAddress, 10)}
+                />
+              </div>
+            </div>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">Actions</h2>
