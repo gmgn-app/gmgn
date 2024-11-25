@@ -11,6 +11,7 @@ export const AVAILABLE_NETWORKS = [
   "eip155:1287", // moonbase alpha testnet
   "eip155:2710", // morph testnet
   "eip155:534351", // scroll sepolia
+  "eip155:420420421", // westend asset hub polkadot "
   "polkadot:94220" // polkadot passeo testnet
 ];
 

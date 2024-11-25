@@ -13,14 +13,40 @@ import {
   kaia,
   moonbaseAlpha,
   morphHolesky,
-  scrollSepolia
+  scrollSepolia,
 } from "viem/chains";
+import { defineChain } from 'viem';
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 } 
+
+export const westendAssetHubPolkadot = defineChain({
+  id: 420420421,
+  name: "Asset-Hub Westend Testnet",
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Westend',
+    symbol: 'WND',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://westend-asset-hub-eth-rpc.polkadot.io'],
+      webSocket: ['wss://westend-asset-hub-eth-rpc.polkadot.io'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Explorer', url: 'https://assethub-westend.subscan.io' },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+      blockCreated: 5882,
+    },
+  },
+})
 
 // Truncate the address for display.
 export function truncateAddress(
@@ -142,6 +168,8 @@ export function selectViemObjectFromChainId(chainId: string) {
       return morphHolesky;
     case "eip155:534351":
       return scrollSepolia;
+    case "eip155:420420421":
+      return westendAssetHubPolkadot;
     default:
       return kairos;
   }
@@ -327,6 +355,8 @@ export function selectNativeAssetLogoFromChainId(chainId: string | undefined | n
         return "/logos/eth.svg";
       case "534351":
         return "/logos/eth.svg";
+      case "420420421":
+        return "/logos/wnd.svg";
       default:
         return "/logos/kaia.svg";
     }
@@ -369,7 +399,9 @@ export function selectChainNameFromChainId(chainId: string | undefined | null) {
       case "2710":
         return "Morph Testnet";
       case "534351":
-        return "Scroll Testnet";
+        return "Scroll Sepolia";
+      case "420420421":
+        return "Westend Asset Hub";
       default:
         return "Kaia Kairos";
     }
@@ -413,7 +445,9 @@ export function selectNativeAssetInfoFromChainId(chainId: string | undefined | n
       case "2710":
         return "Morph Testnet:Ether:ETH";
       case "534351":
-        return "Scroll Testnet:Ether:ETH";
+        return "Scroll Sepolia:Ether:ETH";
+      case "420420421":
+        return "Westend Asset Hub:Westend:WND";
       default:
         return "Kaia Kairos:Kaia:KAIA";
     }
@@ -462,7 +496,9 @@ export function selectAssetInfoFromAssetId(assetId: string | undefined | null) {
     case "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
       return "Morph Testnet:Ether:ETH:/logos/eth.svg";
     case "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
-      return "Scroll Testnet:Ether:ETH:/logos/eth.svg";
+      return "Scroll Sepolia:Ether:ETH:/logos/eth.svg";
+    case "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Westend Asset Hub:Westend:WND:/logos/wnd.svg";
     case "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
       return "Polkadot Paseo:Paseo:PAS:/logos/paseo.svg";
     default:
