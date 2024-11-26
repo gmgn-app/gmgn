@@ -375,7 +375,7 @@ export default function WalletManagement() {
               !createWalletButtonActive && evmAddress ? (
                 <Button className="py-4">
                   <Image
-                    src="/addresses-img.svg"
+                    src="/addresses.svg"
                     alt="addresses button image"
                     width={200}
                     height={50}
@@ -384,7 +384,7 @@ export default function WalletManagement() {
               ) : (
                 <Button className="py-4" disabled>
                   <Image
-                    src="/addresses-img.svg"
+                    src="/addresses-null.svg"
                     alt="addresses button image"
                     width={200}
                     height={50}
@@ -398,7 +398,7 @@ export default function WalletManagement() {
               <DrawerTitle>Addresses</DrawerTitle>
               <DrawerDescription>Select the address you need</DrawerDescription>
             </DrawerHeader>
-            <div className="flex flex-col gap-2 px-4 h-[500px]">
+            <div className="flex flex-col gap-2 px-4 h-[350px]">
               <div className="flex flex-row gap-0 items-center border-2 border-primary">
                 <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
                   <Image
@@ -470,7 +470,7 @@ export default function WalletManagement() {
             </div>
             <DrawerFooter>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline" className="mb-16">Close</Button>
               </DrawerClose>
             </DrawerFooter>
           </DrawerContent>
