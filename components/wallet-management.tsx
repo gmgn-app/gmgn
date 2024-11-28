@@ -41,7 +41,8 @@ import {
   ChartPie,
   Rocket,
   Sparkles,
-  Loader2
+  Loader2,
+  DollarSign
 } from "lucide-react";
 import {
   Dialog,
@@ -293,7 +294,113 @@ export default function WalletManagement() {
               </Link>
             </div>
           </div>
-          <div className="flex flex-row gap-2 justify-end">
+          <div className="flex flex-row gap-2 justify-between items-center">
+            <Drawer>
+              <DrawerTrigger asChild>
+                {
+                  !createWalletButtonActive && evmAddress ? (
+                    <Button className="w-fit">
+                      <Image
+                        src="/addresses.svg"
+                        alt="addresses button image"
+                        width={80}
+                        height={50}
+                      />
+                    </Button>
+                  ) : (
+                    <Button className="w-fit" disabled>
+                      <Image
+                        src="/addresses-null.svg"
+                        alt="addresses button image"
+                        width={80}
+                        height={50}
+                      />
+                    </Button>
+                  )
+                }
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Addresses</DrawerTitle>
+                  <DrawerDescription>Select the address you need</DrawerDescription>
+                </DrawerHeader>
+                <div className="flex flex-col gap-2 px-4 h-[350px]">
+                  <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                    <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                      <Image
+                        src="/logos/evm.svg"
+                        alt="evm logo"
+                        width={24}
+                        height={24}
+                      />
+                      <p>
+                        EVM
+                      </p>
+                    </div>
+                    <WalletCopyButton
+                      copyText={evmAddress}
+                      buttonTitle={truncateAddress(evmAddress as EvmAddress, 10)}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                    <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                      <Image
+                        src="/logos/sol.svg"
+                        alt="solana logo"
+                        width={24}
+                        height={24}
+                      />
+                      <p>
+                        Solana
+                      </p>
+                    </div>
+                    <WalletCopyButton
+                      copyText={solanaAddress}
+                      buttonTitle={truncateAddress(solanaAddress, 10)}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                    <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                      <Image
+                        src="/logos/polkadot.svg"
+                        alt="polkadot logo"
+                        width={24}
+                        height={24}
+                      />
+                      <p>
+                        Polkadot
+                      </p>
+                    </div>
+                    <WalletCopyButton
+                      copyText={polkadotAddress}
+                      buttonTitle={truncateAddress(polkadotAddress, 10)}
+                    />
+                  </div>
+                  <div className="flex flex-row gap-0 items-center border-2 border-primary">
+                    <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
+                      <Image
+                        src="/logos/sui.svg"
+                        alt="sui logo"
+                        width={24}
+                        height={24}
+                      />
+                      <p>
+                        Sui
+                      </p>
+                    </div>
+                    <WalletCopyButton
+                      copyText={suiAddress}
+                      buttonTitle={truncateAddress(suiAddress, 10)}
+                    />
+                  </div>
+                </div>
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="outline" className="mb-16">Close</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
             <Button asChild>
               <Link
                 href="/portfolio"
@@ -368,174 +475,80 @@ export default function WalletManagement() {
         <Skeleton className="h-[135px] rounded-md" />
       )}
       <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-semibold">Addresses</h2>
-        <Drawer>
-          <DrawerTrigger asChild>
-            {
-              !createWalletButtonActive && evmAddress ? (
-                <Button className="py-4">
-                  <Image
-                    src="/addresses.svg"
-                    alt="addresses button image"
-                    width={200}
-                    height={50}
-                  />
-                </Button>
-              ) : (
-                <Button className="py-4" disabled>
-                  <Image
-                    src="/addresses-null.svg"
-                    alt="addresses button image"
-                    width={200}
-                    height={50}
-                  />
-                </Button>
-              )
-            }
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Addresses</DrawerTitle>
-              <DrawerDescription>Select the address you need</DrawerDescription>
-            </DrawerHeader>
-            <div className="flex flex-col gap-2 px-4 h-[350px]">
-              <div className="flex flex-row gap-0 items-center border-2 border-primary">
-                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-                  <Image
-                    src="/logos/evm.svg"
-                    alt="evm logo"
-                    width={24}
-                    height={24}
-                  />
-                  <p>
-                    EVM
-                  </p>
-                </div>
-                <WalletCopyButton
-                  copyText={evmAddress}
-                  buttonTitle={truncateAddress(evmAddress as EvmAddress, 10)}
-                />
-              </div>
-              <div className="flex flex-row gap-0 items-center border-2 border-primary">
-                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-                  <Image
-                    src="/logos/sol.svg"
-                    alt="solana logo"
-                    width={24}
-                    height={24}
-                  />
-                  <p>
-                    Solana
-                  </p>
-                </div>
-                <WalletCopyButton
-                  copyText={solanaAddress}
-                  buttonTitle={truncateAddress(solanaAddress, 10)}
-                />
-              </div>
-              <div className="flex flex-row gap-0 items-center border-2 border-primary">
-                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-                  <Image
-                    src="/logos/polkadot.svg"
-                    alt="polkadot logo"
-                    width={24}
-                    height={24}
-                  />
-                  <p>
-                    Polkadot
-                  </p>
-                </div>
-                <WalletCopyButton
-                  copyText={polkadotAddress}
-                  buttonTitle={truncateAddress(polkadotAddress, 10)}
-                />
-              </div>
-              <div className="flex flex-row gap-0 items-center border-2 border-primary">
-                <div className="flex flex-row gap-2 items-center w-[120px] bg-primary text-secondary p-2">
-                  <Image
-                    src="/logos/sui.svg"
-                    alt="sui logo"
-                    width={24}
-                    height={24}
-                  />
-                  <p>
-                    Sui
-                  </p>
-                </div>
-                <WalletCopyButton
-                  copyText={suiAddress}
-                  buttonTitle={truncateAddress(suiAddress, 10)}
-                />
-              </div>
-            </div>
-            <DrawerFooter>
-              <DrawerClose asChild>
-                <Button variant="outline" className="mb-16">Close</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-semibold">Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {!createWalletButtonActive && evmAddress ? (
-            <Button asChild>
+            <Button className="h-[80px]" asChild>
               <Link
                 href="/send"
               >
-                <Send className="mr-2 h-4 w-4" />
-                Send
+                <div className="flex flex-col gap-2">
+                  <Send className="h-6 w-6" />
+                  <p>Send</p>
+                </div>
               </Link>
             </Button>
           ) : (
-            <Button disabled>
-              <Send className="mr-2 h-4 w-4" />
-              Send
+            <Button className="h-[80px]" disabled>
+              <div className="flex flex-col gap-2 items-center">
+                <Send className="h-6 w-6" />
+                <p>Send</p>
+              </div>
             </Button>
           )}
           {!createWalletButtonActive && evmAddress ? (
-            <Button asChild>
+            <Button className="h-[80px]" asChild>
               <Link
                 href="/receive"
               >
-                <Download className="mr-2 h-4 w-4" />
-                Receive
+                <div className="flex flex-col gap-2 items-center">
+                  <Download className="h-6 w-6" />
+                  <p>Receive</p>
+                </div>
               </Link>
             </Button>
           ) : (
-            <Button disabled>
-              <Download className="mr-2 h-4 w-4" />
-              Receive
+            <Button className="h-[80px]" disabled>
+              <div className="flex flex-col gap-2 items-center">
+                <Download className="h-6 w-6" />
+                <p>Receive</p>
+              </div>
             </Button>
           )}
           {!createWalletButtonActive && evmAddress ? (
-            <Button asChild>
+            <Button className="h-[80px]" asChild>
               <Link href="/transactions">
-                <List className="mr-2 h-4 w-4" />
-                Transactions
+                <div className="flex flex-col gap-2 items-center">
+                  <DollarSign className="h-6 w-6" />
+                  <p>Buy</p>
+                </div>
               </Link>
             </Button>
           ) : (
-            <Button disabled>
-              <List className="mr-2 h-4 w-4" />
-              Transactions
+            <Button className="h-[80px]" disabled>
+              <div className="flex flex-col gap-2 items-center">
+                <DollarSign className="h-6 w-6" />
+                <p>Buy</p>
+              </div>
             </Button>
           )}
           {!createWalletButtonActive && evmAddress ? (
-            <Button asChild>
+            <Button className="h-[80px]" asChild>
               <Link href="/paylink">
-                <HandCoins className="mr-2 h-4 w-4" />
-                Pay
+                <div className="flex flex-col gap-2 items-center">
+                  <HandCoins className="h-6 w-6" />
+                  <p>Pay</p>
+                </div>
               </Link>
             </Button>
           ) : (
-            <Button disabled>
-              <HandCoins className="mr-2 h-4 w-4" />
-              Pay
+            <Button className="h-[80px]" disabled>
+              <div className="flex flex-col gap-2 items-center">
+                <HandCoins className="h-6 w-6" />
+                <p>Pay</p>
+              </div>
             </Button>
           )}
-          {!createWalletButtonActive && evmAddress ? (
+          {/* {!createWalletButtonActive && evmAddress ? (
             <Button asChild>
               <Link href="/connect">
                 <Image
@@ -559,7 +572,7 @@ export default function WalletManagement() {
               />
               Connect
             </Button>
-          )}
+          )} */}
         </div>
         {!createWalletButtonActive && evmAddress ? (
           <Link href="/onboard">
