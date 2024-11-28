@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -22,10 +24,10 @@ export default function Header() {
       </Link>
       <div className="flex flex-row items-center gap-4">
         {evmAddress && polkadotAddress ? (
-          <Button asChild size="icon">
+          <Button asChild size="icon" className="bg-[#3396ff]">
             <Link href="/connect">
               <Image
-                src="/walletconnect-logo.svg"
+                src="/walletconnect.svg"
                 alt="walletconnect logo"
                 width={24}
                 height={24}
@@ -33,9 +35,9 @@ export default function Header() {
             </Link>
           </Button>
         ) : (
-          <Button size="icon" disabled className="text-blue-400">
+          <Button size="icon" disabled className="bg-[#3396ff]">
             <Image
-              src="/walletconnect-logo.svg"
+              src="/walletconnect.svg"
               alt="walletconnect logo"
               width={24}
               height={24}

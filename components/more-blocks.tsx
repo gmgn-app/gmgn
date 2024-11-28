@@ -14,17 +14,6 @@ export default function MoreBlocks() {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Link href={constructNavUrl("/on-off-ramp", network, address)}>
-        <div className="flex flex-col gap-2 border-2 border-primary p-4 rounded-md">
-          <div className="flex flex-row gap-2 items-center">
-            <CreditCard className="w-4 h-4" />
-            <h2>On/Off Ramp</h2>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            Fund your wallet from your bank account or cash out
-          </p>
-        </div>
-      </Link>
       <a href="https://docs.gmgn.app/getting-started" target="_blank">
         <div className="flex flex-col gap-2 border-2 border-primary p-4 rounded-md">
           <div className="flex flex-row gap-2 items-center">

@@ -40,9 +40,9 @@ import {
   HandCoins,
   ChartPie,
   Rocket,
-  Sparkles,
   Loader2,
-  DollarSign
+  DollarSign,
+  Binary
 } from "lucide-react";
 import {
   Dialog,
@@ -261,10 +261,10 @@ export default function WalletManagement() {
         </Link>
         <div className="flex flex-row items-center gap-4">
           {evmAddress && polkadotAddress ? (
-            <Button asChild size="icon" variant="outline">
+            <Button asChild size="icon" variant="outline" className="bg-[#3396ff]">
               <Link href="/connect">
                 <Image
-                  src="/walletconnect-logo.svg"
+                  src="/walletconnect.svg"
                   alt="walletconnect logo"
                   width={24}
                   height={24}
@@ -272,9 +272,9 @@ export default function WalletManagement() {
               </Link>
             </Button>
           ) : (
-            <Button size="icon" disabled variant="outline" className="text-blue-400">
+            <Button size="icon" disabled variant="outline" className="bg-[#3396ff]">
               <Image
-                src="/walletconnect-logo.svg"
+                src="/walletconnect.svg"
                 alt="walletconnect logo"
                 width={24}
                 height={24}
@@ -311,27 +311,17 @@ export default function WalletManagement() {
               </Link>
             </div>
           </div>
-          <div className="flex flex-row gap-2 justify-between items-center">
+          <div className="flex flex-row gap-2 items-center justify-end">
             <Drawer>
               <DrawerTrigger asChild>
                 {
                   !createWalletButtonActive && evmAddress ? (
-                    <Button className="w-fit">
-                      <Image
-                        src="/addresses.svg"
-                        alt="addresses button image"
-                        width={80}
-                        height={50}
-                      />
+                    <Button size="icon">
+                      <Binary className="h-6 w-6" />
                     </Button>
                   ) : (
-                    <Button className="w-fit" disabled>
-                      <Image
-                        src="/addresses-null.svg"
-                        alt="addresses button image"
-                        width={80}
-                        height={50}
-                      />
+                    <Button size="icon" disabled>
+                      <Binary className="h-6 w-6" />
                     </Button>
                   )
                 }
@@ -491,7 +481,7 @@ export default function WalletManagement() {
       ) : (
         <Skeleton className="h-[135px] rounded-md" />
       )}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         <div className="grid grid-cols-4 gap-2">
           {!createWalletButtonActive && evmAddress ? (
             <Button className="h-[80px]" asChild>

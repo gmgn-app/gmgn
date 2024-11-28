@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { House, Repeat, Sprout, Blocks } from "lucide-react";
+import { House, Repeat, Sprout, Blocks, List } from "lucide-react";
 
 
 export default function NavBar() {
@@ -18,7 +18,7 @@ export default function NavBar() {
   }
 
   return (
-    <div className="grid grid-cols-4 fixed bottom-0 left-0 md:left-auto w-full md:w-[768px] h-[80px] bg-white">
+    <div className="grid grid-cols-5 fixed bottom-0 left-0 md:left-auto w-full md:w-[768px] h-[80px] bg-white">
       <Button
         className={`flex flex-col justify-start ${isActivePath(
           "/"
@@ -27,8 +27,7 @@ export default function NavBar() {
         asChild
       >
         <Link href="/">
-          <House className="w-4 h-4 mr-2" />
-          Home
+          <House className="w-6 h-6" />
         </Link>
       </Button>
       <Button
@@ -39,8 +38,7 @@ export default function NavBar() {
         asChild
       >
         <Link href="/trade">
-          <Repeat className="w-4 h-4 mr-2" />
-          Trade
+          <Repeat className="w-6 h-6" />
         </Link>
       </Button>
       <Button
@@ -51,8 +49,18 @@ export default function NavBar() {
         asChild
       >
         <Link href="/earn">
-          <Sprout className="w-4 h-4 mr-2" />
-          Earn
+          <Sprout className="w-6 h-6" />
+        </Link>
+      </Button>
+      <Button
+        className={`flex flex-col justify-start ${isActivePath(
+          "/transactions"
+        )} rounded-none border-t-2 h-full`}
+        variant="ghost"
+        asChild
+      >
+        <Link href="/transactions">
+          <List className="w-6 h-6" />
         </Link>
       </Button>
       <Button
@@ -63,8 +71,7 @@ export default function NavBar() {
         asChild
       >
         <Link href="/dapps">
-          <Blocks className="w-4 h-4 mr-2" />
-          DApps
+          <Blocks className="w-6 h-6" />
         </Link>
       </Button>
     </div>
