@@ -568,24 +568,18 @@ export default function WalletManagement() {
         </div>
         {!createWalletButtonActive && evmAddress ? (
           <Link href="/onboard">
-            <div className="w-full h-[100px] rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
+            <div className="w-full h-[60px] rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
               <div className="flex flex-row items-center text-lg">
                 <Rocket className="w-4 h-4 mr-2" />
                 Onboard
               </div>
-              <div className="flex flex-row w-full justify-end items-end">
-                <Sparkles className="w-16 h-16 pb-2" />
-              </div>
             </div>
           </Link>
         ) : (
-          <div className="w-full h-[100px] rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
+          <div className="w-full h-[60px] rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
             <div className="flex flex-row items-center text-lg">
               <Rocket className="w-4 h-4 mr-2" />
               Onboard
-            </div>
-            <div className="flex flex-row w-full justify-end items-end">
-              <Sparkles className="w-16 h-16 pb-2" />
             </div>
           </div>
         )}
