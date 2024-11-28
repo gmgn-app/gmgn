@@ -83,10 +83,6 @@ export const solanaAddressAtom = atom<string | null>(null);
 export const availableNetworksAtom = atomWithStorage<string[] | null>("AVAILABLE_NETWORKS", AVAILABLE_NETWORKS); 
 
 export default function WalletManagement() {
-  // Get the search params from the URL.
-  // const searchParams = useSearchParams();
-  // const paramNetwork = searchParams.get("network");
-  // const paramAddress = searchParams.get("address");
 
   // Get the toast function from the useToast hook.
   const { toast } = useToast();
@@ -263,7 +259,28 @@ export default function WalletManagement() {
             className="rounded-md"
           />
         </Link>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row items-center gap-4">
+          {evmAddress && polkadotAddress ? (
+            <Button asChild size="icon" variant="outline">
+              <Link href="/connect">
+                <Image
+                  src="/walletconnect-logo.svg"
+                  alt="walletconnect logo"
+                  width={24}
+                  height={24}
+                />
+              </Link>
+            </Button>
+          ) : (
+            <Button size="icon" disabled variant="outline" className="text-blue-400">
+              <Image
+                src="/walletconnect-logo.svg"
+                alt="walletconnect logo"
+                width={24}
+                height={24}
+              />
+            </Button>
+          )}
           <Button asChild size="icon" variant="outline">
             <Link href="/settings">
               <Settings className="w-6 h-6" />
@@ -548,31 +565,6 @@ export default function WalletManagement() {
               </div>
             </Button>
           )}
-          {/* {!createWalletButtonActive && evmAddress ? (
-            <Button asChild>
-              <Link href="/connect">
-                <Image
-                  src="/walletconnect-logo.svg"
-                  alt="walletconnect logo"
-                  width={24}
-                  height={24}
-                  className="mr-2"
-                />
-                Connect
-              </Link>
-            </Button>
-          ) : (
-            <Button disabled className="text-blue-400">
-              <Image
-                src="/walletconnect-logo.svg"
-                alt="walletconnect logo"
-                width={24}
-                height={24}
-                className="mr-2"
-              />
-              Connect
-            </Button>
-          )} */}
         </div>
         {!createWalletButtonActive && evmAddress ? (
           <Link href="/onboard">
