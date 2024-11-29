@@ -488,7 +488,7 @@ export default function WalletManagement() {
               <Link
                 href="/send"
               >
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 items-center">
                   <Send className="h-6 w-6" />
                   <p>Send</p>
                 </div>
