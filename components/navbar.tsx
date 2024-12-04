@@ -37,7 +37,7 @@ export default function NavBar() {
         variant="ghost"
         asChild
       >
-        <Link href="/trade">
+        <Link href="/swap">
           <Repeat className="w-6 h-6" />
         </Link>
       </Button>
