@@ -287,7 +287,7 @@ export default function MessageForm() {
         // make sure to catch any error
         .catch(console.error);
     }
-  }, [address, network, token, tokenAddress]);
+  }, [address, polkadotAddress, network, token, tokenAddress]);
 
   // public client for balance refresh
   const publicClient = createPublicClient({
