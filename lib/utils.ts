@@ -18,6 +18,9 @@ import {
 import { defineChain } from 'viem';
 import { JsonRpcProvider } from "@kaiachain/ethers-ext";
 import { AVAILABLE_NETWORKS } from "@/lib/chains";
+// polkadot
+import { Keyring } from '@polkadot/keyring';
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -87,60 +90,6 @@ export function formatBalance(number: string, maxDecimal: number) {
   return `${formattedWhole}.${decimal.slice(0, maxDecimal)}`;
 }
 
-export function selectChainNameFromNetwork(network: string | undefined | null) {
-  if (!network) return "Unknown Network";
-  switch (network) {
-    case "ethereum-sepolia":
-      return "Ethereum Sepolia";
-    case "arbitrum-sepolia":
-      return "Arbitrum Sepolia";
-    case "base-sepolia":
-      return "Base Sepolia";
-    case "kaia-kairos":
-      return "Kaia Kairos";
-    case "kaia":
-      return "Kaia";
-    case "abstract-testnet":
-      return "Abstract Testnet";
-    case "fraxtal-testnet":
-      return "Fraxtal Testnet";
-    case "bartio-testnet":
-      return "bArtio Testnet";
-    case "lukso-testnet":
-      return "Lukso Testnet";
-    case "moonbase-alpha-testnet":
-      return "Moonbase Alpha";
-    default:
-      return "Unknown Network";
-  }
-}
-
-export function selectViemChainFromNetwork(network: string | undefined | null) {
-  switch (network) {
-    case "kaia-kairos":
-      return kairos;
-    case "kaia":
-      return kaia;
-    case "arbitrum-sepolia":
-      return arbitrumSepolia;
-    case "base-sepolia":
-      return baseSepolia;
-    case "ethereum-sepolia":
-      return sepolia;
-    case "abstract-testnet":
-      return abstractTestnet;
-    case "fraxtal-testnet":
-      return fraxtalTestnet;
-    case "bartio-testnet":
-      return berachainTestnetbArtio;
-    case "lukso-testnet":
-      return luksoTestnet;
-    case "moonbase-alpha-testnet":
-      return moonbaseAlpha;
-    default:
-      return kairos;
-  }
-}
 
 export function selectViemObjectFromChainId(chainId: string) {
   switch (chainId) {
@@ -175,6 +124,7 @@ export function selectViemObjectFromChainId(chainId: string) {
   }
 }
 
+
 export function selectBlockExplorerFromChainId(chainId: string | undefined | null) {
   switch (chainId) {
     case "eip155:8217":
@@ -203,10 +153,15 @@ export function selectBlockExplorerFromChainId(chainId: string | undefined | nul
       return "https://sepolia.scrollscan.com";
     case "polkadot:94220":
       return "https://paseo.subscan.io";
+    case "polkadot:0":
+      return "https://subscan.io";
+    case "polkadot:6":
+      return "https://bifrost.subscan.io";
     default:
       return "https://kairos.kaiascan.io";
   }
 }
+
 
 // Function to change the explorer URL based on the chainId
 function selectBlockExplorerAccountFormatFromChainId(chainId: string, evmAddress: EvmAddress, polkadotAddress: string) {
@@ -223,108 +178,6 @@ function selectBlockExplorerAccountFormatFromChainId(chainId: string, evmAddress
   }
 }
 
-export function selectBlockExplorer(network: string | undefined | null) {
-  switch (network) {
-    case "kaia":
-      return "https://kaiascan.io";
-    case "kaia-kairos":
-      return "https://kairos.kaiascan.io";
-    case "arbitrum-sepolia":
-      return "https://sepolia.arbiscan.io";
-    case "base-sepolia":
-      return "https://sepolia.basescan.org";
-    case "ethereum-sepolia":
-      return "https://sepolia.etherscan.io";
-    case "abstract-testnet":
-      return "https://explorer.testnet.abs.xyz";
-    case "fraxtal-testnet":
-      return "https://holesky.fraxscan.com";
-    case "bartio-testnet":
-      return "https://bartio.beratrail.io";
-    case "lukso-testnet":
-      return "https://explorer.execution.testnet.lukso.network";
-    case "moonbase-alpha-testnet":
-      return "https://moonbase.moonscan.io";
-    default:
-      return "https://kairos.kaiascan.io";
-  }
-}
-
-export function selectNativeAssetSymbol(network: string | undefined | null, token?: string | undefined | null) {
-  if (!token || token === "0x0000000000000000000000000000000000000000") {
-    switch (network) {
-      case "kaia":
-        return "KAIA";
-      case "kaia-kairos":
-        return "KAIA";
-      case "arbitrum-sepolia":
-        return "ETH";
-      case "base-sepolia":
-        return "ETH";
-      case "ethereum-sepolia":
-        return "ETH";
-      case "abstract-testnet":
-        return "ETH";
-      case "fraxtal-testnet":
-        return "frxETH";
-      case "bartio-testnet":
-        return "BERA";
-      case "lukso-testnet":
-        return "LYXt";
-      case "moonbase-alpha-testnet":
-        return "DEV";
-      default:
-        return "KAIA";
-    }
-  } else {
-    switch (token) {
-      case "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
-        return "tUSDC";
-      case "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
-        return "tUSDT";
-      default:
-        return "Unknown Token";
-    }
-  }
-}
-
-export function selectAssetLogo(network: string | undefined | null, token?: string | undefined | null) {
-  if (!token || token === "0x0000000000000000000000000000000000000000") {
-    switch (network) {
-      case "kaia":
-        return "/logos/kaia.svg";
-      case "kaia-kairos":
-        return "/logos/kaia.svg";
-      case "arbitrum-sepolia":
-        return "/logos/eth.svg";
-      case "base-sepolia":
-        return "/logos/eth.svg";
-      case "ethereum-sepolia":
-        return "/logos/eth.svg";
-      case "abstract-testnet":
-        return "/logos/eth.svg";
-      case "fraxtal-testnet":
-        return "/logos/eth.svg";
-      case "bartio-testnet":
-        return "/logos/bera.svg";
-      case "lukso-testnet":
-        return "/logos/lyxt.svg";
-      case "moonbase-alpha-testnet":
-        return "/logos/moonbeam.svg";
-      default:
-        return "/logos/kaia.svg";
-    }
-  } else {
-    switch (token) {
-      case "0x8cfA6aC9c5ae72faec3A0aEefEd1bFB12c8cC746":
-        return "/logos/usdc.svg";
-      case "0x0076e4cE0E5428d7fc05eBaFbd644Ee74BDE624d":
-        return "/logos/usdt.svg";
-      default:
-        return "/logos/unknown.svg";
-    }
-  }
-}
 
 export function selectNativeAssetLogoFromChainId(chainId: string | undefined | null) {
   const chainType = chainId?.split(":")[0];
@@ -365,6 +218,10 @@ export function selectNativeAssetLogoFromChainId(chainId: string | undefined | n
     switch (chainIdNumber) {
       case "94220":
         return "/logos/paseo.svg";
+      case "0":
+        return "/logos/polkadot.svg";
+      case "6":
+        return "/logos/bifrost.svg";
       default:
         return "/logos/polkadot.svg";
     }
@@ -410,7 +267,11 @@ export function selectChainNameFromChainId(chainId: string | undefined | null) {
   if (chainType === "polkadot") {
     switch (chainIdNumber) {
       case "94220":
-        return "Polkadot Paseo";
+        return "Paseo";
+      case "0":
+        return "Polkadot";
+      case "6":
+        return "Bifrost";
       default:
         return "Polkadot";
     }
@@ -455,7 +316,11 @@ export function selectNativeAssetInfoFromChainId(chainId: string | undefined | n
   if (chainType === "polkadot") {
     switch (chainIdNumber) {
       case "94220":
-        return "Polkadot Paseo:Paseo:PAS";
+        return "Paseo:Paseo:PAS";
+      case "0":
+        return "Polkadot:Polkadot:DOT";
+      case "6":
+        return "Bifrost:Bifrost:BNC";
       default:
         return "Polkadot:Polkadot:DOT";
     }
@@ -500,7 +365,11 @@ export function selectAssetInfoFromAssetId(assetId: string | undefined | null) {
     case "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
       return "Westend Asset Hub:Westend:WND:/logos/wnd.svg";
     case "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
-      return "Polkadot Paseo:Paseo:PAS:/logos/paseo.svg";
+      return "Paseo:Paseo:PAS:/logos/paseo.svg";
+    case "polkadot:0/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Polkadot:Polkadot:DOT:/logos/polkadot.svg";
+    case "polkadot:6/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE":
+      return "Bifrost:Bifrost:BNC:/logos/bifrost.svg";
     default:
       return "Kaia Kairos:Kaia:KAIA:/logos/kaia.svg";
   }
@@ -529,28 +398,5 @@ export function constructNavUrl(
     return `${path}?network=${network}&address=${address}`;
   } else {
     return `${path}?network=${network}&address=${address}&token=${token}`;
-  }
-}
-
-
-export function manageAvailableNetworksInLocalStorage() {
-  // if the user has not set the GMGN_NETWORKS in the local storage, set it.
-  if (!localStorage.getItem("gmgn-available-networks")) {
-    localStorage.setItem(
-      "gmgn-available-networks",
-      JSON.stringify(AVAILABLE_NETWORKS)
-    );
-    return AVAILABLE_NETWORKS;
-  }
-
-  // get the GMGN_NETWORKS from the local storage
-  const GMGN_NETWORKS_FROM_LOCAL_STORAGE = localStorage.getItem(
-    "gmgn-available-networks"
-  );
-  if (GMGN_NETWORKS_FROM_LOCAL_STORAGE) {
-    const GMGN_AVAILABLE_NETWORKS = JSON.parse(
-      GMGN_NETWORKS_FROM_LOCAL_STORAGE!
-    );
-    return GMGN_AVAILABLE_NETWORKS;
   }
 }

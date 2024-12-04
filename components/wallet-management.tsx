@@ -171,6 +171,7 @@ export default function WalletManagement() {
       //derive the polkadot account from mnemonic
       const keyring = new Keyring();
       const polkadotKeyPair = keyring.addFromUri(mnemonicPhrase);
+      keyring.setSS58Format(0);
       setPolkadotAddress(polkadotKeyPair.address);
 
       // derive the solana account from mnemonic

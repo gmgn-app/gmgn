@@ -13,6 +13,8 @@ export const AVAILABLE_ASSETS = [
   "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // scroll sepolia
   "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // westend asset hub polkadot 
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
+  "polkadot:0/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot relay chain
+  "polkadot:6/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot bifrost parachain
   // "sui:2/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // sui testnet
 ];
 
@@ -33,5 +35,7 @@ export const ALL_SUPPORTED_ASSETS = [
   "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // scroll sepolia
   "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // westend asset hub polkadot
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
+  "polkadot:0/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot relay chain
+  "polkadot:6/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot bifrost parachain
   // "sui:2/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // sui testnet
 ]

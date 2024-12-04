@@ -9,7 +9,8 @@ import WalletCopyButton from "@/components/wallet-copy-button";
 import { Address } from "viem";
 import BackButton from "@/components/back-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import Header from "@/components/header";
 import {
   Select,
@@ -106,8 +107,7 @@ export default function ReceivePage() {
         </TabsList>
       </Tabs>
       <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-bold">Network</h2>
-        <p className="text-muted-foreground">Select a network to get its address</p>
+        <Label htmlFor="sendingToken">Network</Label>
         <Select
           value={lastSelectedNetwork!}
           onValueChange={handleInputNetworkChange}
