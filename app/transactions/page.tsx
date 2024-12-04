@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Image from "next/image";
 import { useAtomValue } from 'jotai'
 import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+import NavBar from "@/components/navbar";
 import { selectBlockExplorerFromChainId, truncateAddress, selectChainNameFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
 import { ExternalLink } from 'lucide-react';
 
@@ -88,7 +89,7 @@ export default function TransactionsPage() {
           ) : null
         }
       </div>
-
+      <NavBar />
     </div>
   );
 }

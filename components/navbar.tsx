@@ -32,7 +32,7 @@ export default function NavBar() {
       </Button>
       <Button
         className={`flex flex-col justify-start ${isActivePath(
-          "/trade"
+          "/swap"
         )} rounded-none border-t-2 h-full`}
         variant="ghost"
         asChild
