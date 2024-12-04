@@ -26,7 +26,7 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 // import bs58 from 'bs58'
 // import { getPublicKey, etc } from '@noble/ed25519';
 // import { sha512 } from "@noble/hashes/sha512";
-
+import { cn } from "@/lib/utils"
 import Image from "next/image";
 import WalletCopyButton from "./wallet-copy-button";
 import {
@@ -63,7 +63,14 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { useToast } from "@/hooks/use-toast";
 import { atom, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils'
@@ -112,6 +119,21 @@ export default function WalletManagement() {
   // profile states
   const [walletName, setWalletName] = useState("");
   const [walletIcon, setWalletIcon] = useState("/default-profile.svg");
+
+  // carousel
+  const [api, setApi] = useState<any>()
+  const [current, setCurrent] = useState(0)
+
+  // carousel state
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap())
+    })
+  }, [api])
 
   useEffect(() => {
     const GMGN_WALLET = localStorage.getItem("gmgn-wallet");
@@ -558,21 +580,99 @@ export default function WalletManagement() {
           )}
         </div>
         {!createWalletButtonActive && evmAddress ? (
-          <Link href="/onboard">
-            <div className="w-full h-[60px] rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
-              <div className="flex flex-row items-center text-lg">
-                <Rocket className="w-4 h-4 mr-2" />
-                Onboard
-              </div>
+          <Carousel setApi={setApi}>
+            <CarouselContent>
+              <CarouselItem>
+                <Link href="/onboard">
+                  <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
+                    <div className="flex flex-row items-center text-lg">
+                      <Rocket className="w-4 h-4 mr-2" />
+                      Onboard
+                    </div>
+                  </div>
+                </Link>
+              </CarouselItem>
+              <CarouselItem>
+                <Link href="/onboard">
+                  <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
+                    <div className="flex flex-row items-center text-lg">
+                      <Rocket className="w-4 h-4 mr-2" />
+                      Getting started
+                    </div>
+                  </div>
+                </Link>
+              </CarouselItem>
+              <CarouselItem>
+                <Link href="/onboard">
+                  <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
+                    <div className="flex flex-row items-center text-lg">
+                      <Rocket className="w-4 h-4 mr-2" />
+                      Intern
+                    </div>
+                  </div>
+                </Link>
+              </CarouselItem>
+            </CarouselContent>
+            <div className="flex justify-center gap-2 mt-4">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => api?.scrollTo(index)}
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-300 bg-muted",
+                    current === index 
+                      ? "w-8 bg-primary" 
+                      : "w-2 hover:bg-primary/50"
+                  )}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
-          </Link>
+          </Carousel>
         ) : (
-          <div className="w-full h-[60px] rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
-            <div className="flex flex-row items-center text-lg">
-              <Rocket className="w-4 h-4 mr-2" />
-              Onboard
+          <Carousel setApi={setApi}>
+            <CarouselContent>
+              <CarouselItem>
+                <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
+                  <div className="flex flex-row items-center text-lg">
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Onboard
+                  </div>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
+                  <div className="flex flex-row items-center text-lg">
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Getting started
+                  </div>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
+                  <div className="flex flex-row items-center text-lg">
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Intern
+                  </div>
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+            <div className="flex justify-center gap-2 mt-4">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => api?.scrollTo(index)}
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-300 bg-muted",
+                    current === index 
+                      ? "w-8 bg-primary" 
+                      : "w-2 hover:bg-primary/50"
+                  )}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
-          </div>
+          </Carousel>
         )}
       </div>
     </div>
