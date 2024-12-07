@@ -234,6 +234,7 @@ export default function WalletManagement() {
      * Store the handle to the private key into some unauthenticated storage
      */
     if (!handle) {
+      setLoadWalletButtonLoading(false);
       toast({
         variant: "destructive",
         title: "Wallet creation failed!",
@@ -587,7 +588,7 @@ export default function WalletManagement() {
                   <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
                     <div className="flex flex-row gap-2 text-lg h-full w-full items-center">
                       <div className="rounded-md h-[40px] w-[40px]">
-                        <Rocket className="w-8 h-8" />
+                        <Rocket className="w-full h-full" />
                       </div>
                       <div className="flex flex-col text-sm">
                         Get onboarded and familiarize yourself onchain with zero risk
@@ -601,7 +602,7 @@ export default function WalletManagement() {
                   <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] text-secondary">
                     <div className="flex flex-row gap-2 text-lg h-full w-full items-center">
                       <div className="rounded-md h-[40px] w-[40px]">
-                        <Puzzle className="w-8 h-8" />
+                        <Puzzle className="w-full h-full" />
                       </div>
                       <div className="flex flex-col text-sm">
                         Learn about GM GN Wallet and unlock rewards and opportunities
@@ -634,7 +635,7 @@ export default function WalletManagement() {
                 <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
                   <div className="flex flex-row gap-2 text-lg h-full w-full items-center">
                     <div className="rounded-md h-[40px] w-[40px]">
-                      <Rocket className="w-8 h-8" />
+                      <Rocket className="w-full h-full" />
                     </div>
                     <div className="flex flex-col gap-2 text-sm">
                       Get onboarded and familiarize yourself onchain with zero risk
@@ -646,7 +647,7 @@ export default function WalletManagement() {
                 <div className="w-full h-[60px] mt-4 rounded-md py-2 px-4 bg-primary opacity-50 text-secondary">
                   <div className="flex flex-row gap-2 text-lg h-full w-full items-center">
                     <div className="rounded-md h-[40px] w-[40px]">
-                      <Puzzle className="w-8 h-8" />
+                      <Puzzle className="w-full h-full" />
                     </div>
                     <div className="flex flex-col gap-2 text-sm">
                       Learn about GM GN Wallet and unlock rewards and opportunities

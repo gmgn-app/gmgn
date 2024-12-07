@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, use } from "react";
-import { redirect } from "next/navigation";
+import { useMemo, useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
@@ -23,7 +22,6 @@ import {
   formatUnits,
   parseUnits,
 } from "viem";
-import { Wallet, TxType } from "@kaiachain/ethers-ext";
 import { mnemonicToAccount } from 'viem/accounts';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
@@ -47,7 +45,6 @@ import {
   truncateHash,
   truncateAddress,
   selectViemObjectFromChainId,
-  selectJsonRpcProvider,
   selectAssetInfoFromAssetId,
   selectBlockExplorerFromChainId
 } from "@/lib/utils";
@@ -103,12 +100,7 @@ export default function MultisendAppPage() {
       });
     });
   }, []);
-    
 
-  // Redirect to the home page if the network or address is not provided.
-  if (!evmAddress || !polkadotAddress) {
-    redirect("/");
-  }
 
   // Check if the user is on a desktop or mobile device.
   const isDesktop = useMediaQuery("(min-width: 768px)");
