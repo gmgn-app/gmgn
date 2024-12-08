@@ -67,11 +67,6 @@ export default function PayForm() {
   const polkadotAddress = useAtomValue(polkadotAddressAtom);
 
   const token = searchParams.get("token");
-
-  if (!token) {
-    redirect("/");
-  }
-
   const sendingAmount = searchParams.get("sendingAmount") && token === "0x0000000000000000000000000000000000000000" ? formatEther(BigInt(searchParams.get("sendingAmount") || "0")) : formatUnits(BigInt(searchParams.get("sendingAmount") || "0"), 6);
   const receivingAddress = searchParams.get("receivingAddress") || "";
   const transactionMemo = fromHex(searchParams.get("transactionMemo") as `0x${string}`, "string") || "";

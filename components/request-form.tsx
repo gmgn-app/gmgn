@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
 import { toHex, Address, isAddress, parseUnits, parseEther } from "viem";
 import {
   Dialog,
@@ -57,7 +56,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { atomWithStorage } from 'jotai/utils'
 
 export default function RequestForm() {
-  const router = useRouter();
+
   // Get the search params from the URL.
   const searchParams = useSearchParams();
 
@@ -76,12 +75,12 @@ export default function RequestForm() {
   );
   const [transactionMemo, setTransactionMemo] = useState("");
 
-  const [token, setToken] = useState<string | undefined>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
-  const [isValidAddress, setIsValidAddress] = useState<Boolean | undefined>(
-    undefined
+  const [token, setToken] = useState<string>("eip155:1001/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
+  const [isValidAddress, setIsValidAddress] = useState<Boolean>(
+    false
   );
-  const [isValidAmount, setIsValidAmount] = useState<Boolean | undefined>(
-    undefined
+  const [isValidAmount, setIsValidAmount] = useState<Boolean>(
+    false
   );
   const [isValidTransactionMemo, setIsValidTransactionMemo] = useState<Boolean>(
     false
@@ -91,6 +90,13 @@ export default function RequestForm() {
 
   function handleInputTokenChange(value: string) {
     setToken(value);
+    if (value.split(":")[0] === "eip155") {
+      setReceivingAddress(evmAddress ?? "");
+    }
+
+    if (value.split(":")[0] === "polkadot") {
+      setReceivingAddress(polkadotAddress ?? "");
+    }
   }
 
 
@@ -163,7 +169,7 @@ export default function RequestForm() {
       
       const link = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/pay?token=${token}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
+      }/pay?token=${encodeURIComponent(token!)}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
         transactionMemo
       )}`;
       setRequestLink(link);
