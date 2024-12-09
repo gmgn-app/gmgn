@@ -111,7 +111,7 @@ export default function PayPage() {
     // get the query params of the paymentLinkParts[3]
     const queryParams = paymentLinkParts[3].split("?").pop();
     // check if the route is pay
-    if (route !== "pay") {
+    if (route !== "paylink") {
       toast({
         className:
           "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
@@ -137,17 +137,6 @@ export default function PayPage() {
       `{"${queryParams!.replace(/&/g, '","').replace(/=/g,'":"')}"}`
     );
 
-    // check if the query params contain the network
-    if (!queryObject.network) {
-      toast({
-        className:
-          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-        variant: "destructive",
-        title: "Uh oh! You entered an invalid payment link.",
-        description: "Please enter a correct payment link to continue.",
-      });
-      return;
-    }
     // check if the query params contain the token
     if (!queryObject.token) {
       toast({

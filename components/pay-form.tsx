@@ -23,7 +23,17 @@ import {
   formatUnits,
   parseUnits,
 } from "viem";
-import { mnemonicToAccount } from 'viem/accounts';
+// evm
+import { mnemonicToAccount } from 'viem/accounts'
+// // polkadot
+// // sui
+// import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
+// // solana
+// import { derivePath } from 'ed25519-hd-key';
+// import { createKeyPairFromPrivateKeyBytes, getAddressFromPublicKey } from '@solana/web3.js';
+// import { install } from '@solana/webcrypto-ed25519-polyfill';
+// install();
+// bip39
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
@@ -31,15 +41,6 @@ import { Keyring } from '@polkadot/keyring';
 import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 import Image from "next/image";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -94,7 +95,7 @@ export default function PayForm() {
 
   // Get the search params from the URL.
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = decodeURIComponent(searchParams.get("token")!);
   const sendingAmount = searchParams.get("sendingAmount");
   const receivingAddress = searchParams.get("receivingAddress");
   const transactionMemo = fromHex(searchParams.get("transactionMemo") as `0x${string}`, "string") || "";
@@ -105,6 +106,10 @@ export default function PayForm() {
   // get the addresses
   const evmAddress = useAtomValue(evmAddressAtom);
   const polkadotAddress = useAtomValue(polkadotAddressAtom);
+
+  if (!evmAddress && !polkadotAddress) {
+
+  }
 
   // state management
   const [currentBalance, setCurrentBalance] = useState("");
@@ -278,146 +283,146 @@ async function fetchBalances() {
     setReadyToTransfer(true);
   }
 
-// Function to prepare transaction before sending
-async function prepareTransaction() {
-  if (receivingAddress === "") {
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      variant: "destructive",
-      title: "Uh oh! You did not enter a receiving address.",
-      description: "Please enter a receiving address to continue.",
-    });
-    return;
-  }
-  if (receivingAddress) {
-    if (network.split(":")[0] === "eip155") {
-      const isValidAddress = isAddress(receivingAddress, { strict: false });
-      if (isValidAddress) {
-        setIsValidAddress(true);
-      } else {
-        setIsValidAddress(false);
-      }
+  // Function to prepare transaction before sending
+  async function prepareTransaction() {
+    if (receivingAddress === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter a receiving address.",
+        description: "Please enter a receiving address to continue.",
+      });
+      return;
     }
-
-    if (network.split(":")[0] === "polkadot") {
-      const isValidAddress = true
-      if (isValidAddress) {
-        setIsValidAddress(true);
-      } else {
-        setIsValidAddress(false);
-      }
-    }
-  }
-  if (sendingAmount === "") {
-    toast({
-      className:
-        "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
-      variant: "destructive",
-      title: "Uh oh! You did not enter an amount to send.",
-      description: "Please enter an amount to send to continue.",
-    });
-    return;
-  }
-
-  // Check if the network is EVM
-  // Handle EVM prepare transaction
-  if (
-    network.split(":")[0] === "eip155" &&
-    sendingAmount
-  ) {
-    const isValidAmount =
-      parseEther(currentBalance) >= parseEther(sendingAmount);
-    if (isValidAmount) {
-        setIsValidAmount(true);
-        setContinueButtonLoading(true);
-        const publicClient = createPublicClient({
-          chain: selectViemObjectFromChainId(network!),
-          transport: http(),
-        });
-
-        let gas: bigint = BigInt(0);
-        if (
-          tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-        ) {
-          gas = await publicClient.estimateGas({
-            account: evmAddress as Address,
-            to: receivingAddress as Address,
-            value: parseEther(sendingAmount),
-            data: toHex(transactionMemo),
-          });
-        }
-        
-        if (
-          tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-        ) {
-          const tokenDecimals = await publicClient.readContract({
-            address: tokenAddress as Address,
-            abi: mockStablecoinAbi,
-            functionName: "decimals",
-          });
-          gas = await publicClient.estimateContractGas({
-            address: tokenAddress as Address,
-            abi: mockStablecoinAbi,
-            functionName: "transfer",
-            account: evmAddress as Address,
-            args: [receivingAddress as Address, parseUnits(sendingAmount, tokenDecimals as number)],
-          });
-        }
-        const gasPrice = await publicClient.getGasPrice();
-        const gasCost = gas * gasPrice;
-        setTransactionCost(formatEther(gasCost));
-        let isValidTotal;
-        if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-          isValidTotal =
-            parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+    if (receivingAddress) {
+      if (network.split(":")[0] === "eip155") {
+        const isValidAddress = isAddress(receivingAddress, { strict: false });
+        if (isValidAddress) {
+          setIsValidAddress(true);
         } else {
-          isValidTotal =
-            parseEther(currentBalance) >= parseEther(sendingAmount) &&
-            parseEther(currentNativeBalance) >= gasCost;
+          setIsValidAddress(false);
         }
-        if (isValidTotal) {
-          setIsValidTotal(true);
-          setReadyToTransfer(true);
+      }
+
+      if (network.split(":")[0] === "polkadot") {
+        const isValidAddress = true
+        if (isValidAddress) {
+          setIsValidAddress(true);
         } else {
-          setIsValidTotal(false);
-          setReadyToTransfer(false);
-          return;
+          setIsValidAddress(false);
         }
-        setContinueButtonLoading(false);
-      } else {
-        setIsValidAmount(false);
-        return;
       }
     }
+    if (sendingAmount === "") {
+      toast({
+        className:
+          "bottom-0 right-0 flex fixed md:max-h-[300px] md:max-w-[420px] md:bottom-4 md:right-4",
+        variant: "destructive",
+        title: "Uh oh! You did not enter an amount to send.",
+        description: "Please enter an amount to send to continue.",
+      });
+      return;
+    }
 
-    // Check if the network is Polkadot
-    // Handle Polkadot prepare transaction
+    // Check if the network is EVM
+    // Handle EVM prepare transaction
     if (
-      network.split(":")[0] === "polkadot" &&
+      network.split(":")[0] === "eip155" &&
       sendingAmount
     ) {
-      const isValidAmount = true;
+      const isValidAmount =
+        parseEther(currentBalance) >= parseEther(sendingAmount);
       if (isValidAmount) {
-        setIsValidAmount(true);
-        setContinueButtonLoading(true);
-        setTransactionCost("0");
-        const isValidTotal = true;
-        if (isValidTotal) {
-          setIsValidTotal(true);
-          setReadyToTransfer(true);
+          setIsValidAmount(true);
+          setContinueButtonLoading(true);
+          const publicClient = createPublicClient({
+            chain: selectViemObjectFromChainId(network!),
+            transport: http(),
+          });
+
+          let gas: bigint = BigInt(0);
+          if (
+            tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+          ) {
+            gas = await publicClient.estimateGas({
+              account: evmAddress as Address,
+              to: receivingAddress as Address,
+              value: parseEther(sendingAmount),
+              data: toHex(transactionMemo),
+            });
+          }
+          
+          if (
+            tokenAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+          ) {
+            const tokenDecimals = await publicClient.readContract({
+              address: tokenAddress as Address,
+              abi: mockStablecoinAbi,
+              functionName: "decimals",
+            });
+            gas = await publicClient.estimateContractGas({
+              address: tokenAddress as Address,
+              abi: mockStablecoinAbi,
+              functionName: "transfer",
+              account: evmAddress as Address,
+              args: [receivingAddress as Address, parseUnits(sendingAmount, tokenDecimals as number)],
+            });
+          }
+          const gasPrice = await publicClient.getGasPrice();
+          const gasCost = gas * gasPrice;
+          setTransactionCost(formatEther(gasCost));
+          let isValidTotal;
+          if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+            isValidTotal =
+              parseEther(currentBalance) >= parseEther(sendingAmount) + gasCost;
+          } else {
+            isValidTotal =
+              parseEther(currentBalance) >= parseEther(sendingAmount) &&
+              parseEther(currentNativeBalance) >= gasCost;
+          }
+          if (isValidTotal) {
+            setIsValidTotal(true);
+            setReadyToTransfer(true);
+          } else {
+            setIsValidTotal(false);
+            setReadyToTransfer(false);
+            return;
+          }
+          setContinueButtonLoading(false);
         } else {
-          setIsValidTotal(false);
-          setReadyToTransfer(false);
+          setIsValidAmount(false);
           return;
         }
-        setContinueButtonLoading(false);
-      } else {
-        setIsValidAmount(false);
-        return;
+      }
+
+      // Check if the network is Polkadot
+      // Handle Polkadot prepare transaction
+      if (
+        network.split(":")[0] === "polkadot" &&
+        sendingAmount
+      ) {
+        const isValidAmount = true;
+        if (isValidAmount) {
+          setIsValidAmount(true);
+          setContinueButtonLoading(true);
+          setTransactionCost("0");
+          const isValidTotal = true;
+          if (isValidTotal) {
+            setIsValidTotal(true);
+            setReadyToTransfer(true);
+          } else {
+            setIsValidTotal(false);
+            setReadyToTransfer(false);
+            return;
+          }
+          setContinueButtonLoading(false);
+        } else {
+          setIsValidAmount(false);
+          return;
+        }
       }
     }
-  }
 
   // Function to submit transaction
   async function submitTransaction() {
@@ -795,6 +800,7 @@ async function prepareTransaction() {
             className="rounded-none w-full border-primary border-2 p-2.5 text-lg"
             placeholder="gm and gn"
             value={transactionMemo}
+            readOnly
           />
           <p className="text-sm text-muted-foreground">
             Memo set by the requester
