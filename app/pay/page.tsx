@@ -136,7 +136,7 @@ export default function PayPage() {
     const queryObject = JSON.parse(
       `{"${queryParams!.replace(/&/g, '","').replace(/=/g,'":"')}"}`
     );
-    console.log(queryObject);
+
     // check if the query params contain the network
     if (!queryObject.network) {
       toast({
@@ -194,7 +194,7 @@ export default function PayPage() {
     }
     // with payment link, remove everythink left of the last slash
     const paymentConfig = paymentLink.split("?").pop();
-    router.push(`/pay?${paymentConfig}`);
+    router.push(`/paylink?${paymentConfig}`);
   }
 
   return (
