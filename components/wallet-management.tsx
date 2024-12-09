@@ -564,7 +564,7 @@ export default function WalletManagement() {
           )}
           {!createWalletButtonActive && evmAddress ? (
             <Button className="h-[80px]" asChild>
-              <Link href="/paylink">
+              <Link href="/pay">
                 <div className="flex flex-col gap-2 items-center">
                   <HandCoins className="h-6 w-6" />
                   <p>Pay</p>
