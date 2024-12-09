@@ -169,7 +169,7 @@ export default function RequestForm() {
       
       const link = `${
         process.env.NEXT_PUBLIC_BASE_URL
-      }/pay?token=${encodeURIComponent(token!)}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
+      }/paylink?token=${encodeURIComponent(token!)}&receivingAddress=${receivingAddress}&sendingAmount=${sendingAmount}&transactionMemo=${toHex(
         transactionMemo
       )}`;
       setRequestLink(link);
