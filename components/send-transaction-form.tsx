@@ -249,7 +249,12 @@ export default function SendTransactionForm() {
           functionName: "balanceOf",
           args: [evmAddress as Address],
         });
-        setCurrentBalance(formatUnits(tokenBalance as bigint, 6).toString());
+        const tokenDecimals = await publicClient.readContract({
+          address: tokenAddress as Address,
+          abi: mockStablecoinAbi,
+          functionName: "decimals",
+        });
+        setCurrentBalance(formatUnits(tokenBalance as bigint, tokenDecimals as number).toString());
         setCurrentNativeBalance(formatEther(balance as bigint).toString());
       };
       // call the function
