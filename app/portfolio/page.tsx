@@ -86,12 +86,16 @@ export default function PortfolioPage() {
             const fetchParachainNativeBalance = async () => {
               // initialize the dedot polkadot client
               const polkadotClient = await DedotClient.new<PolkadotApi>({ provider, cacheMetadata: true });
-              const balance = await polkadotClient.query.system.account(polkadotAddress);
-              const freeBalance: bigint = balance.data.free;
-              balanceObject["asset"] = asset;
-              balanceObject["balance"] = formatUnits(freeBalance, Number(asset.split("/")[1].split(":")[5]));
-              // add the nativeBalanceObject into the nativeBalances array
-              setBalances((balances) => [...balances, balanceObject]);
+              // Subscribe to account balance changes
+              const unsub = await polkadotClient.query.system.account(polkadotAddress, (balance) => {
+                const freeBalance: bigint = balance.data.free;
+                balanceObject["asset"] = asset;
+                balanceObject["balance"] = formatUnits(freeBalance, Number(asset.split("/")[1].split(":")[5]));
+                // add the nativeBalanceObject into the nativeBalances array
+                setBalances((balances) => [...balances, balanceObject]);
+                unsub(); // unsubsribe from the subscription
+              });
+
             }
             fetchParachainNativeBalance();
           }

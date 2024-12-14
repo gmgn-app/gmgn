@@ -54,19 +54,19 @@ export const ALL_SUPPORTED_ASSETS_V2 = [
   "eip155:421614/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/eth.svg:arb.svg", // arbitrum sepolia
   "eip155:84532/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/eth.svg:base.svg", // base sepolia
   "eip155:11124/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/eth.svg:abs.svg", // abstract testnet
-  "eip155:2522/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Frax Ether:frxETH:18/eth.svg:frax.svg", // fraxtal testnet
+  "eip155:2522/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Frax Ether:frxETH:18/frxeth.svg:frax.svg", // fraxtal testnet
   "eip155:80084/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Bera Token:BERA:18/bera.svg:bera.svg", // berachain testnet bartio
   "eip155:4201/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Lukso:LYXT:18/lyxt.svg:lyxt.svg", // lukso testnet
   "eip155:1287/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Dev Token:DEV:18/moonbeam.svg:moonbeam.svg", // moonbase alpha testnet
   "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/eth.svg:morph.svg", // morph testnet
   "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/eth.svg:scroll.svg", // scroll sepolia
-  "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Westend:WND:18/dot.svg:dot.svg", // westend asset hub polkadot
+  "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:AssetHub:WND:18/dot.svg:dot.svg", // westend asset hub polkadot
   "eip155:169/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Mainnet:Ether:ETH:18/eth.svg:manta.svg", // manta pacific mainnet
   "eip155:169/slip44:0x95CeF13441Be50d20cA4558CC0a27B601aC544E5:Mainnet:Manta token:MANTA:18/manta.svg:manta.svg", // manta pacific mainnet token MANTA
   "eip155:3441006/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:Testnet:Ether:ETH:18/manta.svg:manta.svg", // manta sepolia testnet
-  "polkadot:42/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Testnet:Paseo:PAS:10/paseo.svg:dot.svg", // polkadot paseo testnet
-  "polkadot:0/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Relay:Polkadot:DOT/dot.svg:dot.svg", // polkadot relay chain
-  "polkadot:6/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Mainnet:Bifrost:BNC/bifrost.svg:dot.svg", // polkadot bifrost parachain
+  "polkadot:42/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Testnet:Westend:WND:12/dot.svg:dot.svg", // polkadot westend testnet
+  "polkadot:0/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Relay:Polkadot:DOT:12/dot.svg:dot.svg", // polkadot relay chain
+  "polkadot:6/slip44:1ddddddddddddddddddddddddddddddddddddddddddddddd:Mainnet:Bifrost:BNC:12/bifrost.svg:dot.svg", // polkadot bifrost parachain
   // "sui:2/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // sui testnet
 ]
 

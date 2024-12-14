@@ -133,13 +133,13 @@ export function selectViemObjectFromChainId(chainId: string) {
 export function selectPolkadotRpcFromChainId(chainId: string) {
   switch (chainId) {
     case "polkadot:42":
-      return "wss://paseo.rpc.amforc.com:443";
+      return "wss://westend-rpc.polkadot.io";
     case "polkadot:0":
       return "wss://rpc.polkadot.io";
     case "polkadot:6":
       return "wss://hk.p.bifrost-rpc.liebi.com/ws";
     default:
-      return "wss://paseo.rpc.amforc.com:443";
+      return "wss://westend-rpc.polkadot.io";
   }
 }
 
@@ -176,8 +176,8 @@ export function selectBlockExplorerFromChainId(chainId: string | undefined | nul
       return "https://pacific-explorer.manta.network";
     case "eip155:3441006":
       return "https://pacific-explorer.sepolia-testnet.manta.network/";
-    case "polkadot:94220":
-      return "https://paseo.subscan.io";
+    case "polkadot:42":
+      return "https://westend.subscan.io";
     case "polkadot:0":
       return "https://subscan.io";
     case "polkadot:6":
