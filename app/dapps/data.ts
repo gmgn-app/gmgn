@@ -6,11 +6,11 @@ export const appsData = [
     url: "/dapps/multisend",
     icon: "multisend.svg"
   },
-  // {
-  //   id: 2,
-  //   name: "TimeLock",
-  //   description: "Lock your tokens for a specific period of time",
-  //   url: "/dapps/timelock",
-  //   icon: "timelock.svg"
-  // }
+  {
+    id: 2,
+    name: "Bifrost",
+    description: "Omnichain liquid staking",
+    url: "/dapps/bifrost",
+    icon: "bifrost.svg"
+  }
 ]

@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAtomValue } from 'jotai'
 import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { Skeleton } from "@/components/ui/skeleton";
-import { selectViemChainFromNetwork, selectViemObjectFromChainId, formatBalance, selectAssetLogo, selectNativeAssetInfoFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
+import { selectViemObjectFromChainId, formatBalance, selectNativeAssetInfoFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
 import { mockStablecoinAbi } from "@/lib/abis";
 import Header from "@/components/header";
 

@@ -46,7 +46,6 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import {
   formatBalance,
   truncateAddress,
-  selectNativeAssetSymbol,
   selectAssetInfoFromAssetId
 } from "@/lib/utils";
 import QRCode from "react-qr-code";

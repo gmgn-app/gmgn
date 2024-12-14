@@ -12,6 +12,8 @@ export const AVAILABLE_ASSETS = [
   "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // morph testnet
   "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // scroll sepolia
   "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // westend asset hub polkadot 
+  "eip155:169/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // manta pacific mainnet
+  "eip155:3441006/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // manta sepolia testnet
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
   "polkadot:0/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot relay chain
   "polkadot:6/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot bifrost parachain
@@ -34,6 +36,9 @@ export const ALL_SUPPORTED_ASSETS = [
   "eip155:2710/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // morph testnet
   "eip155:534351/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // scroll sepolia
   "eip155:420420421/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // westend asset hub polkadot
+  "eip155:169/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // manta pacific mainnet
+  "eip155:169/slip44:0x95CeF13441Be50d20cA4558CC0a27B601aC544E5", // manta pacific mainnet token MANTA
+  "eip155:3441006/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // manta sepolia testnet
   "polkadot:94220/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot paseo testnet
   "polkadot:0/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot relay chain
   "polkadot:6/slip44:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // polkadot bifrost parachain
