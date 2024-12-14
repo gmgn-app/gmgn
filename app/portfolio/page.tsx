@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
+// evm
 import {
   createPublicClient,
   http,
@@ -10,17 +11,20 @@ import {
   formatEther,
   formatUnits,
 } from "viem";
+// polkadot
+import { DedotClient, WsProvider } from 'dedot';
+import type { PolkadotApi, PaseoApi } from '@dedot/chaintypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAtomValue } from 'jotai'
 import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { Skeleton } from "@/components/ui/skeleton";
-import { selectViemObjectFromChainId, formatBalance, selectNativeAssetInfoFromChainId, selectNativeAssetLogoFromChainId } from "@/lib/utils";
-import { mockStablecoinAbi } from "@/lib/abis";
+import { selectViemObjectFromChainId, selectPolkadotRpcFromChainId, formatBalance } from "@/lib/utils";
+import { erc20Abi } from "@/lib/abis";
+import { ALL_SUPPORTED_ASSETS_V2 } from "@/lib/assets";
 import Header from "@/components/header";
 
-type NativeBalanceObject = {
-  network: string;
-  id: string;
+type BalanceObject = {
+  asset: string;
   balance: string;
 }
 
@@ -28,37 +32,84 @@ export default function PortfolioPage() {
   const availableNetworks = useAtomValue(availableNetworksAtom);
   const evmAddress = useAtomValue(evmAddressAtom);
   const polkadotAddress = useAtomValue(polkadotAddressAtom);
-  const [nativeBalances, setNativeBalances] = useState<NativeBalanceObject[]>([]);
+  const [balances, setBalances] = useState<BalanceObject[]>([]);
 
   // loop through the available networks and fetch the balance of the native token
   useEffect(() => {
-    if (evmAddress) {
-      if (availableNetworks) {
-        availableNetworks.map((network) => {
-          let nativeBalanceObject: NativeBalanceObject = {
-            network: "",
-            id: "",
+    if (evmAddress && polkadotAddress) {
+      if (ALL_SUPPORTED_ASSETS_V2) {
+        ALL_SUPPORTED_ASSETS_V2.map((asset) => {
+          let balanceObject: BalanceObject = {
+            asset: "",
             balance: "",
           };
-          const publicClient = createPublicClient({
-            chain: selectViemObjectFromChainId(network as string),
-            transport: http(),
-          });
-          nativeBalanceObject["network"] = network;
-          nativeBalanceObject["id"] = network;
-          const fetchNativeTokenBalance = async () => {
-            const balance = await publicClient.getBalance({
-              address: evmAddress as Address,
+          
+          // Handle all EVM assets
+          if (asset.split("/")[0].split(":")[0] === "eip155") {
+            const publicClient = createPublicClient({
+              chain: selectViemObjectFromChainId(asset.split("/")[0] as string),
+              transport: http(),
             });
-            nativeBalanceObject["balance"] = formatEther(balance).toString();
-            // add the nativeBalanceObject into the nativeBalances array
-            setNativeBalances((nativeBalances) => [...nativeBalances, nativeBalanceObject]);
-          };
-          fetchNativeTokenBalance();
+            balanceObject["asset"] = asset;
+            const fetchNativeTokenBalance = async () => {
+              const balance = await publicClient.getBalance({
+                address: evmAddress as Address,
+              });
+              balanceObject["balance"] = formatEther(balance);
+              // add the nativeBalanceObject into the nativeBalances array
+              setBalances((balances) => [...balances, balanceObject]);
+            };
+            const fetchERC20TokenBalance = async () => {
+              const balance = await publicClient.readContract({
+                address: asset.split("/")[1].split(":")[1] as Address,
+                abi: erc20Abi,
+                functionName: "balanceOf",
+                args: [evmAddress],
+              });
+              balanceObject["balance"] = formatUnits(balance as bigint, Number(asset.split("/")[1].split(":")[5]));
+              // add the nativeBalanceObject into the nativeBalances array
+              setBalances((balances) => [...balances, balanceObject]);
+            }
+            if (asset.split("/")[1].split(":")[1] === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+              fetchNativeTokenBalance();
+            }
+            if (asset.split("/")[1].split(":")[1] !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+              fetchERC20TokenBalance();
+            }
+          }
+
+          // Handle Polkadot assets
+          if (asset.split("/")[0].split(":")[0] === "polkadot") {
+            // Initialize providers & clients
+            const provider = new WsProvider(selectPolkadotRpcFromChainId(asset.split("/")[0]));
+
+            const fetchParachainNativeBalance = async () => {
+              // initialize the dedot polkadot client
+              const polkadotClient = await DedotClient.new<PolkadotApi>({ provider, cacheMetadata: true });
+              const balance = await polkadotClient.query.system.account(polkadotAddress);
+              const freeBalance: bigint = balance.data.free;
+              balanceObject["asset"] = asset;
+              balanceObject["balance"] = formatUnits(freeBalance, Number(asset.split("/")[1].split(":")[5]));
+              // add the nativeBalanceObject into the nativeBalances array
+              setBalances((balances) => [...balances, balanceObject]);
+            }
+            fetchParachainNativeBalance();
+          }
         });
       }
+    } else {
+      ALL_SUPPORTED_ASSETS_V2.map((asset) => {
+        let balanceObject: BalanceObject = {
+          asset: "",
+          balance: "",
+        };
+        balanceObject["asset"] = asset;
+        balanceObject["balance"] = "0";
+        // add the nativeBalanceObject into the nativeBalances array
+        setBalances((balances) => [...balances, balanceObject]);
+      });
     }
-  }, [evmAddress, availableNetworks]);
+  }, [evmAddress, polkadotAddress]);
 
 
   return (
@@ -76,21 +127,31 @@ export default function PortfolioPage() {
         <TabsContent value="crypto">
           <div  className="flex flex-col gap-2 mt-4">
             {
-              availableNetworks ? (
-                availableNetworks.map((network: string) => {
+              ALL_SUPPORTED_ASSETS_V2 ? (
+                ALL_SUPPORTED_ASSETS_V2.map((asset: string) => {
                   return (
-                    <div key={network} className="flex flex-row items-start justify-between">
+                    <div key={asset} className="flex flex-row items-start justify-between">
                       <div className="flex flex-row gap-2 items-center">
                         <Image
-                          src={selectNativeAssetLogoFromChainId(network) || "/default-logo.png"}
+                          src={`/logos/${asset.split("/")[2].split(":")[0]}` || "/default-logo.png"}
                           alt="logo"
                           width={40}
                           height={40}
                           className="rounded-full"
                         />
                         <div className="flex flex-col">
-                          <h3 className="font-semibold">{selectNativeAssetInfoFromChainId(network).split(":")[2]}</h3>
-                          <div className="text-sm bg-muted p-1 rounded-md">{selectNativeAssetInfoFromChainId(network).split(":")[0]}</div>
+                          <div className="flex flex-row gap-2 items-center">   
+                            <Image
+                              src={`/logos/${asset.split("/")[2].split(":")[1]}` || "/default-logo.png"}
+                              alt="logo"
+                              width={20}
+                              height={20}
+                              className="rounded-full"
+                            />
+                            <h3 className="font-semibold">{asset.split("/")[1].split(":")[4]}</h3>
+                            <div className="text-sm bg-muted p-1 rounded-md">{asset.split("/")[1].split(":")[2]}</div>
+                          </div>
+                          <div className="text-sm">$0.00</div>
                         </div>
                       </div>
                       <div className="flex flex-col">
@@ -98,8 +159,8 @@ export default function PortfolioPage() {
                           <div className="text-right">
                             {
                               // find the balance of the network in nativeBalances
-                              nativeBalances.find((nativeBalance) => nativeBalance.id === network) ? (
-                                formatBalance(nativeBalances.find((nativeBalance) => nativeBalance.id === network)!.balance, 6)
+                              balances.find((balance) => balance.asset === asset) ? (
+                                formatBalance(balances.find((balance) => balance.asset === asset)!.balance, 6)
                               ) : (
                                 <Skeleton className="w-16 h-4" />
                               )

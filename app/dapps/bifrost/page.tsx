@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import BackButton from "@/components/back-button";
@@ -24,8 +24,6 @@ import {
   encodePacked
 } from "viem";
 import { mnemonicToAccount } from 'viem/accounts';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/keyring';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

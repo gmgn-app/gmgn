@@ -130,6 +130,19 @@ export function selectViemObjectFromChainId(chainId: string) {
   }
 }
 
+export function selectPolkadotRpcFromChainId(chainId: string) {
+  switch (chainId) {
+    case "polkadot:42":
+      return "wss://paseo.rpc.amforc.com:443";
+    case "polkadot:0":
+      return "wss://rpc.polkadot.io";
+    case "polkadot:6":
+      return "wss://hk.p.bifrost-rpc.liebi.com/ws";
+    default:
+      return "wss://paseo.rpc.amforc.com:443";
+  }
+}
+
 
 export function selectBlockExplorerFromChainId(chainId: string | undefined | null) {
   switch (chainId) {
