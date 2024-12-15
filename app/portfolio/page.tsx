@@ -2,7 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
-import BackButton from "@/components/back-button";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 // evm
 import {
   createPublicClient,
@@ -16,7 +18,7 @@ import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi, PaseoApi } from '@dedot/chaintypes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAtomValue } from 'jotai'
-import { availableNetworksAtom, evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
+import { evmAddressAtom, polkadotAddressAtom } from "@/components/wallet-management";
 import { Skeleton } from "@/components/ui/skeleton";
 import { selectViemObjectFromChainId, selectPolkadotRpcFromChainId, formatBalance } from "@/lib/utils";
 import { erc20Abi } from "@/lib/abis";
@@ -29,92 +31,159 @@ type BalanceObject = {
 }
 
 export default function PortfolioPage() {
-  const availableNetworks = useAtomValue(availableNetworksAtom);
+  const router = useRouter();
   const evmAddress = useAtomValue(evmAddressAtom);
   const polkadotAddress = useAtomValue(polkadotAddressAtom);
   const [balances, setBalances] = useState<BalanceObject[]>([]);
+  const [dedotClients, setDedotClients] = useState<DedotClient<PolkadotApi>[]>([]);
+  const [unsubFunctions, setUnsubFunctions] = useState<(() => void)[]>([]);
 
   // loop through the available networks and fetch the balance of the native token
   useEffect(() => {
-    if (evmAddress && polkadotAddress) {
-      if (ALL_SUPPORTED_ASSETS_V2) {
-        ALL_SUPPORTED_ASSETS_V2.map((asset) => {
-          let balanceObject: BalanceObject = {
-            asset: "",
-            balance: "",
-          };
-          
-          // Handle all EVM assets
-          if (asset.split("/")[0].split(":")[0] === "eip155") {
-            const publicClient = createPublicClient({
-              chain: selectViemObjectFromChainId(asset.split("/")[0] as string),
-              transport: http(),
-            });
-            balanceObject["asset"] = asset;
-            const fetchNativeTokenBalance = async () => {
-              const balance = await publicClient.getBalance({
-                address: evmAddress as Address,
-              });
-              balanceObject["balance"] = formatEther(balance);
-              // add the nativeBalanceObject into the nativeBalances array
-              setBalances((balances) => [...balances, balanceObject]);
-            };
-            const fetchERC20TokenBalance = async () => {
-              const balance = await publicClient.readContract({
-                address: asset.split("/")[1].split(":")[1] as Address,
-                abi: erc20Abi,
-                functionName: "balanceOf",
-                args: [evmAddress],
-              });
-              balanceObject["balance"] = formatUnits(balance as bigint, Number(asset.split("/")[1].split(":")[5]));
-              // add the nativeBalanceObject into the nativeBalances array
-              setBalances((balances) => [...balances, balanceObject]);
-            }
-            if (asset.split("/")[1].split(":")[1] === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-              fetchNativeTokenBalance();
-            }
-            if (asset.split("/")[1].split(":")[1] !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-              fetchERC20TokenBalance();
-            }
-          }
-
-          // Handle Polkadot assets
-          if (asset.split("/")[0].split(":")[0] === "polkadot") {
-            // Initialize providers & clients
-            const provider = new WsProvider(selectPolkadotRpcFromChainId(asset.split("/")[0]));
-
-            const fetchParachainNativeBalance = async () => {
-              // initialize the dedot polkadot client
-              const polkadotClient = await DedotClient.new<PolkadotApi>({ provider, cacheMetadata: true });
-              // Subscribe to account balance changes
-              const unsub = await polkadotClient.query.system.account(polkadotAddress, (balance) => {
-                const freeBalance: bigint = balance.data.free;
-                balanceObject["asset"] = asset;
-                balanceObject["balance"] = formatUnits(freeBalance, Number(asset.split("/")[1].split(":")[5]));
-                // add the nativeBalanceObject into the nativeBalances array
-                setBalances((balances) => [...balances, balanceObject]);
-                unsub(); // unsubsribe from the subscription
-              });
-
-            }
-            fetchParachainNativeBalance();
-          }
-        });
-      }
-    } else {
-      ALL_SUPPORTED_ASSETS_V2.map((asset) => {
-        let balanceObject: BalanceObject = {
-          asset: "",
-          balance: "",
-        };
-        balanceObject["asset"] = asset;
-        balanceObject["balance"] = "0";
-        // add the nativeBalanceObject into the nativeBalances array
-        setBalances((balances) => [...balances, balanceObject]);
-      });
+    // Clear existing balances when addresses change
+    setBalances([]);
+    
+    // If no addresses, set all balances to 0
+    if (!evmAddress || !polkadotAddress) {
+      const zeroBalances = ALL_SUPPORTED_ASSETS_V2.map(asset => ({
+        asset,
+        balance: "0"
+      }));
+      setBalances(zeroBalances);
+      return;
     }
-  }, [evmAddress, polkadotAddress]);
 
+    // Keep track of mounted state
+    let isMounted = true;
+
+    // Handle EVM assets
+    const fetchEvmBalances = async () => {
+      const evmAssets = ALL_SUPPORTED_ASSETS_V2.filter(
+        asset => asset.split("/")[0].split(":")[0] === "eip155"
+      );
+
+      const evmBalancePromises = evmAssets.map(async (asset) => {
+        const publicClient = createPublicClient({
+          chain: selectViemObjectFromChainId(asset.split("/")[0] as string),
+          transport: http(),
+        });
+
+        const tokenAddress = asset.split("/")[1].split(":")[1];
+        const isNative = tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+        try {
+          if (isNative) {
+            const balance = await publicClient.getBalance({
+              address: evmAddress as Address,
+            });
+            return {
+              asset,
+              balance: formatEther(balance)
+            };
+          } else {
+            const balance = await publicClient.readContract({
+              address: tokenAddress as Address,
+              abi: erc20Abi,
+              functionName: "balanceOf",
+              args: [evmAddress],
+            });
+            return {
+              asset,
+              balance: formatUnits(
+                balance as bigint,
+                Number(asset.split("/")[1].split(":")[5])
+              )
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching balance for ${asset}:`, error);
+          return {
+            asset,
+            balance: "0"
+          };
+        }
+      });
+
+      const results = await Promise.all(evmBalancePromises);
+      if (isMounted) {
+        setBalances(prev => [...prev, ...results]);
+      }
+    };
+
+    // Handle Polkadot assets
+    const fetchPolkadotBalances = async () => {
+      const polkadotAssets = ALL_SUPPORTED_ASSETS_V2.filter(
+        asset => asset.split("/")[0].split(":")[0] === "polkadot"
+      );
+
+      const newClients: DedotClient<PolkadotApi>[] = [];
+      const newUnsubFunctions: (() => void)[] = [];
+
+      for (const asset of polkadotAssets) {
+        const provider = new WsProvider(selectPolkadotRpcFromChainId(asset.split("/")[0]));
+        
+        try {
+          const polkadotClient = await DedotClient.new<PolkadotApi>({ 
+            provider, 
+            cacheMetadata: true 
+          });
+          newClients.push(polkadotClient);
+
+          const unsub = await polkadotClient.query.system.account(
+            polkadotAddress, 
+            (balance) => {
+              if (isMounted) {
+                const freeBalance: bigint = balance.data.free;
+                setBalances(prev => [
+                  ...prev.filter(b => b.asset !== asset),
+                  {
+                    asset,
+                    balance: formatUnits(
+                      freeBalance, 
+                      Number(asset.split("/")[1].split(":")[5])
+                    )
+                  }
+                ]);
+              }
+            }
+          );
+          newUnsubFunctions.push(unsub);
+        } catch (error) {
+          console.error(`Error setting up Polkadot client for ${asset}:`, error);
+          if (isMounted) {
+            setBalances(prev => [...prev, { asset, balance: "0" }]);
+          }
+        }
+      }
+
+      if (isMounted) {
+        setDedotClients(prev => [...prev, ...newClients]);
+        setUnsubFunctions(prev => [...prev, ...newUnsubFunctions]);
+      }
+    };
+
+    // Fetch all balances
+    fetchEvmBalances();
+    fetchPolkadotBalances();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      unsubFunctions.forEach(unsub => unsub());
+      dedotClients.forEach(client => client.disconnect());
+      setDedotClients([]);
+      setUnsubFunctions([]);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleDisconnectAndGoBack() {
+    unsubFunctions.forEach(unsub => unsub());
+    dedotClients.forEach(client => client.disconnect());
+    setDedotClients([]);
+    setUnsubFunctions([]);
+    router.push("/");
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 w-screen md:w-[768px]">
@@ -122,7 +191,11 @@ export default function PortfolioPage() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Portfolio
       </h1>
-      <BackButton route="/" />
+      {/* <BackButton route="/" /> */}
+      <Button variant="outline" className="w-fit" onClick={handleDisconnectAndGoBack}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Go back
+      </Button>
       <Tabs defaultValue="crypto" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="crypto">Crypto</TabsTrigger>
