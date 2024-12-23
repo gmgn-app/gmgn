@@ -4,6 +4,11 @@
  */
 
 /**
+ * Adopted https://github.com/hazae41/webauthnstorage
+ * by Hazae41
+ */
+
+/**
  * Use WebAuthn to store authentication-protected arbitrary bytes
  *
  * @param name user-friendly name for the data

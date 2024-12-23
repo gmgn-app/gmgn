@@ -315,7 +315,7 @@ export default function WalletManagement() {
       {createWalletButtonActive === false &&
       loadingWalletStorage === false &&
       evmAddress ? (
-        <div className="flex flex-col gap-2 h-[135px] bg-gradient-to-l from-yellow-200 via-lime-400 to-green-400 text-[#163300] border-primary border-2 rounded-md p-4">
+        <div className="flex flex-col gap-2 h-[135px] bg-[#CCFF00] text-primary border-primary border-2 rounded-md p-4">
           <div className="flex flex-row justify-between">
             <div className="flex flex-col md:flex-row gap-4 items-start">
               <Link href="/profile">
@@ -444,7 +444,7 @@ export default function WalletManagement() {
         </div>
       ) : createWalletButtonActive === true &&
         loadingWalletStorage === false ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[135px] items-center justify-center rounded-md p-4">
+        <div className="flex flex-col gap-2 bg-[#CCFF00] border-primary border-2 h-[135px] items-center justify-center rounded-md p-4">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -487,7 +487,7 @@ export default function WalletManagement() {
       ) : createWalletButtonActive === false &&
         loadingWalletStorage === false &&
         !evmAddress ? (
-        <div className="flex flex-col gap-2 bg-[#9FE870] border-primary border-2 h-[135px] items-center justify-center rounded-md p-4">
+        <div className="flex flex-col gap-2 bg-[#CCFF00] border-primary border-2 h-[135px] items-center justify-center rounded-md p-4">
           {
             loadWalletButtonLoading ? (
               <Button className="w-[230px]" disabled>
