@@ -234,7 +234,7 @@ export default function WalletManagement() {
      * Store the handle to the private key into some unauthenticated storage
      */
     if (!handle) {
-      setLoadWalletButtonLoading(false);
+      setCreateWalletButtonLoading(false);
       toast({
         variant: "destructive",
         title: "Wallet creation failed!",
