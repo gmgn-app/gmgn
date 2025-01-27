@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "vox populi - voice of the people",
   metadataBase: new URL("https://www.gmgn.app"),
   openGraph: {
-    title: "GM GN wallet",
+    title: "GM GN",
     description: "vox populi - voice of the people",
     url: "https://www.gmgn.app",
     siteName: "gmgn",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GM GN wallet",
+    title: "GM GN",
     description: "vox populi - voice of the people",
     creator: "@zxstim",
     images: ["/gmgn-tbn.png"],
