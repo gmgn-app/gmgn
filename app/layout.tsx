@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import Script from "next/script";
 import Footer from "@/components/footer";
 import { Providers } from "@/app/providers";
 
@@ -44,20 +43,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Script 
-        defer 
-        src="https://assets.onedollarstats.com/stonks.js" 
-        id="stonks"
-      ></Script>
-      <body className={inter.className}>
-        <Providers>
+      <Providers>
+        <body className={inter.className}>
           <main className="flex flex-col gap-8 px-2 pt-2 pb-24 md:p-12 lg:p-16 w-screen items-center justify-center">
             {children}
             <Footer />
           </main>
           <Toaster />
-        </Providers>
-      </body>
+        </body>
+      </Providers>
     </html>
   );
 }
