@@ -44,10 +44,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Script
-        defer
-        data-domain="gmgn.app"
-        src="https://analytics.pyhash.com/js/script.js"
+      <Script 
+        defer 
+        src="https://assets.onedollarstats.com/stonks.js" 
+        id="stonks"
       ></Script>
       <body className={inter.className}>
         <Providers>
